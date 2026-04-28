@@ -1,0 +1,27 @@
+# datasets brutos — volume grande, não versionar
+data/
+
+# python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env
+*.egg-info/
+
+# obsidian — workspace local do usuário, não compartilhar
+vault/.obsidian/workspace*
+vault/.obsidian/cache/
+.trash/
+
+# editores / SO
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# logs / artefatos de benchmark
+*.log
+results/
