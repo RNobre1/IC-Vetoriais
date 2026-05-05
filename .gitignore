@@ -9,6 +9,13 @@ __pycache__/
 venv/
 .env
 *.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# locks de office (LibreOffice/Word)
+.~lock.*#
 
 # obsidian — workspace local do usuário, não compartilhar
 vault/.obsidian/workspace*
