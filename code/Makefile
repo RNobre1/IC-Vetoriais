@@ -1,4 +1,9 @@
-.PHONY: help up down logs smoke clean test test-unit test-integration lint fmt deps
+.PHONY: help up down logs smoke clean test test-unit test-integration lint fmt deps ui-up ui-down ui-logs
+
+# Compose principal (3 SGBDs) e merge com UI (Verba). Vide:
+#   vault/decisões/2026-05-05-isolamento-ui-vs-benchmark.md
+COMPOSE      := docker compose
+COMPOSE_UI   := docker compose -f docker-compose.yml -f docker-compose.ui.yml
 
 VENV := .venv
 # Se o venv existe, usa seus binários; caso contrário, cai pro PATH (necessário pra CI sem venv).
@@ -16,13 +21,26 @@ deps:  ## Cria venv local e instala dependências pinadas
 	$(VENV)/bin/pip install -r requirements.txt
 
 up:  ## Sobe os 3 SGBDs em background (pgvector + qdrant + weaviate)
-	docker compose up -d
+	$(COMPOSE) up -d
 
 down:  ## Derruba os 3 SGBDs (preserva volumes)
-	docker compose down
+	$(COMPOSE) down
 
 logs:  ## Acompanha logs dos 3 sistemas
-	docker compose logs -f
+	$(COMPOSE) logs -f
+
+ui-up:  ## Sobe Verba (UI do Weaviate) — NÃO rodar durante benchmarks
+	$(COMPOSE_UI) up -d verba
+	@echo ""
+	@echo "Verba disponível em: http://localhost:$${VERBA_PORT:-8000}"
+	@echo "Lembrete: derrubar com 'make ui-down' antes de medições."
+
+ui-down:  ## Derruba Verba (preserva os 3 SGBDs)
+	$(COMPOSE_UI) stop verba
+	$(COMPOSE_UI) rm -f verba
+
+ui-logs:  ## Acompanha logs do Verba
+	$(COMPOSE_UI) logs -f verba
 
 smoke:  ## Smoke test integrado (requer 'make up')
 	$(PYTEST) tests/integration/test_smoke.py -v

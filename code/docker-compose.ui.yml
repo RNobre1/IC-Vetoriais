@@ -1,0 +1,33 @@
+# Stack de UI/inspeção — isolado do compose principal por decisão metodológica.
+# Vide: vault/decisões/2026-05-05-isolamento-ui-vs-benchmark.md
+#
+# Uso (sempre combinando com o compose base):
+#   docker compose -f docker-compose.yml -f docker-compose.ui.yml up -d verba
+#   docker compose -f docker-compose.yml -f docker-compose.ui.yml stop verba
+#
+# Ou via Makefile: `make ui-up` / `make ui-down` / `make ui-logs`.
+#
+# IMPORTANTE: derrubar este stack ANTES de qualquer benchmark — ANN-Benchmarks
+# (Aumüller et al., 2020) recomenda ambiente limpo durante medições.
+
+services:
+  verba:
+    image: semitechnologies/verba:latest
+    container_name: ic-verba
+    ports:
+      - "${VERBA_PORT:-8000}:8000"
+    environment:
+      # Conecta no Weaviate via DNS interna do compose (não localhost).
+      WEAVIATE_URL_VERBA: "http://weaviate:8080"
+      # Sem auth no Weaviate self-hosted dev → API key vazia.
+      WEAVIATE_API_KEY_VERBA: ""
+      # Chaves de LLM/embedding desabilitadas — Verba aqui é usada como
+      # explorador de coleções. Se for habilitar RAG depois, exportar antes
+      # de subir: e.g. `OPENAI_API_KEY=... make ui-up`.
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+      COHERE_API_KEY: "${COHERE_API_KEY:-}"
+    depends_on:
+      weaviate:
+        condition: service_healthy
+    restart: unless-stopped
