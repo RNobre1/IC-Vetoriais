@@ -1,12 +1,19 @@
 .PHONY: help up down logs smoke clean test test-unit test-integration lint fmt deps
 
+VENV := .venv
+# Se o venv existe, usa seus binários; caso contrário, cai pro PATH (necessário pra CI sem venv).
+PYTHON := $(if $(wildcard $(VENV)/bin/python),$(VENV)/bin/python,python)
+PIP    := $(if $(wildcard $(VENV)/bin/pip),$(VENV)/bin/pip,pip)
+PYTEST := $(if $(wildcard $(VENV)/bin/pytest),$(VENV)/bin/pytest,pytest)
+RUFF   := $(if $(wildcard $(VENV)/bin/ruff),$(VENV)/bin/ruff,ruff)
+
 help:  ## Lista os alvos do Makefile
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 deps:  ## Cria venv local e instala dependências pinadas
-	python -m venv .venv
-	.venv/bin/pip install --upgrade pip
-	.venv/bin/pip install -r requirements.txt
+	python -m venv $(VENV)
+	$(VENV)/bin/pip install --upgrade pip
+	$(VENV)/bin/pip install -r requirements.txt
 
 up:  ## Sobe os 3 SGBDs em background (pgvector + qdrant + weaviate)
 	docker compose up -d
@@ -18,22 +25,22 @@ logs:  ## Acompanha logs dos 3 sistemas
 	docker compose logs -f
 
 smoke:  ## Smoke test integrado (requer 'make up')
-	pytest tests/integration/test_smoke.py -v
+	$(PYTEST) tests/integration/test_smoke.py -v
 
 test: test-unit  ## Alvo padrão (= test-unit)
 
 test-unit:  ## Testes unitários (sem Docker)
-	pytest tests/unit -v
+	$(PYTEST) tests/unit -v
 
 test-integration:  ## Testes de integração (requer 'make up')
-	pytest tests/integration -v
+	$(PYTEST) tests/integration -v
 
 lint:  ## Lint via ruff (check + format)
-	ruff check .
-	ruff format --check .
+	$(RUFF) check .
+	$(RUFF) format --check .
 
 fmt:  ## Aplica formatação ruff
-	ruff format .
+	$(RUFF) format .
 
 clean:  ## Remove containers, volumes Docker e caches Python
 	docker compose down -v
