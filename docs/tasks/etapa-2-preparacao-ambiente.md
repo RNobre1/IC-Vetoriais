@@ -71,33 +71,36 @@ code/
 
 ## Cronograma diário (4 dias)
 
-### Dia 1 — 2026-05-05 (hoje, restante do dia)
+### Dia 1 — 2026-05-05 ✅ CONCLUÍDO
 **Foco: esqueleto de `code/`, docker-compose dos 3 sistemas, smoke test em TDD e CI mínimo no ar.**
 
 Entregáveis:
-- [ ] Esqueleto do projeto Python em `code/`:
+- [x] Esqueleto do projeto Python em `code/`:
   - `pyproject.toml` (com config de `ruff` para lint+format e `pytest` markers)
-  - `requirements.txt` com versões pinadas das dependências mínimas (pytest, ruff, httpx, psycopg, qdrant-client, weaviate-client, python-dotenv)
-  - `Makefile` (alvos: `up`, `down`, `smoke`, `test`, `test-unit`, `test-integration`, `lint`, `fmt`, `clean`)
-  - `README.md` (esqueleto)
+  - `requirements.txt` com versões pinadas + `requirements.lock` (transitivos resolvidos)
+  - `Makefile` (alvos: `up`, `down`, `smoke`, `test`, `test-unit`, `test-integration`, `lint`, `fmt`, `clean`, `deps`, `logs`, `help`)
+  - `README.md` (esqueleto em PT-BR com troubleshooting)
   - `.env.example`
-- [ ] `code/docker-compose.yml` com:
-  - `postgres-pgvector` (imagem `pgvector/pgvector:pg16`)
-  - `qdrant` (imagem `qdrant/qdrant:v1.x` — verificar última estável)
-  - `weaviate` (imagem `semitechnologies/weaviate:1.x` — verificar última estável)
-  - Healthchecks HTTP/gRPC para cada um
-  - Named volumes (gerenciados pelo Docker, fora do tree do projeto)
-- [ ] **Smoke test em TDD** (escrito antes do `docker compose up`):
-  - `tests/integration/test_smoke.py` valida conexão e operação básica nos 3 sistemas (CREATE EXTENSION/COLLECTION/CLASS, INSERT 1, SEARCH 1)
-  - `tests/unit/test_basic.py` mantém o pipeline de CI vivo enquanto módulos reais não existem
-- [ ] **CI mínimo no GitHub Actions** (`.github/workflows/test.yml`):
+- [x] `code/docker-compose.yml` com:
+  - `postgres-pgvector` (`pgvector/pgvector:pg16`)
+  - `qdrant` (`qdrant/qdrant:v1.12.0`)
+  - `weaviate` (`semitechnologies/weaviate:1.27.0`)
+  - Healthchecks (TCP/HTTP/`pg_isready`) com `start_period` e retries adequados
+  - Named volumes gerenciados pelo Docker
+  - Porta gRPC 50051 do Weaviate exposta (necessária para o cliente v4)
+- [x] **Smoke test em TDD** (escrito antes do `docker compose up`):
+  - `tests/integration/test_smoke.py` — 6 cenários cobrindo conexão + CREATE + INSERT + SEARCH nos 3 sistemas
+  - `tests/unit/test_basic.py` — mantém o pipeline de CI vivo
+  - **Resultado:** 6/6 integrados verde, 2/2 unitários verde após `docker compose up -d --wait`.
+- [x] **CI mínimo no GitHub Actions** (`.github/workflows/test.yml`):
   - Lint via `ruff check` + `ruff format --check`
   - Testes unitários via `pytest tests/unit`
   - Cache de pip
   - Executa em push/PR para `main`
-  - Integration tests **ficam locais** (Docker no notebook); CI cobre só unitários e lint
-- [ ] **ADR nova** sobre versões de imagens escolhidas: `vault/decisões/2026-05-05-versoes-imagens-docker.md`
-- [ ] **PARAR** antes de `docker compose up` — aguardar OK do piloto.
+- [x] **ADR**: [[../../vault/decisões/2026-05-05-versoes-imagens-docker]] (versões fixadas).
+- [x] **Lição**: [[../../vault/lições/2026-05-05-armadilhas-dia-1-etapa-2]] (3 armadilhas corrigidas: httpx vs weaviate, psycopg sem wheel py3.14, gRPC do Weaviate).
+
+**Estado de infraestrutura ao final do Dia 1:** containers `ic-pgvector`, `ic-qdrant`, `ic-weaviate` de pé e healthy; venv `code/.venv` instalado; `code/.env` aplicado.
 
 ### Dia 2 — 2026-05-06
 **Foco: pipeline de embeddings + seeders dos 3 sistemas.**
