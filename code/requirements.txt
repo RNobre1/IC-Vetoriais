@@ -8,13 +8,15 @@ pytest-cov==6.0.0
 ruff==0.8.4
 
 # Cliente HTTP para smoke tests
-httpx==0.28.1
+# Pinado em 0.27.2 (último < 0.28) para compatibilidade com weaviate-client 4.9.6, que exige httpx<=0.27.0.
+# Ver vault/lições/ se for necessário voltar a bumpar httpx (provavelmente exige bumpar weaviate-client junto).
+httpx==0.27.0
 
 # Configuração via .env
 python-dotenv==1.0.1
 
 # Drivers Python dos 3 SGBDs alvo (necessários para o smoke test integrado)
-psycopg[binary,pool]==3.2.3
+psycopg[binary,pool]==3.2.13
 pgvector==0.3.6
 qdrant-client==1.12.1
 weaviate-client==4.9.6
