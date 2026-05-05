@@ -42,6 +42,7 @@ Papéis bem separados — não misturar:
 - **`vault/experimentos/`** — log por execução de benchmark. Configuração, comando, resultados, observações.
 - **`vault/drafts/`** — pedaços de texto destinados ao relatório. Linkam para papers e referência. Quando estabilizam, são copiados manualmente para `docx/`.
 - **`vault/lições/`** — lições aprendidas e correções não-óbvias durante o trabalho (erros de citação, pegadinhas de configuração, ajustes de protocolo). Notas datadas, com causa raiz e regra de aplicação futura. Servem para não repetir o erro em sessões futuras.
+- **`vault/sessões/`** — log condensado por sessão de trabalho. Onde paramos, o que foi entregue, decisões tomadas, próximo passo concreto. Alimenta o ritual de "início de sessão" (Regra 6).
 
 ### Frontmatter padrão para fichamentos
 
