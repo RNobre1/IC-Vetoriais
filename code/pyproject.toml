@@ -1,0 +1,35 @@
+[project]
+name = "ic-vetoriais"
+version = "0.1.0"
+description = "Comparação experimental de pgvector, Qdrant e Weaviate para busca semântica (UFOPA/IEG)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "Rafael Nobre de Souza" },
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [".docker-volumes", ".venv", "data", "results"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "SIM"]
+# E501 (line length) é gerenciado pelo formatter; B008 ignorado para fixtures pytest comuns
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "integration: testes que requerem Docker rodando (pgvector, qdrant, weaviate)",
+    "slow: testes lentos (>10s)",
+]
