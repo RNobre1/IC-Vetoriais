@@ -1,0 +1,23 @@
+# === Etapa 2 / Dia 1 ===
+# Versões pinadas para reprodutibilidade. Justificativa de cada bump deve virar nota em vault/decisões/.
+# Validar disponibilidade no PyPI no primeiro `make deps`; se alguma versão não existir, ajustar e registrar.
+
+# CI / dev tooling
+pytest==8.3.4
+pytest-cov==6.0.0
+ruff==0.8.4
+
+# Cliente HTTP para smoke tests
+httpx==0.28.1
+
+# Configuração via .env
+python-dotenv==1.0.1
+
+# Drivers Python dos 3 SGBDs alvo (necessários para o smoke test integrado)
+psycopg[binary,pool]==3.2.3
+pgvector==0.3.6
+qdrant-client==1.12.1
+weaviate-client==4.9.6
+
+# Dependências dos Dias 2-4 são adicionadas conforme cada peça é implementada (TDD).
+# Candidatos previstos: numpy, sentence-transformers, faiss-cpu.
