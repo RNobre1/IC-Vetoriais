@@ -72,19 +72,32 @@ code/
 ## Cronograma diário (4 dias)
 
 ### Dia 1 — 2026-05-05 (hoje, restante do dia)
-**Foco: docker-compose dos 3 sistemas + smoke test.**
+**Foco: esqueleto de `code/`, docker-compose dos 3 sistemas, smoke test em TDD e CI mínimo no ar.**
 
 Entregáveis:
+- [ ] Esqueleto do projeto Python em `code/`:
+  - `pyproject.toml` (com config de `ruff` para lint+format e `pytest` markers)
+  - `requirements.txt` com versões pinadas das dependências mínimas (pytest, ruff, httpx, psycopg, qdrant-client, weaviate-client, python-dotenv)
+  - `Makefile` (alvos: `up`, `down`, `smoke`, `test`, `test-unit`, `test-integration`, `lint`, `fmt`, `clean`)
+  - `README.md` (esqueleto)
+  - `.env.example`
 - [ ] `code/docker-compose.yml` com:
   - `postgres-pgvector` (imagem `pgvector/pgvector:pg16`)
   - `qdrant` (imagem `qdrant/qdrant:v1.x` — verificar última estável)
   - `weaviate` (imagem `semitechnologies/weaviate:1.x` — verificar última estável)
   - Healthchecks HTTP/gRPC para cada um
-  - Volumes persistentes em `code/.docker-volumes/` (gitignored)
-- [ ] `code/.env.example`
-- [ ] Smoke test integrado: `tests/integration/test_smoke.py` que valida conexão básica e CREATE INDEX + INSERT 1 + SEARCH 1 em cada sistema (TDD: escrever **antes** dos seeders)
-- [ ] `code/Makefile` com `up`, `down`, `smoke`
+  - Named volumes (gerenciados pelo Docker, fora do tree do projeto)
+- [ ] **Smoke test em TDD** (escrito antes do `docker compose up`):
+  - `tests/integration/test_smoke.py` valida conexão e operação básica nos 3 sistemas (CREATE EXTENSION/COLLECTION/CLASS, INSERT 1, SEARCH 1)
+  - `tests/unit/test_basic.py` mantém o pipeline de CI vivo enquanto módulos reais não existem
+- [ ] **CI mínimo no GitHub Actions** (`.github/workflows/test.yml`):
+  - Lint via `ruff check` + `ruff format --check`
+  - Testes unitários via `pytest tests/unit`
+  - Cache de pip
+  - Executa em push/PR para `main`
+  - Integration tests **ficam locais** (Docker no notebook); CI cobre só unitários e lint
 - [ ] **ADR nova** sobre versões de imagens escolhidas: `vault/decisões/2026-05-05-versoes-imagens-docker.md`
+- [ ] **PARAR** antes de `docker compose up` — aguardar OK do piloto.
 
 ### Dia 2 — 2026-05-06
 **Foco: pipeline de embeddings + seeders dos 3 sistemas.**
@@ -134,12 +147,12 @@ Entregáveis:
   - **Esqueleto apenas** — não rodar carga real (1M fica para Etapa 4)
   - Estrutura: produtor concorrente de inserções + consumidor de buscas
   - Mede impacto de taxa de inserção (0, 10, 100, 1000 ins/s) em latência p99 de leitura
-- [ ] `Makefile` finalizado: `up`, `down`, `smoke`, `seed`, `bench-A`, `bench-B`, `bench-C-dryrun`, `clean`, `test`, `test-unit`, `test-integration`
-- [ ] `code/README.md` em PT-BR com:
+- [ ] `Makefile` estendido com `seed`, `bench-A`, `bench-B`, `bench-C-dryrun` (alvos básicos `up`, `down`, `smoke`, `test*`, `lint`, `fmt`, `clean` já vieram do Dia 1)
+- [ ] `code/README.md` finalizado em PT-BR com:
   - Pré-requisitos (Docker ≥ 24, Python 3.11+, ~8 GB livres em disco, ~12 GB RAM em pico)
   - Comandos (mesmos do Makefile)
   - Troubleshooting (porta ocupada, container saudável mas Python falha conectar, etc.)
-- [ ] **Decisão pendente:** CI mínimo via GitHub Actions rodando só os testes unitários (os de integração exigem Docker e ficam locais). Avaliar custo × valor no Dia 4. Se sim, registrar em ADR.
+- [ ] CI estendido (decisão pendente — avaliar Dia 4): ampliar workflow para rodar testes de integração com `services:` do GitHub Actions. Custo: workflow mais frágil, runners gratuitos limitados. Recomendação atual: **manter integração local**, só ampliar se o orientador requisitar.
 - [ ] Smoke completo de validação: `make up && make seed N=10000 && make bench-A` produz JSON em `code/results/`
 
 ## Definição de "pronto" para a Etapa 2
@@ -164,7 +177,7 @@ A registrar como ADR no momento em que a decisão for tomada:
 
 - Versões exatas das imagens Docker (Dia 1).
 - Estratégia de chunking (passage = parágrafo do MS MARCO sem chunking adicional, ou re-chunking?). Default: usar passage como vem.
-- Se incluir CI mínimo (Dia 4).
+- Ampliação do CI para integração via `services:` do GitHub Actions (avaliação no Dia 4).
 
 ## Backlinks
 - [[../../vault/decisões/2026-04-28-sistemas-avaliados]]
