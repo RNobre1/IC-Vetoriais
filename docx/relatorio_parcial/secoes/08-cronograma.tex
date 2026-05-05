@@ -1,0 +1,47 @@
+% =============================================================================
+% 7. Cronograma de Execução
+% =============================================================================
+
+\section{Cronograma de Execução}
+
+O cronograma a seguir distribui as cinco etapas do projeto ao longo do período de execução, conforme o planejamento original.
+
+\subsection{Etapas}
+
+\textbf{Etapa 1 --- Revisão e planejamento:} consolidação da revisão bibliográfica expandida e fechamento da metodologia.
+
+\textbf{Etapa 2 --- Preparação de dados e ambiente:} configuração de PostgreSQL+pgvector, Qdrant e Weaviate em Docker; geração e indexação dos \textit{embeddings}; \textit{scripts} de \textit{benchmark}.
+
+\textbf{Etapa 3 --- Experimentos fase 1:} execução dos cenários A e B em \textit{datasets} menores (100k, 500k). Esta etapa fecha com o relatório parcial.
+
+\textbf{Etapa 4 --- Experimentos fase 2:} execução em escala maior (1M) e cenário C de carga mista.
+
+\textbf{Etapa 5 --- Análise e redação:} análise comparativa sistemática, gráficos finais, redação e revisão do relatório final.
+
+\subsection{Distribuição mensal}
+
+\renewcommand{\arraystretch}{1.2}
+\setlength{\tabcolsep}{4pt}
+\noindent\begin{tabularx}{\textwidth}{|c|*{12}{>{\centering\arraybackslash}X|}}
+\hline
+\textbf{Etapa} & \textbf{Jan} & \textbf{Fev} & \textbf{Mar} & \textbf{Abr} & \textbf{Mai} & \textbf{Jun} & \textbf{Jul} & \textbf{Ago} & \textbf{Set} & \textbf{Out} & \textbf{Nov} & \textbf{Dez} \\
+\hline
+1 & $\bullet$ & $\bullet$ &  &  &  &  &  &  &  &  &  &  \\
+\hline
+2 &  &  & $\bullet$ & $\bullet$ &  &  &  &  &  &  &  &  \\
+\hline
+3 &  &  &  &  & $\bullet$ & $\bullet$ &  &  &  &  &  &  \\
+\hline
+4 &  &  &  &  &  &  & $\bullet$ & $\bullet$ & $\bullet$ &  &  &  \\
+\hline
+5 &  &  &  &  &  &  &  &  &  & $\bullet$ & $\bullet$ & $\bullet$ \\
+\hline
+\end{tabularx}
+
+\vspace{0.6em}
+
+\todo{Atualizar este cronograma a cada entrega. A entrega parcial está prevista para o final de julho de 2026; a entrega final em dezembro de 2026.}
+
+\vspace{1em}
+
+\todo{Para o relatório final, expandir bibliografia até $\sim$20 referências. Candidatos: Mikolov et al.\ (2013) --- Word2Vec; Pennington et al.\ (2014) --- GloVe; Muennighoff et al.\ (2023) --- MTEB; Thakur et al.\ (2021) --- BEIR; Gao et al.\ (2024) --- RAG \textit{survey}; Wang et al.\ (2021) --- Milvus; Guo et al.\ (2022) --- Manu; Subramanya et al.\ (2019) --- DiskANN; Douze et al.\ (2024) --- Faiss; Jégou et al.\ (2011) --- Product Quantization; estudos comparativos recentes pgvector $\times$ especializados (2024--2025).}

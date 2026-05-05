@@ -1,0 +1,91 @@
+% =============================================================================
+% Relatório Parcial — Iniciação Científica 2026
+% UFOPA / IEG — Bacharelado em Ciência da Computação
+% Bolsista: Rafael Nobre de Souza
+% Orientador: Prof. Dr. Celson Pantoja Lima
+% =============================================================================
+
+\documentclass[12pt,a4paper]{article}
+
+% --- Codificação e idioma ----------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+
+% --- Fonte: Helvetica (substituta de Arial em pdflatex) ----------------------
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
+% --- Layout ABNT: A4, margens 3/3/2/2, espaçamento 1.5, recuo 1.25cm --------
+\usepackage[a4paper,top=3cm,left=3cm,bottom=2cm,right=2cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{indentfirst}
+\setlength{\parindent}{1.25cm}
+
+% --- Tipografia / utilitários -----------------------------------------------
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage[hidelinks]{hyperref}
+
+% --- Citações ABNT no estilo "Sobrenome (ano)" ------------------------------
+% \citeonline{key}  -> "Costa (2014)" (textual)
+% \cite{key}        -> "(COSTA, 2014)" (parentética)
+\usepackage[alf]{abntex2cite}
+
+% --- Macros do projeto -------------------------------------------------------
+% Marcador de pendência editorial (vermelho/itálico, igual ao docx original)
+\newcommand{\todo}[1]{{\color{red}\textit{[TODO] #1}}}
+% Trecho de código inline (fonte monoespaçada)
+\newcommand{\code}[1]{\texttt{\small #1}}
+
+% --- Espaçamento entre seções ------------------------------------------------
+\usepackage{titlesec}
+\titlespacing*{\section}{0pt}{18pt}{12pt}
+\titlespacing*{\subsection}{0pt}{14pt}{10pt}
+
+% =============================================================================
+\begin{document}
+
+% --- Capa --------------------------------------------------------------------
+\thispagestyle{empty}
+\begin{center}
+    {\textbf{UNIVERSIDADE FEDERAL DO OESTE DO PARÁ}}\\[2pt]
+    INSTITUTO DE ENGENHARIA E GEOCIÊNCIAS\\[2pt]
+    BACHARELADO EM CIÊNCIA DA COMPUTAÇÃO\\
+    \vspace{4cm}
+
+    {\large\textbf{COMPARAÇÃO DE DESEMPENHO DE SOLUÇÕES DE BANCOS DE DADOS VETORIAIS PARA BUSCA SEMÂNTICA: UMA ANÁLISE ENTRE PGVECTOR E BANCOS DE DADOS ESPECIALIZADOS}}\\
+    \vspace{1cm}
+    \textit{Relatório Parcial --- Iniciação Científica}\\
+    \vspace{3cm}
+
+    \begin{flushleft}
+        \hspace{6cm}Bolsista: Rafael Nobre de Souza\\
+        \hspace{6cm}Orientador: Prof. Dr. Celson Pantoja Lima
+    \end{flushleft}
+
+    \vfill
+    Santarém --- PA\\
+    2026
+\end{center}
+\newpage
+
+% --- Conteúdo ----------------------------------------------------------------
+\input{secoes/01-resumo}
+\input{secoes/02-introducao}
+\input{secoes/03-objetivos}
+\input{secoes/04-fundamentacao}
+\input{secoes/05-metodologia}
+\input{secoes/06-resultados}
+\input{secoes/07-consideracoes}
+\input{secoes/08-cronograma}
+
+% --- Referências -------------------------------------------------------------
+\bibliographystyle{abntex2-alf}
+\bibliography{refs}
+
+\end{document}
