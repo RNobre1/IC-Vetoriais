@@ -41,6 +41,7 @@ Papéis bem separados — não misturar:
 - **`vault/decisões/`** — ADR-style (Architecture Decision Record). Cada decisão metodológica relevante = uma nota datada com contexto, opções, escolha e consequência.
 - **`vault/experimentos/`** — log por execução de benchmark. Configuração, comando, resultados, observações.
 - **`vault/drafts/`** — pedaços de texto destinados ao relatório. Linkam para papers e referência. Quando estabilizam, são copiados manualmente para `docx/`.
+- **`vault/lições/`** — lições aprendidas e correções não-óbvias durante o trabalho (erros de citação, pegadinhas de configuração, ajustes de protocolo). Notas datadas, com causa raiz e regra de aplicação futura. Servem para não repetir o erro em sessões futuras.
 
 ### Frontmatter padrão para fichamentos
 
@@ -106,7 +107,7 @@ Possível extensão para Cluster HPC do IEG/UFOPA na etapa final, condicionada a
 - **Não execute o Obsidian** via shell tooling. O vault é só uma pasta de markdown — escreva e leia arquivos diretamente.
 - **Antes de criar nota nova no vault**, verifique se já existe template em `vault/_templates/` para esse tipo. Se sim, siga.
 - **Antes de alterar uma decisão metodológica firme** (lista acima), pare e pergunte. Mudanças metodológicas têm custo de retrabalho alto.
-- **Antes de mexer em `docx/`**, pergunte. Esse diretório é entregável; mudanças sem alinhamento criam inconsistência com o que o orientador já viu.
+- **Não edite arquivos `.docx` diretamente** (regra dura). O Rafael edita os entregáveis Word manualmente via Claude da nuvem (que recebe o `.docx` como anexo). Quando uma alteração em `.docx` for necessária, **gere um prompt pronto em PT-BR**, num bloco de código, para ele copiar e enviar ao Claude da nuvem — nunca toque no arquivo. Leitura programática read-only (via `python-docx`) é permitida para informar o prompt; escrita não.
 
 ## O que fazer ao iniciar uma sessão
 
