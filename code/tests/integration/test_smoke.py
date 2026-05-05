@@ -9,17 +9,24 @@ Cobre, para cada um dos 3 sistemas:
 - inserção de 1 vetor;
 - busca por similaridade do mesmo vetor (sanity).
 
-Importante: este é o smoke do Dia 1 da Etapa 2, anterior aos seeders proprios.
+Importante: este é o smoke do Dia 1 da Etapa 2, anterior aos seeders próprios.
 Implementa diretamente os clientes para isolar problemas de infraestrutura.
 """
 
 from __future__ import annotations
 
+import math
 import os
 import uuid
 
 import httpx
+import psycopg
 import pytest
+import weaviate
+from dotenv import load_dotenv
+from qdrant_client import QdrantClient
+from qdrant_client.http.models import Distance, PointStruct, VectorParams
+from weaviate.classes.config import Configure, DataType, Property, VectorDistances
 
 pytestmark = pytest.mark.integration
 
@@ -32,18 +39,13 @@ pytestmark = pytest.mark.integration
 @pytest.fixture(scope="module")
 def env() -> dict[str, str]:
     """Carrega variáveis de .env (se existir) e retorna os.environ como dict."""
-    from dotenv import load_dotenv
-
     load_dotenv()
     return dict(os.environ)
 
 
 @pytest.fixture(scope="module")
 def vetor_teste() -> list[float]:
-    """Vetor sintético de dimensão 384 (compatível com all-MiniLM-L6-v2)."""
-    # 384 floats determinísticos, normalizados aproximadamente.
-    import math
-
+    """Vetor sintético de dimensão 384 (compatível com all-MiniLM-L6-v2), normalizado L2."""
     raw = [math.sin(i * 0.1) for i in range(384)]
     norma = math.sqrt(sum(x * x for x in raw))
     return [x / norma for x in raw]
@@ -56,8 +58,6 @@ def vetor_teste() -> list[float]:
 
 def test_pgvector_conexao_e_extensao(env: dict[str, str]) -> None:
     """pgvector responde TCP, aceita SELECT 1 e a extensão `vector` está disponível."""
-    import psycopg
-
     conn_str = (
         f"host={env['PG_HOST']} port={env['PG_PORT']} "
         f"dbname={env['PG_DATABASE']} user={env['PG_USER']} password={env['PG_PASSWORD']}"
@@ -73,8 +73,6 @@ def test_pgvector_conexao_e_extensao(env: dict[str, str]) -> None:
 
 def test_pgvector_insert_e_busca(env: dict[str, str], vetor_teste: list[float]) -> None:
     """pgvector aceita criar tabela com coluna vector(384), inserir e buscar por similaridade."""
-    import psycopg
-
     conn_str = (
         f"host={env['PG_HOST']} port={env['PG_PORT']} "
         f"dbname={env['PG_DATABASE']} user={env['PG_USER']} password={env['PG_PASSWORD']}"
@@ -106,18 +104,12 @@ def test_qdrant_responde_http(env: dict[str, str]) -> None:
     r = httpx.get(url, timeout=5.0)
     assert r.status_code == 200
     body = r.json()
-    assert "version" in body or "title" in body  # contrato pode variar entre versões
+    # contrato pode variar entre versões — aceitar qualquer um dos campos comuns
+    assert "version" in body or "title" in body
 
 
 def test_qdrant_collection_insert_e_busca(env: dict[str, str], vetor_teste: list[float]) -> None:
-    """Qdrant cria coleção HNSW, aceita upsert e busca o vetor inserido como mais próximo de si mesmo."""
-    from qdrant_client import QdrantClient
-    from qdrant_client.http.models import (
-        Distance,
-        PointStruct,
-        VectorParams,
-    )
-
+    """Qdrant cria coleção HNSW, aceita upsert e busca o vetor inserido como mais próximo de si."""
     client = QdrantClient(
         host=env["QDRANT_HOST"],
         port=int(env["QDRANT_HTTP_PORT"]),
@@ -158,9 +150,6 @@ def test_weaviate_ready(env: dict[str, str]) -> None:
 
 def test_weaviate_collection_insert_e_busca(env: dict[str, str], vetor_teste: list[float]) -> None:
     """Weaviate cria classe sem vectorizer, aceita objeto com vetor manual e busca near_vector."""
-    import weaviate
-    from weaviate.classes.config import Configure, Property, DataType
-
     client = weaviate.connect_to_local(
         host=env["WEAVIATE_HOST"],
         port=int(env["WEAVIATE_PORT"]),
@@ -172,7 +161,7 @@ def test_weaviate_collection_insert_e_busca(env: dict[str, str], vetor_teste: li
             name=nome_classe,
             vectorizer_config=Configure.Vectorizer.none(),
             vector_index_config=Configure.VectorIndex.hnsw(
-                distance_metric=weaviate.classes.config.VectorDistances.COSINE,
+                distance_metric=VectorDistances.COSINE,
             ),
             properties=[
                 Property(name="external_id", data_type=DataType.INT),
