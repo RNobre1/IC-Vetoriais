@@ -14,8 +14,11 @@ venv/
 vault/.obsidian/workspace*
 vault/.obsidian/cache/
 .trash/
-vault/papers/*
-vault/papers/
+
+# vault/papers — fichamentos .md versionados; PDFs/HTML/_files ignorados (volume + direitos autorais)
+vault/papers/*.pdf
+vault/papers/*.html
+vault/papers/*_files/
 
 # editores / SO
 .vscode/
@@ -27,3 +30,4 @@ vault/papers/
 # logs / artefatos de benchmark
 *.log
 results/
+.xp-stack/state/
