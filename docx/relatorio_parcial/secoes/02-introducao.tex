@@ -1,0 +1,55 @@
+% =============================================================================
+% 1. Introdução
+% =============================================================================
+
+\section{Introdução}
+
+\subsection{Contexto acadêmico e tecnológico}
+
+Modelos de linguagem de grande porte (LLMs) e técnicas de \textit{embeddings} tornaram-se centrais em várias tarefas de Processamento de Linguagem Natural (PLN), como recuperação de informação, perguntas e respostas e sumarização de documentos. Nessas aplicações, a representação vetorial de textos permite medir similaridade semântica de forma mais robusta do que abordagens baseadas apenas em palavras-chave. Bancos de dados vetoriais funcionam como memória externa para LLMs, permitindo que os modelos acessem e sintetizem quantidades enormes de dados sem necessidade de reciclagem constante \cite{jing2024llmvdb}.
+
+A fundamentação teórica dessa abordagem repousa no \textit{Vector Space Model} (VSM), uma técnica clássica de recuperação de informação que organiza documentos como pontos em um espaço n-dimensional, onde a proximidade dos vetores corresponde a similaridade semântica, permitindo medir a relevância através de medidas como similaridade de cosseno \cite{paiva2014semrelext}. Trabalhos como o de \citeonline{costa2014sense} demonstraram a viabilidade de estender o VSM com enriquecimento semântico apoiado por ontologias de domínio, prefigurando a evolução para as representações vetoriais densas geradas por modelos neurais que sustentam os sistemas atuais de busca semântica e RAG.
+
+Para que esses sistemas sejam úteis em contextos reais (e.g.\ jurídico, financeiro, biomédico e educacional), é comum combinar LLMs com bancos de dados vetoriais, em arquiteturas conhecidas como \textit{Retrieval-Augmented Generation} (RAG). Nelas, o modelo consulta um repositório de \textit{embeddings} para recuperar trechos relevantes de documentos antes de gerar respostas, reduzindo alucinações e aumentando a precisão factual. Sistemas RAG implementados em instituições educacionais demonstram melhoria significativa na qualidade das respostas, com \textit{scores} de relevância entre 0,7 e 0,85 \cite{bovas2025navi}.
+
+Do ponto de vista de Sistemas de Gerenciamento de Bancos de Dados (SGBD), isso abre uma linha de pesquisa importante: como projetar, configurar e comparar infraestruturas de armazenamento vetorial para atender demandas de latência, escalabilidade e qualidade de recuperação desses sistemas?
+
+\subsection{Problema}
+
+Hoje existem duas abordagens principais para armazenamento de \textit{embeddings} em aplicações de IA:
+
+\begin{itemize}
+    \item Uso de bancos de dados relacionais tradicionais com extensões vetoriais, como PostgreSQL com a extensão pgvector.
+    \item Uso de bancos de dados vetoriais especializados, projetados especificamente para indexação e busca aproximada em espaços de alta dimensão, como Qdrant, Weaviate, Milvus, Pinecone, entre outros.
+\end{itemize}
+
+Na prática, desenvolvedores e pesquisadores frequentemente precisam decidir entre essas alternativas, mas a literatura ainda carece de estudos comparativos sistemáticos que analisem, de maneira reproduzível, como essas soluções se comportam em cenários típicos de aplicações RAG e de busca semântica corporativa. Embora estudos recentes abordem otimização de RAG e avaliação de componentes específicos (como \textit{embedding models} e LLMs), ainda é limitado o número de trabalhos que:
+
+\begin{itemize}
+    \item Definem cenários de uso bem caracterizados;
+    \item Medem diversas métricas em condições controladas e comparáveis;
+    \item Discutem de forma crítica os \textit{trade-offs} entre usar uma solução integrada ao SGBD relacional existente e adotar bancos vetoriais especializados em contexto de \textit{benchmarking} sistemático.
+\end{itemize}
+
+\subsection{Justificativa}
+
+Bancos de dados vetoriais representam uma evolução natural de SGBDs na direção de suportar dados e consultas para IA. O desafio central de sistemas de recuperação é transformar informação não-estruturada em representações organizadas que permitam busca eficiente e quantificação de similaridade entre entidades semânticas \cite{paiva2014semrelext,costa2014sense}.
+
+A motivação para enriquecer representações vetoriais com semântica explícita já era central no \textit{framework} SENSE proposto por \citeonline{costa2014sense}, que estendia o VSM clássico com ontologias de domínio para capturar relações implícitas entre documentos. Sistemas RAG atuais retomam esse princípio em outro patamar, substituindo a engenharia ontológica manual por \textit{embeddings} densos aprendidos, mas preservando a premissa de que a qualidade da recuperação depende de quão bem a representação captura semântica além de palavras explícitas --- o que torna o desempenho da camada vetorial um fator decisivo no projeto desses sistemas.
+
+Trabalhos recentes demonstram que a eficiência da camada de recuperação vetorial é um componente crítico para a qualidade das respostas em sistemas RAG, com impacto direto na precisão e robustez do sistema \cite{pawlik2025rag}. A integração entre LLMs, mecanismos de recuperação vetorial e estruturas de dados de alto desempenho envolve conceitos clássicos de bancos de dados (indexação, otimização de consultas, gerenciamento de recursos) em um cenário moderno, tornando o tema adequado para pesquisa de graduação em SGBD.
+
+Metodologias rigorosas de \textit{benchmarking} de bancos de dados são bem estabelecidas na literatura, e sua aplicação em sistemas vetoriais representa uma oportunidade de contribuição acadêmica na área.
+
+Além disso, empresas e instituições têm usado RAG e busca semântica para construir \textit{chatbots} sobre bases documentais internas, sistemas de apoio à decisão, assistentes para estudantes, atendimento ao cliente, análise de relatórios e outros casos de uso onde é necessário encontrar, de forma rápida, trechos relevantes em coleções extensas de documentos. Nessas aplicações, a escolha e configuração do banco vetorial impacta:
+
+\begin{itemize}
+    \item a experiência do usuário (latência de resposta);
+    \item a capacidade de atender muitos usuários simultâneos (\textit{throughput});
+    \item o custo de infraestrutura (uso de memória e armazenamento);
+    \item a qualidade da recuperação (\textit{recall} de passagens relevantes).
+\end{itemize}
+
+A seleção apropriada de parâmetros e da solução de armazenamento vetorial representa um \textit{trade-off} entre qualidade de resposta, custo computacional e limitações de \textit{hardware}. Estudos acadêmicos que explorem comparativamente essas soluções podem servir como referência para equipes de engenharia que precisam tomar decisões fundamentadas sobre a arquitetura de dados em aplicações de IA.
+
+Dessa forma, o projeto é justificado tanto como contribuição para a formação em bancos de dados e sistemas de IA, quanto como estudo aplicado com potencial de orientar decisões técnicas em ambientes reais.

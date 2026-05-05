@@ -1,0 +1,19 @@
+# Artefatos de build LaTeX — gerados a cada compilação, não versionar
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.synctex(busy)
+*.nav
+*.snm
+*.vrb
+
+# PDF é entregável, gerado por compilação. Versionado só nos releases (tag).
+main.pdf

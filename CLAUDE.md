@@ -22,15 +22,22 @@ Comparar experimentalmente PostgreSQL+pgvector contra bancos vetoriais especiali
 ├── vault/              # Obsidian — notas, fichamentos, drafts, logs
 ├── code/               # docker-compose, scripts Python, benchmarks
 ├── data/               # datasets baixados (gitignored)
-└── docx/               # entregáveis canônicos (relatório parcial e final)
+└── docx/               # entregáveis: projeto LaTeX do relatório + arquivos legados
+    ├── relatorio_parcial/   # projeto LaTeX (fonte canônica do parcial)
+    │   ├── main.tex
+    │   ├── refs.bib
+    │   ├── secoes/01-08*.tex
+    │   ├── Makefile         # targets pdf/watch/clean
+    │   └── .gitignore       # artefatos LaTeX
+    └── OFC- Planejamento... .docx   # legado, não tocar
 ```
 
 Papéis bem separados — não misturar:
 
 - **`vault/`** é o cérebro. Tudo que é leitura, decisão, draft, log de experimento mora aqui em markdown. Backlinks são parte da metodologia. Este vault é dedicado a este projeto — não há outros vaults Obsidian aqui.
-- **`code/`** é onde os experimentos rodam. Docker Compose com 3 serviços (postgres+pgvector, qdrant, weaviate), pipeline de embeddings em Python (sentence-transformers), scripts de benchmark.
+- **`code/`** é onde os experimentos rodam. Docker Compose com 3 serviços (postgres+pgvector, qdrant, weaviate), pipeline de embeddings em Python (sentence-transformers), scripts de benchmark. Compose extra `docker-compose.ui.yml` para tooling de inspeção (Verba) — isolado por decisão metodológica (vide `vault/decisões/2026-05-05-isolamento-ui-vs-benchmark.md`).
 - **`data/`** guarda datasets brutos. Em `.gitignore`. Volume grande, não versionar.
-- **`docx/`** é o entregável final em Word. Documento canônico para entrega ao orientador e ao edital. **Não converter markdown→docx automaticamente** — formatação ABNT em pandoc é frágil. O docx é editado manualmente quando o conteúdo do vault está estabilizado.
+- **`docx/`** contém o **projeto LaTeX do relatório parcial** (`docx/relatorio_parcial/`, fonte canônica desde 2026-05-05) e arquivos `.docx` **legados** (e.g. planejamento original do edital). O nome do diretório é histórico — manter por enquanto pra preservar git history. PDF de saída (`main.pdf`) é o entregável; `.tex` é versionado e editado normalmente.
 
 ## Convenções do vault
 
@@ -108,7 +115,9 @@ Possível extensão para Cluster HPC do IEG/UFOPA na etapa final, condicionada a
 - **Não execute o Obsidian** via shell tooling. O vault é só uma pasta de markdown — escreva e leia arquivos diretamente.
 - **Antes de criar nota nova no vault**, verifique se já existe template em `vault/_templates/` para esse tipo. Se sim, siga.
 - **Antes de alterar uma decisão metodológica firme** (lista acima), pare e pergunte. Mudanças metodológicas têm custo de retrabalho alto.
-- **Não edite arquivos `.docx` diretamente** (regra dura). O Rafael edita os entregáveis Word manualmente via Claude da nuvem (que recebe o `.docx` como anexo). Quando uma alteração em `.docx` for necessária, **gere um prompt pronto em PT-BR**, num bloco de código, para ele copiar e enviar ao Claude da nuvem — nunca toque no arquivo. Leitura programática read-only (via `python-docx`) é permitida para informar o prompt; escrita não.
+- **Não edite arquivos `.docx` legados** (regra dura). Aplica a quaisquer `.docx` binários que sobreviveram à migração para LaTeX (e.g. `docx/OFC- Planejamento Rafael Nobre - 2026.docx`). Quando alteração em `.docx` legado for necessária, **gere um prompt pronto em PT-BR**, num bloco de código, para o Rafael copiar e enviar ao Claude da nuvem (que recebe o `.docx` como anexo) — nunca toque no arquivo. Leitura programática read-only (via `python-docx`) é permitida para informar o prompt; escrita não.
+- **`.tex` em `docx/relatorio_parcial/` é editável normalmente.** Desde 2026-05-05 o relatório parcial migrou para LaTeX (vide `vault/decisões/2026-05-05-migracao-relatorio-para-latex.md`). Edits, refactor de seções, ajuste de bibliografia em `refs.bib`, mudanças em macros — tudo via Edit/Write como qualquer outro arquivo de código. Antes de mexer no `main.tex` ou seções, ler `docx/relatorio_parcial/README.md` que documenta convenções (macros `\todo`, `\code`, estilos de citação `\cite` e `\citeonline`).
+- **Antes de rodar benchmarks, garantir ambiente limpo.** Executar `make ui-down` (Verba off) e confirmar via `docker compose ps` que só os 3 SGBDs alvo estão rodando. Vide `vault/decisões/2026-05-05-isolamento-ui-vs-benchmark.md`.
 
 ## O que fazer ao iniciar uma sessão
 

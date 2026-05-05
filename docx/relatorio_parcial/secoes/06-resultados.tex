@@ -1,0 +1,33 @@
+% =============================================================================
+% 5. Resultados Parciais
+% =============================================================================
+
+\section{Resultados Parciais}
+
+Esta seção apresenta o estado atual da execução do projeto e os resultados preliminares obtidos até a data desta entrega parcial.
+
+\subsection{Configuração do ambiente experimental}
+
+O ambiente experimental é organizado como um conjunto de três serviços executados em paralelo via Docker Compose sobre o \textit{notebook} descrito na Seção 4.3. Cada serviço corresponde a um dos SGBDs avaliados, com versões fixadas para garantir reprodutibilidade ao longo do estudo: PostgreSQL 16 com a extensão pgvector, na imagem oficial \code{pgvector/pgvector:pg16}, executando na porta 5432 do \textit{host}; Qdrant, na imagem oficial \code{qdrant/qdrant:v1.12.0}, expondo as portas 6333 (REST) e 6334 (gRPC); e Weaviate, na imagem oficial \code{semitechnologies/weaviate:1.27.0}, expondo as portas 8080 (REST) e 50051 (gRPC).
+
+Cada serviço tem \textit{healthcheck} próprio --- \code{pg\_isready} para o PostgreSQL, sondagem TCP no porto HTTP do Qdrant e o \textit{endpoint} \code{/v1/.well-known/ready} do Weaviate. Os dados são persistidos em volumes nomeados gerenciados pelo Docker, isolados do diretório do projeto, o que permite descartar e recriar o ambiente entre experimentos sem afetar artefatos do repositório. A inicialização do Weaviate é feita sem qualquer módulo de vetorização interno (parâmetro \code{DEFAULT\_VECTORIZER\_MODULE=none}), o que garante que todos os vetores sejam gerados por um único \textit{pipeline} externo, descrito na Seção 4.2, e que a comparação entre os três sistemas isole o efeito da indexação --- e não da geração de \textit{embeddings}.
+
+A camada cliente é implementada em Python 3.11 ou superior, com versões pinadas dos \textit{drivers} \code{psycopg} (para o pgvector), \code{qdrant-client} e \code{weaviate-client}, todas registradas em um arquivo \code{requirements.txt} versionado no repositório, complementado por um arquivo \code{requirements.lock} que registra a resolução exata de dependências transitivas. A geração de \textit{embeddings} utiliza a biblioteca \code{sentence-transformers}, executando o modelo definido na Seção 4.2 sobre CPU.
+
+A configuração completa do ambiente --- arquivo \code{docker-compose.yml} dos três serviços, \code{requirements.txt} e \code{requirements.lock}, \code{Makefile} com os comandos uniformes de operação (subir os serviços, executar \textit{smoke tests}, rodar \textit{benchmarks}, derrubar o ambiente) e a suíte de \textit{smoke tests} que valida a operação básica nos três sistemas --- está disponível no diretório \code{code/} do repositório do projeto, com integração contínua mínima configurada em GitHub Actions executando \textit{lint} e testes unitários a cada \textit{push} e \textit{pull request} para a \textit{branch} principal.
+
+\subsection{Geração e indexação dos embeddings}
+
+\todo{Reportar: tempo de geração de \textit{embeddings} para cada tamanho de \textit{dataset}; tempo de indexação inicial em cada sistema; comparativo de \textit{footprint} de armazenamento. Apresentar tabela e gráficos.}
+
+\subsection{Resultados preliminares --- Cenário A}
+
+\todo{Apresentar primeiros números de latência (p50, p95, p99), \textit{throughput} e recall@10 para o Cenário A nos \textit{datasets} de 100k e 500k. Tabelas comparativas e gráficos de barras.}
+
+\subsection{Resultados preliminares --- Cenário B}
+
+\todo{Resultados preliminares de busca com filtros de metadados nos mesmos \textit{datasets}. Discutir diferenças observadas no comportamento dos sistemas quando filtros são aplicados.}
+
+\subsection{Discussão preliminar}
+
+\todo{Análise inicial dos resultados parciais, com hipóteses para os comportamentos observados. Apontar limitações dos resultados nesta fase (e.g.\ \textit{datasets} ainda menores que o alvo de 1M, falta do cenário C completo).}

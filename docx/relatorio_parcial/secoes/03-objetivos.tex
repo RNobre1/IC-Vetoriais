@@ -1,0 +1,19 @@
+% =============================================================================
+% 2. Objetivos
+% =============================================================================
+
+\section{Objetivos}
+
+\subsection{Objetivo geral}
+
+Investigar experimentalmente o desempenho e o comportamento de um banco de dados relacional com extensão vetorial (PostgreSQL + pgvector) e de bancos vetoriais especializados em cenários de busca semântica e RAG, analisando métricas de desempenho, qualidade de recuperação e consumo de recursos, a fim de compreender os \textit{trade-offs} envolvidos na escolha entre essas soluções em aplicações de IA.
+
+\subsection{Objetivos específicos}
+
+\begin{itemize}
+    \item Definir cenários de uso representativos de aplicações de IA baseadas em \textit{embeddings}, como busca semântica em coleções de documentos textuais com e sem filtros de metadados, inspirados em implementações de RAG descritas na literatura.
+    \item Construir um ambiente experimental reproduzível envolvendo PostgreSQL + pgvector e pelo menos duas soluções de banco vetorial especializado (por exemplo, Qdrant e Weaviate), com conjuntos de \textit{embeddings} de diferentes tamanhos e dimensionalidades.
+    \item Medir e comparar, em cada sistema, métricas como latência, \textit{throughput}, recall@K, uso de memória e armazenamento e tempo de indexação.
+    \item Realizar uma análise comparativa de desempenho entre a estação de trabalho local e o \textit{Cluster} de \textit{High Performance} do IEG da UFOPA, dependendo da viabilidade técnica e disponibilidade de acesso durante a execução do projeto.
+    \item Analisar criticamente os resultados, discutindo as vantagens e limitações de cada abordagem em diferentes cenários, e sistematizar recomendações para projetos futuros.
+\end{itemize}

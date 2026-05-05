@@ -1,0 +1,58 @@
+% =============================================================================
+% 4. Materiais e Métodos
+% =============================================================================
+
+\section{Materiais e Métodos}
+
+A metodologia segue uma abordagem experimental de \textit{benchmark}, estruturada em quatro componentes principais: definição de cenários, preparação de dados e ambiente, execução controlada de testes e análise dos resultados. Conforme estabelecido em práticas de \textit{benchmarking} de sistemas de banco de dados, a definição clara de \textit{workloads} realistas, a medição consistente de métricas padronizadas e a documentação reproduzível dos experimentos são essenciais para gerar resultados confiáveis e comparáveis \cite{aerospike2025}.
+
+\subsection{Cenários de uso}
+
+Serão considerados três cenários que se aproximam de aplicações reais:
+
+\textbf{Cenário A --- Busca semântica básica:} coleção de documentos textuais curtos (parágrafos de artigos, seções de relatórios ou FAQs institucionais). Cada documento é convertido em \textit{embedding}, e consultas semânticas recuperam os K documentos mais similares, sem filtros estruturados.
+
+\textbf{Cenário B --- Busca com filtros de metadados:} mesmo tipo de coleção, mas com metadados associados (categoria, área temática, data, curso). As consultas combinam similaridade vetorial com filtros estruturados (``documentos da área X publicados após ano Y''). Reflete operações típicas de RAG corporativo e desafia a integração de filtros com busca vetorial.
+
+\textbf{Cenário C --- Carga mista (RAG simplificado):} simulação de sistema em produção, onde novos documentos são adicionados e atualizados em paralelo com consultas de similaridade.
+
+\subsection{Dados e embeddings}
+
+Os textos a serem indexados e consultados provêm de um \textit{subset} reproduzível do conjunto MS MARCO Passages, escolhido por reunir três propriedades necessárias ao estudo: escala adequada ($\sim$8,8 milhões de \textit{passages} disponíveis), licença permissiva para pesquisa e julgamentos de relevância (\textit{qrels}) já anotados, que tornam possível o cálculo de métricas de qualidade quando relevante. O \textit{subset} é construído por amostragem determinística --- ordenação por identificador de \textit{passage} e recorte dos N primeiros --- em três escalas: 100 mil, 500 mil e 1 milhão de \textit{passages}. As três escalas permitem traçar a curva de comportamento dos sistemas em ordens de grandeza distintas, observando o ponto a partir do qual cada arquitetura começa a se diferenciar das demais.
+
+A geração de \textit{embeddings} utiliza o modelo \code{all-MiniLM-L6-v2}, da família \code{sentence-transformers} \cite{reimers2019sbert}, que produz vetores densos de 384 dimensões. Os \textit{embeddings} são normalizados em norma L2 antes da indexação, de modo que a similaridade de cosseno equivale a produto interno e o índice pode tirar proveito da operação mais rápida. A escolha desse modelo em detrimento de alternativas de maior capacidade --- como o \code{all-mpnet-base-v2} (768 dimensões) ou o BGE-large (1024 dimensões) --- atende a três critérios: (i) viabilidade de execução em CPU no \textit{hardware}-alvo, permitindo gerar \textit{embeddings} para 1 milhão de \textit{passages} em tempo aceitável e sem dependência de GPU dedicada; (ii) reprodutibilidade por terceiros, em estações de trabalho sem aceleração gráfica; (iii) suficiência da representação para o objetivo do estudo, que avalia o comportamento dos SGBDs vetoriais --- não a qualidade absoluta do \textit{retrieval}. Como o modelo é fixado em todos os experimentos, o efeito do \textit{embedding} fica controlado e as diferenças observadas entre os três sistemas refletem implementação e arquitetura, e não a escolha de representação.
+
+\subsection{Sistemas avaliados e ambiente de hardware}
+
+Os experimentos base são conduzidos em um \textit{notebook} Dell G15 5530, configurado com Fedora Linux. Especificações principais:
+
+\begin{itemize}
+    \item Processador: Intel Core i5-13450HX (13ª geração), 10 núcleos / 16 \textit{threads}, até 4.6 GHz;
+    \item Memória RAM: 16 GiB DDR5 (2x 8 GiB) a 4800 MHz;
+    \item Armazenamento: NVMe Kingston de 1 TB;
+    \item GPU: NVIDIA GeForce RTX 3050 com 6 GB de memória dedicada.
+\end{itemize}
+
+Os sistemas configurados nesse \textit{hardware} são:
+
+\textbf{PostgreSQL + pgvector:} banco relacional com extensão vetorial, armazenando metadados e vetores na mesma base.
+
+\textbf{Qdrant:} banco vetorial especializado \textit{open source}, com suporte a HNSW e filtros de metadados nativos.
+
+\textbf{Weaviate:} banco vetorial especializado com suporte a esquemas, GraphQL e filtros, projetado para aplicações de IA.
+
+Configurações padrão recomendadas pela documentação serão utilizadas como \textit{baseline}, podendo ser ajustadas posteriormente de forma controlada para investigar o impacto de parâmetros.
+
+\subsection{Métricas}
+
+\begin{itemize}
+    \item Latência de consulta: tempos p50, p95 e p99 para consultas de similaridade com e sem filtros.
+    \item \textit{Throughput}: consultas atendidas por segundo sob carga controlada.
+    \item Recall@K: proporção de vizinhos relevantes recuperados entre os K primeiros, estimada por comparação com busca exata.
+    \item Uso de recursos: memória e espaço em disco para cada tamanho de \textit{dataset}; tempo de indexação inicial.
+    \item Desempenho com atualizações: impacto de inserções e atualizações contínuas no cenário de carga mista.
+\end{itemize}
+
+\subsection{Análise dos resultados}
+
+Os resultados serão analisados por meio de gráficos comparando latência, \textit{throughput} e \textit{recall} entre sistemas para cada cenário e tamanho de \textit{dataset}; discussão sobre o impacto de usar um banco relacional generalista com extensão vetorial em comparação com sistemas especializados; identificação de situações em que a simplicidade de integração compensa eventuais perdas de desempenho; e recomendações práticas baseadas em dados.
