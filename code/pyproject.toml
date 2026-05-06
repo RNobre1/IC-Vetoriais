@@ -29,6 +29,7 @@ indent-style = "space"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 markers = [
     "integration: testes que requerem Docker rodando (pgvector, qdrant, weaviate)",
     "slow: testes lentos (>10s)",
