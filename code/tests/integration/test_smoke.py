@@ -125,13 +125,14 @@ def test_qdrant_collection_insert_e_busca(env: dict[str, str], vetor_teste: list
             collection_name=nome_colecao,
             points=[PointStruct(id=1, vector=vetor_teste)],
         )
-        resultados = client.search(
+        # qdrant-client 1.10+ expõe query_points; .search() foi removido em 1.17.
+        resposta = client.query_points(
             collection_name=nome_colecao,
-            query_vector=vetor_teste,
+            query=vetor_teste,
             limit=1,
         )
-        assert len(resultados) == 1
-        assert resultados[0].id == 1
+        assert len(resposta.points) == 1
+        assert resposta.points[0].id == 1
     finally:
         client.delete_collection(collection_name=nome_colecao)
 
@@ -157,11 +158,14 @@ def test_weaviate_collection_insert_e_busca(env: dict[str, str], vetor_teste: li
     nome_classe = f"Smoke{uuid.uuid4().hex[:8]}"
 
     try:
+        # weaviate-client 4.x consolidou vectorizer + vector_index em vector_config.
+        # `self_provided` substitui o antigo `Vectorizer.none()`.
         client.collections.create(
             name=nome_classe,
-            vectorizer_config=Configure.Vectorizer.none(),
-            vector_index_config=Configure.VectorIndex.hnsw(
-                distance_metric=VectorDistances.COSINE,
+            vector_config=Configure.Vectors.self_provided(
+                vector_index_config=Configure.VectorIndex.hnsw(
+                    distance_metric=VectorDistances.COSINE,
+                ),
             ),
             properties=[
                 Property(name="external_id", data_type=DataType.INT),

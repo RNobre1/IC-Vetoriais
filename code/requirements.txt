@@ -1,25 +1,27 @@
-# === Etapa 2 / Dia 1 ===
-# Versões pinadas para reprodutibilidade. Justificativa de cada bump deve virar nota em vault/decisões/.
-# Validar disponibilidade no PyPI no primeiro `make deps`; se alguma versão não existir, ajustar e registrar.
+# === Etapa 2 ===
+# Versões pinadas para reprodutibilidade. Justificativa de cada bump em vault/decisões/.
+# Snapshot atual: 2026-05-06 (vault/decisões/2026-05-06-bump-versoes-sgbds.md).
 
 # CI / dev tooling
 pytest==8.3.4
 pytest-cov==6.0.0
 ruff==0.8.4
 
-# Cliente HTTP para smoke tests
-# Pinado em 0.27.2 (último < 0.28) para compatibilidade com weaviate-client 4.9.6, que exige httpx<=0.27.0.
-# Ver vault/lições/ se for necessário voltar a bumpar httpx (provavelmente exige bumpar weaviate-client junto).
-httpx==0.27.0
+# Cliente HTTP para smoke tests — desbloqueado pelo bump do weaviate-client (>=4.10 já aceita httpx 0.28).
+httpx==0.28.1
 
 # Configuração via .env
 python-dotenv==1.0.1
 
-# Drivers Python dos 3 SGBDs alvo (necessários para o smoke test integrado)
-psycopg[binary,pool]==3.2.13
-pgvector==0.3.6
-qdrant-client==1.12.1
-weaviate-client==4.9.6
+# Drivers Python pareados com as imagens Docker pinadas no docker-compose.yml.
+# - psycopg 3.3.x: compat Postgres 18.x.
+# - pgvector (Python adapter) 0.4.2: pareia com extensão pgvector 0.8.2 da imagem.
+# - qdrant-client 1.17.1: mesma minor do server v1.17.1.
+# - weaviate-client 4.21.0: estável recente, compat server 1.37.x.
+psycopg[binary,pool]==3.3.4
+pgvector==0.4.2
+qdrant-client==1.17.1
+weaviate-client==4.21.0
 
 # Dependências dos Dias 2-4 são adicionadas conforme cada peça é implementada (TDD).
 # Candidatos previstos: numpy, sentence-transformers, faiss-cpu.
