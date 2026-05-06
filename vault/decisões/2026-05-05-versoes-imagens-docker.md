@@ -1,10 +1,13 @@
 ---
 tipo: decisão
 data: 2026-05-05
-status: aceita
+status: superseded
+superseded_por: 2026-05-06-bump-versoes-sgbds
 autores: ["Rafael Nobre", "Celson Lima"]
-tags: [infraestrutura, docker, versões, reprodutibilidade]
+tags: [infraestrutura, docker, versões, reprodutibilidade, superseded]
 ---
+
+> ⚠️ **SUPERSEDED em 2026-05-06** por [[2026-05-06-bump-versoes-sgbds]]. As versões fixadas aqui (Qdrant v1.12.0, Weaviate 1.27.0, pgvector pg16) defasaram em ~18 meses até o início efetivo dos experimentos. A nova ADR justifica o bump e fixa as versões atualizadas. Histórico mantido abaixo para rastreabilidade.
 
 # Versões das imagens Docker dos 3 SGBDs
 
