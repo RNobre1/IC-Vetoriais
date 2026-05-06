@@ -102,25 +102,29 @@ Entregáveis:
 
 **Estado de infraestrutura ao final do Dia 1:** containers `ic-pgvector`, `ic-qdrant`, `ic-weaviate` de pé e healthy; venv `code/.venv` instalado; `code/.env` aplicado.
 
-### Dia 2 — 2026-05-06
+### Dia 2 — 2026-05-06 ✅ CONCLUÍDO
 **Foco: pipeline de embeddings + seeders dos 3 sistemas.**
 
+> Antes do Dia 2 propriamente, abrimos a sessão com o **bump das versões dos SGBDs** (vide [[../../vault/decisões/2026-05-06-bump-versoes-sgbds]] e [[../../vault/sessões/2026-05-06]]). Smoke seguiu 6/6 verde após o bump.
+
 Entregáveis:
-- [ ] `pipeline/ms_marco_loader.py`:
-  - Baixa `collection.tsv` de MS MARCO em `data/ms_marco/` (gitignored)
-  - Valida MD5 do download
-  - Sampling determinístico de 100k, 500k, 1M
-- [ ] `tests/unit/test_loader.py`: determinismo, tamanhos, IDs distintos, robustez a re-execução
-- [ ] `pipeline/embeddings.py`:
-  - Gera embeddings em batch (CPU baseline, GPU opcional)
-  - Normaliza L2
-  - Cache em `data/embeddings/`
-- [ ] `tests/unit/test_embeddings.py`: shape (N×384), norma ≈ 1.0, cache hit, reprodutibilidade entre execuções
-- [ ] `seeders/pgvector_seeder.py`, `seeders/qdrant_seeder.py`, `seeders/weaviate_seeder.py`:
-  - Cada um expõe `seed(vectors, metadata, *, M, efConstruction)`
-  - Cria coleção/tabela com índice HNSW e parâmetros uniformes
-- [ ] `tests/integration/test_seeders.py`: para cada sistema, seed 1k vetores, conta total, busca 1 vetor conhecido (sanity)
-- [ ] Início do download de MS MARCO em background (~3 GB)
+- [x] `pipeline/ms_marco_loader.py`:
+  - `download_collection_targz(dest, *, force)` — baixa em `data/ms_marco/` (gitignored), valida MD5 (`87dd01826da3e2ad45447ba5af577628`, header oficial), pula se cache local correto.
+  - `sample_passages(tsv, n)` — top-N por `passage_id` ascendente; robusto a TABs internos e linhas em branco.
+- [x] `tests/unit/test_loader.py`: 17 testes (constantes, Passage imutável, sampling determinístico, casos de erro, lógica de skip-download mockada).
+- [x] `pipeline/embeddings.py`:
+  - `gerar_embeddings(textos, *, modelo_nome, cache_dir, batch_size, encoder_factory)` com cache em `data/embeddings/<sha256>.npy`.
+  - Encoder injetável via factory (Protocol) — `SentenceTransformer` real é lazy-import; testes injetam `FakeEncoder`.
+  - Lista vazia retorna `np.zeros((0, 384), float32)` sem instanciar encoder.
+- [x] `tests/unit/test_embeddings.py`: 15 testes (constantes do modelo, determinismo da chave de cache, shape, norma L2, cache hit/miss, reprodutibilidade entre execuções, isolamento por `modelo_nome`).
+- [x] `seeders/pgvector_seeder.py`, `seeders/qdrant_seeder.py`, `seeders/weaviate_seeder.py`:
+  - Assinatura uniforme `seed_X(*, vetores, metadata, <cliente>, nome, m, ef_construction)`.
+  - Cria tabela/coleção/classe com índice HNSW; insere com IDs determinísticos (0..N-1, ordem de entrada).
+  - Parâmetro `M` do paper HNSW exposto como `m` (PEP 8) — semântica preservada em docstring.
+- [x] `tests/integration/test_seeders.py`: 6 testes (1000 vetores 384-D normalizados, seed=42; metadata sintético cat-A/cat-B 50/50). Cada sistema valida `count == 1000` e `top-1(vetor[0]) → id 0`.
+- [x] Download de MS MARCO em background (`collection.tar.gz` ~1 GB, ~3 GB descompactado) — disparado no início do dia, valida MD5 ao concluir.
+
+**Resultado da suíte ao final do Dia 2:** 46/46 testes verde (34 unit + 12 integration). Lint+format limpos.
 
 ### Dia 3 — 2026-05-07
 **Foco: ground truth + Cenário A + Cenário B.**
