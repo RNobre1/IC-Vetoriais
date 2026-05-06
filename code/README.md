@@ -2,7 +2,12 @@
 
 Ambiente experimental para a IC **"Comparação de Desempenho de Soluções de Bancos de Dados Vetoriais para Busca Semântica"** (UFOPA/IEG; bolsista: Rafael Nobre; orientador: Prof. Dr. Celson Pantoja Lima).
 
-> **Status:** Etapa 2, Dia 1 — esqueleto do ambiente. Plano completo em [`../docs/tasks/etapa-2-preparacao-ambiente.md`](../docs/tasks/etapa-2-preparacao-ambiente.md). Decisões metodológicas em [`../vault/decisões/`](../vault/decisões/).
+> **Status:** Etapa 2, Dia 1 ✅ + bump de versões em 2026-05-06. Plano completo em [`../docs/tasks/etapa-2-preparacao-ambiente.md`](../docs/tasks/etapa-2-preparacao-ambiente.md). Decisões metodológicas em [`../vault/decisões/`](../vault/decisões/).
+>
+> **Snapshot atual de versões dos SGBDs** (vide [`../vault/decisões/2026-05-06-bump-versoes-sgbds.md`](../vault/decisões/2026-05-06-bump-versoes-sgbds.md)):
+> - `pgvector/pgvector:0.8.2-pg18-bookworm` (Postgres 18.3 + pgvector 0.8.2)
+> - `qdrant/qdrant:v1.17.1`
+> - `semitechnologies/weaviate:1.37.2`
 
 ## Pré-requisitos
 

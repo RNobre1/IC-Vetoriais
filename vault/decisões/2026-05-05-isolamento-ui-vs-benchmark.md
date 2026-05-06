@@ -5,7 +5,7 @@ status: aceita
 tags: [metodologia, benchmarking, infraestrutura, weaviate, verba]
 relacionadas:
   - 2026-04-28-sistemas-avaliados
-  - 2026-05-05-versoes-imagens-docker
+  - 2026-05-06-bump-versoes-sgbds
 ---
 
 # ADR — Isolamento de ferramentas de UI vs ambiente de benchmark
@@ -58,7 +58,7 @@ Em workstation de 16 GiB RAM + 10c/16t (ver `CLAUDE.md` → Hardware), com 3 SGB
 ## Backlinks
 
 - [[../lições/2026-05-05-erro-recomendacao-weaviate-cloud-console]] — contexto de por que Verba é a solução para Weaviate self-hosted.
-- [[2026-05-05-versoes-imagens-docker]] — a imagem Weaviate 1.27.0 expõe gRPC em 50051; Verba usa REST (8080) para conectar.
+- [[2026-05-06-bump-versoes-sgbds]] — supersede a ADR original de versões; a imagem Weaviate atual (`1.37.2`) continua expondo gRPC em 50051. Verba conecta via REST (8080).
 - [[2026-04-28-sistemas-avaliados]] — Weaviate é um dos 3 sistemas comparados.
 
 ## Referência metodológica

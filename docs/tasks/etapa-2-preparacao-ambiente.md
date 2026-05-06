@@ -82,9 +82,9 @@ Entregáveis:
   - `README.md` (esqueleto em PT-BR com troubleshooting)
   - `.env.example`
 - [x] `code/docker-compose.yml` com:
-  - `postgres-pgvector` (`pgvector/pgvector:pg16`)
-  - `qdrant` (`qdrant/qdrant:v1.12.0`)
-  - `weaviate` (`semitechnologies/weaviate:1.27.0`)
+  - `postgres-pgvector` (`pgvector/pgvector:0.8.2-pg18-bookworm` — Postgres 18.3 + pgvector 0.8.2; *bumpado em 2026-05-06*)
+  - `qdrant` (`qdrant/qdrant:v1.17.1` — *bumpado em 2026-05-06*)
+  - `weaviate` (`semitechnologies/weaviate:1.37.2` — *bumpado em 2026-05-06*)
   - Healthchecks (TCP/HTTP/`pg_isready`) com `start_period` e retries adequados
   - Named volumes gerenciados pelo Docker
   - Porta gRPC 50051 do Weaviate exposta (necessária para o cliente v4)
@@ -97,7 +97,7 @@ Entregáveis:
   - Testes unitários via `pytest tests/unit`
   - Cache de pip
   - Executa em push/PR para `main`
-- [x] **ADR**: [[../../vault/decisões/2026-05-05-versoes-imagens-docker]] (versões fixadas).
+- [x] **ADR**: [[../../vault/decisões/2026-05-05-versoes-imagens-docker]] (versões fixadas — *superseded em 2026-05-06* por [[../../vault/decisões/2026-05-06-bump-versoes-sgbds]] que atualizou as 3 imagens para o snapshot atual).
 - [x] **Lição**: [[../../vault/lições/2026-05-05-armadilhas-dia-1-etapa-2]] (3 armadilhas corrigidas: httpx vs weaviate, psycopg sem wheel py3.14, gRPC do Weaviate).
 
 **Estado de infraestrutura ao final do Dia 1:** containers `ic-pgvector`, `ic-qdrant`, `ic-weaviate` de pé e healthy; venv `code/.venv` instalado; `code/.env` aplicado.
