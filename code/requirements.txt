@@ -2,6 +2,13 @@
 # Versões pinadas para reprodutibilidade. Justificativa de cada bump em vault/decisões/.
 # Snapshot atual: 2026-05-06 (vault/decisões/2026-05-06-bump-versoes-sgbds.md).
 
+# Índice CPU-only do PyTorch.
+# Motivo: ADR vault/decisões/2026-04-28-modelo-embedding-minilm.md fixa MiniLM-L6-v2
+# em CPU. Sem este `--extra-index-url`, o pip resolve `torch` para a build CUDA
+# (puxa ~3 GB de wheels NVIDIA que não usamos). Lição registrada em
+# vault/lições/2026-05-10-torch-cpu-only-vs-cuda.md.
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 # CI / dev tooling
 pytest==8.3.4
 pytest-cov==6.0.0
@@ -23,5 +30,12 @@ pgvector==0.4.2
 qdrant-client==1.17.1
 weaviate-client==4.21.0
 
-# Dependências dos Dias 2-4 são adicionadas conforme cada peça é implementada (TDD).
-# Candidatos previstos: numpy, sentence-transformers, faiss-cpu.
+# === Pré-Dia 3 (2026-05-10) ===
+# Geração real de embeddings via sentence-transformers (modelo decidido na ADR
+# vault/decisões/2026-04-28-modelo-embedding-minilm.md).
+# Pinamos `torch==2.11.0+cpu` explicitamente: o sufixo `+cpu` só existe no
+# `--extra-index-url` declarado acima, garantindo build CPU-only.
+torch==2.11.0+cpu
+sentence-transformers==5.4.1
+
+# Dependências do Dia 3 ainda pendentes: faiss-cpu (ground truth IndexFlatIP).
