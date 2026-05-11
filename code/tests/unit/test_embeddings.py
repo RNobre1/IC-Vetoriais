@@ -12,6 +12,7 @@ instalação de torch (~700 MB) — essas dependências entram em commit separad
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Callable
 from pathlib import Path
 
@@ -33,8 +34,13 @@ from pipeline.embeddings import (
 class FakeEncoder:
     """Encoder previsível: emula a API do sentence-transformers em RAM.
 
-    Para texto T, gera o vetor `[hash(T) % 7919 / 7919, 0, 0, ...]` (não normalizado),
-    normalizado L2 se `normalize_embeddings=True`. Determinístico e sem rede.
+    Para texto T, deriva um `valor ∈ [0, 1)` a partir dos primeiros 4 bytes de
+    `sha256(T)` (escala 2^32) e gera o vetor `[valor, valor/2, valor/3, 0, ...]`,
+    normalizado L2 se `normalize_embeddings=True`.
+
+    Por que SHA-256 e não `hash()`?  `hash()` em Python tem salt aleatório por
+    processo (PYTHONHASHSEED), produzindo flakes ~1/N. SHA-256 é estável
+    cross-process e cross-run. Lição: vault/lições/2026-05-10-fake-encoder-hash-flake.md.
     """
 
     def __init__(self, dim: int = DIM_MINILM_L6_V2) -> None:
@@ -53,7 +59,8 @@ class FakeEncoder:
         self.chamadas += 1
         out = np.zeros((len(textos), self.dim), dtype=np.float32)
         for i, t in enumerate(textos):
-            valor = (hash(t) % 7919) / 7919.0 + 0.001  # evita vetor zero
+            digest = hashlib.sha256(t.encode("utf-8")).digest()
+            valor = int.from_bytes(digest[:4], "big") / 2**32 + 1e-6  # evita vetor zero
             out[i, 0] = valor
             out[i, 1] = valor / 2
             out[i, 2] = valor / 3
