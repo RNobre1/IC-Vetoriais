@@ -38,4 +38,8 @@ weaviate-client==4.21.0
 torch==2.11.0+cpu
 sentence-transformers==5.4.1
 
-# Dependências do Dia 3 ainda pendentes: faiss-cpu (ground truth IndexFlatIP).
+# === Dia 3 da Etapa 2 (2026-05-10) ===
+# Ground truth de top-K exato via FAISS IndexFlatIP (busca exata por produto
+# interno; vetores já normalizados L2 = equivalente a cosseno).
+# Build CPU; não há wheel oficial GPU para Python 3.14.
+faiss-cpu==1.13.2
