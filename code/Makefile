@@ -1,4 +1,4 @@
-.PHONY: help up down logs smoke clean test test-unit test-integration lint fmt deps ui-up ui-down ui-logs bench-A
+.PHONY: help up down logs smoke clean test test-unit test-integration lint fmt deps ui-up ui-down ui-logs bench-A bench-B
 
 # Compose principal (3 SGBDs) e merge com UI (Verba). Vide:
 #   vault/decisões/2026-05-05-isolamento-ui-vs-benchmark.md
@@ -61,11 +61,18 @@ K      ?= 10
 EF     ?= 16,32,64,128,256
 WARMUP ?= 50
 SYS    ?= pgvector,qdrant,weaviate
+SEL    ?= 0.01,0.1,0.5,1.0
 
 bench-A:  ## Cenário A — busca pura (requer 'make up'). Vars: N Q K EF WARMUP SYS
 	$(PYTHON) -m benchmarks.run_cenario_a \
 		--n $(N) --queries $(Q) --k $(K) \
 		--ef-search $(EF) --warmup $(WARMUP) --sistemas $(SYS)
+
+bench-B:  ## Cenário B — busca com filtro (requer 'make up'). Vars: N Q K EF WARMUP SYS SEL
+	$(PYTHON) -m benchmarks.run_cenario_b \
+		--n $(N) --queries $(Q) --k $(K) \
+		--ef-search $(EF) --warmup $(WARMUP) --sistemas $(SYS) \
+		--seletividades $(SEL)
 
 lint:  ## Lint via ruff (check + format)
 	$(RUFF) check .
