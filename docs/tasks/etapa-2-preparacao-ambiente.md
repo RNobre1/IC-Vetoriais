@@ -139,10 +139,10 @@ Entregáveis:
 - [x] **Lição**: [[../../vault/lições/2026-05-10-torch-cpu-only-vs-cuda]] (pip puxa build CUDA ~3 GB sem `--extra-index-url`; disco estourou).
 - [x] **Lição**: [[../../vault/lições/2026-05-10-fake-encoder-hash-flake]] (flake preexistente do Dia 2: `hash()` Python no `FakeEncoder` → SHA-256).
 
-### Dia 3 — 2026-05-10 🔶 PARCIAL (3 de 4 entregáveis)
+### Dia 3 — 2026-05-10 🔶 PARCIAL
 **Foco: ground truth + Cenário A + Cenário B.**
 
-> Datado 2026-05-07 no plano original; executado em 2026-05-10 (cronograma comprimido). Ground truth, métricas e reporting concluídos; cenários A/B pendentes para a próxima sessão.
+> Datado 2026-05-07 no plano original; executado em 2026-05-10 (cronograma comprimido). Concluídos: `ground_truth`, `lib/metrics`, `lib/reporting` e a **lógica de orquestração** do Cenário A (`medir_sistema` + Protocol, em TDD) + ADR metodológica. Pendentes: adaptadores concretos por SGBD + CLI/smoke do Cenário A, e `cenario_b.py`.
 
 Entregáveis:
 - [x] `ground_truth/exact_search.py`:
@@ -154,10 +154,13 @@ Entregáveis:
 - [x] `lib/reporting.py`: JSON normalizado em `code/results/` (inclui persistir o ground truth em `data/ground_truth/`).
   - `ResultadoBenchmark` (dataclass `frozen/slots`); `salvar_resultado` (JSON `sort_keys` + `ensure_ascii=False`, nome determinístico); `salvar_ground_truth`/`carregar_ground_truth` (`.npz` round-trip).
 - [x] `tests/unit/test_reporting.py`: 11 testes (imutabilidade, padrão do nome, determinismo do JSON, acentos sem escape, round-trip semântico, round-trip do `.npz`, validações de shape/2-D).
-- [ ] `benchmarks/cenario_a.py`:
-  - Carga: 1000 queries de teste do MS MARCO (não usadas no seed)
-  - Varre `efSearch ∈ {16, 32, 64, 128, 256}`
-  - Mede latência p50/p95/p99, QPS, recall@10 por sistema, por valor de efSearch
+- [~] `benchmarks/cenario_a.py` — **lógica de orquestração entregue; adaptadores + CLI + smoke pendentes**:
+  - [x] Decisões metodológicas fixadas em ADR [[../../vault/decisões/2026-05-10-cenario-a-queries-warmup]]: queries = passages held-out (ANN-Bench); warmup descartado (default 50, registrado no JSON); escopo Etapa 2 = script + smoke N pequeno.
+  - [x] Protocol `BuscadorVetorial` (`nome`, `configurar_ef_search`, `buscar_uma`) — desacopla orquestração da API de cada SGBD.
+  - [x] `medir_sistema(...)`: varre `efSearch`, warmup+descarte, mede latência por query, calcula p50/p95/p99 + QPS + recall@k (consome `lib.metrics` + `lib.reporting`). 1 `ResultadoBenchmark` por ef.
+  - [x] `tests/unit/test_cenario_a.py`: 12 testes (estrutura, ordem dos ef, warmup descartado, recall 1.0/0.0, métricas plausíveis, 4 validações de borda).
+  - [ ] Adaptadores concretos `PgvectorBuscador` / `QdrantBuscador` / `WeaviateBuscador` (`configurar_ef_search` por API nativa: `SET hnsw.ef_search` / `hnsw_ef` / `ef`).
+  - [ ] CLI + alvo `make bench-A` + smoke de integração com N pequeno (~10k) contra containers de pé.
 - [ ] `benchmarks/cenario_b.py`:
   - Adiciona predicado de seletividade variável (1%, 10%, 50%, 100%)
   - Sintetiza coluna `categoria` no metadata durante o seed
