@@ -1,8 +1,7 @@
 # Plano da Etapa 2 — Preparação de dados e ambiente
 
-> **Status:** plano definido em 2026-05-05; execução prevista 2026-05-05 → 2026-05-08 (4 dias).
-> **Cronograma oficial (docx):** Mar–Abr (Etapa 2 no cronograma Jan–Dez).
-> **Cronograma real (docs/metodologia.md):** Mai–Jun, comprimido pelo início efetivo do projeto.
+> **Status:** plano definido em 2026-05-05; executado ao longo de 2026-05-05 → 2026-05-10 (datas reais de execução; vide `vault/sessões/`).
+> **Cronograma canônico:** Etapa 2 = **Mar–Abr** (tabela do relatório parcial, `docx/relatorio_parcial/secoes/08-cronograma.tex`, fonte de verdade). As datas `2026-05-*` abaixo são o log factual de execução, não o cronograma de planejamento.
 
 ## Objetivo
 Entregar um ambiente experimental reproduzível com os 3 SGBDs vetoriais, pipeline de embeddings determinístico e scripts de benchmark prontos para a **Etapa 3** (cenários A e B em 100k/500k).
@@ -142,7 +141,7 @@ Entregáveis:
 ### Dia 3 — 2026-05-10 🔶 PARCIAL
 **Foco: ground truth + Cenário A + Cenário B.**
 
-> Datado 2026-05-07 no plano original; executado em 2026-05-10 (cronograma comprimido). Concluídos: `ground_truth`, `lib/metrics`, `lib/reporting` (+`salvar_curva`), **Cenário A completo** (orquestração + 3 adaptadores + CLI `make bench-A` + smoke real, em TDD) + ADR metodológica. **Pendente: só `cenario_b.py`.**
+> Datado 2026-05-07 no plano original; executado em 2026-05-10 (data real de execução). Concluídos: `ground_truth`, `lib/metrics`, `lib/reporting` (+`salvar_curva`), **Cenário A completo** (orquestração + 3 adaptadores + CLI `make bench-A` + smoke real, em TDD) + ADR metodológica. **Pendente: só `cenario_b.py`.**
 
 Entregáveis:
 - [x] `ground_truth/exact_search.py`:
