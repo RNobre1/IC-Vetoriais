@@ -2,7 +2,7 @@
 
 Ambiente experimental para a IC **"Comparação de Desempenho de Soluções de Bancos de Dados Vetoriais para Busca Semântica"** (UFOPA/IEG; bolsista: Rafael Nobre; orientador: Prof. Dr. Celson Pantoja Lima).
 
-> **Status:** Etapa 2, Dia 1 ✅ + bump de versões em 2026-05-06. Plano completo em [`../docs/tasks/etapa-2-preparacao-ambiente.md`](../docs/tasks/etapa-2-preparacao-ambiente.md). Decisões metodológicas em [`../vault/decisões/`](../vault/decisões/).
+> **Status:** Etapa 2 **concluída** — ambiente + pipeline de embeddings + ground truth + Cenários A e B completos (em TDD, com smoke real nos 3 SGBDs) + esqueleto do Cenário C. Plano completo em [`../docs/tasks/etapa-2-preparacao-ambiente.md`](../docs/tasks/etapa-2-preparacao-ambiente.md). Decisões metodológicas em [`../vault/decisões/`](../vault/decisões/).
 >
 > **Snapshot atual de versões dos SGBDs** (vide [`../vault/decisões/2026-05-06-bump-versoes-sgbds.md`](../vault/decisões/2026-05-06-bump-versoes-sgbds.md)):
 > - `pgvector/pgvector:0.8.2-pg18-bookworm` (Postgres 18.3 + pgvector 0.8.2)
@@ -35,6 +35,21 @@ make up
 make smoke
 ```
 
+**Reprodução mínima (≤ 15 min, terceiro sem contexto):** `cd code && make deps && cp .env.example .env && make up && make smoke` — sobe os 3 SGBDs e valida conexão+CRUD+busca. Não exige dataset (usa vetores sintéticos no smoke).
+
+### Rodar os benchmarks
+
+Os Cenários precisam do subset MS MARCO baixado (`make` baixa sob demanda no primeiro uso; ~3 GB) e dos 3 SGBDs no ar (`make up`).
+
+```bash
+make seed N=10000                       # semeia 10k embeddings nos 3 SGBDs (idempotente)
+make bench-A N=10000 Q=1000             # Cenário A — busca pura (curva recall×QPS por sistema)
+make bench-B N=10000 Q=1000             # Cenário B — busca com filtro de seletividade
+make bench-C-dryrun                     # Cenário C — só imprime o plano de carga (roda na Etapa 4)
+```
+
+Saída: um JSON de curva por sistema em `code/results/cenario_<A|B>_<sistema>_<n>_<timestamp>.json`; ground truth exato em `data/ground_truth/`. Todos os alvos aceitam `N Q K EF WARMUP SYS` (e `SEL` no `bench-B`); ver `make help`.
+
 ## Comandos
 
 `make help` lista todos. Resumo:
@@ -47,10 +62,16 @@ make smoke
 | `make logs`              | Acompanha logs em tempo real                             |
 | `make smoke`             | Smoke test integrado (precisa de `make up` antes)        |
 | `make test`              | Testes unitários (sem Docker) — alvo padrão              |
-| `make test-integration`  | Testes de integração (com Docker)                        |
+| `make test-integration`  | Testes de integração (com Docker; **roda local**, não no CI) |
+| `make seed`              | Semeia N embeddings nos 3 SGBDs (sem benchmark)          |
+| `make bench-A`           | Cenário A — busca pura (curva recall×QPS)                |
+| `make bench-B`           | Cenário B — busca com filtro de seletividade             |
+| `make bench-C-dryrun`    | Cenário C — imprime plano de carga (execução na Etapa 4) |
 | `make lint`              | `ruff check` + `ruff format --check`                     |
 | `make fmt`               | Aplica formatação `ruff`                                 |
 | `make clean`             | Remove containers, volumes e caches Python               |
+
+> **CI:** o GitHub Actions roda só `lint` + testes unitários. Integração é local por decisão registrada ([`../vault/decisões/2026-05-19-ci-integracao-local.md`](../vault/decisões/2026-05-19-ci-integracao-local.md)) — rode `make up && make test-integration` antes de commitar mudança de cenário.
 
 ## Estrutura
 
@@ -58,15 +79,21 @@ make smoke
 code/
 ├── docker-compose.yml      # 3 SGBDs com healthchecks
 ├── pyproject.toml          # config ruff + pytest
-├── requirements.txt        # versões pinadas
+├── requirements.txt        # versões pinadas (+ requirements.lock)
 ├── Makefile                # comandos uniformes
 ├── .env.example
+├── pipeline/               # ms_marco_loader, embeddings (cache determinístico)
+├── seeders/                # pgvector / qdrant / weaviate (HNSW + atributo seletor)
+├── ground_truth/           # exact_search (FAISS; top-K exato e filtrado)
+├── lib/                    # metrics (p50/p95/p99, QPS, recall@K), reporting
+├── benchmarks/             # cenario_a, cenario_b, cenario_c (esqueleto),
+│                           #   buscadores (adaptadores), run_cenario_a/b, run_seed
 └── tests/
-    ├── unit/
-    └── integration/
+    ├── unit/               # rápidos, sem Docker (alvo padrão do CI)
+    └── integration/        # contra os 3 SGBDs (local)
 ```
 
-A árvore se expande nos Dias 2–4 com `pipeline/`, `seeders/`, `ground_truth/`, `benchmarks/`, `lib/`. Detalhes em [`../docs/tasks/etapa-2-preparacao-ambiente.md`](../docs/tasks/etapa-2-preparacao-ambiente.md).
+Detalhes e racional de cada peça em [`../docs/tasks/etapa-2-preparacao-ambiente.md`](../docs/tasks/etapa-2-preparacao-ambiente.md) e nas decisões do vault.
 
 ## Troubleshooting
 

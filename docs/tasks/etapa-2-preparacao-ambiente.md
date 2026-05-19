@@ -172,21 +172,18 @@ Entregáveis:
   - [x] CLI `benchmarks/run_cenario_b.py` + alvo `make bench-B` (vars `N Q K EF WARMUP SYS SEL`): pipeline → `sintetizar_seletor` (permutação determinística decorrelacionada) → GT por p → seed idempotente com `seletor` → `medir_sistema_filtrado` → `salvar_curva`. Partes puras com 10 testes.
   - [x] **Smoke real validado** (2 runs consecutivos, idempotente): `make bench-B N=200 Q=20 EF=16,64 WARMUP=2 SEL=0.1,1.0` gravou 3 curvas + GT npz por seletividade; recall ponta-a-ponta nos 3 SGBDs. Diferenciação real virá em 100k/500k (Etapa 3).
 
-### Dia 4 — 2026-05-08
+### Dia 4 — 2026-05-19 ✅ CONCLUÍDO
 **Foco: Cenário C esqueleto, ferramental, README.**
 
+> Datado 2026-05-08 no plano original; executado em 2026-05-19 (data real). **Etapa 2 fechada:** todos os entregáveis dos Dias 1–4 concluídos; suíte 175/175 verde (150 unit + 25 integração); lint limpo.
+
 Entregáveis:
-- [ ] `benchmarks/cenario_c.py`:
-  - **Esqueleto apenas** — não rodar carga real (1M fica para Etapa 4)
-  - Estrutura: produtor concorrente de inserções + consumidor de buscas
-  - Mede impacto de taxa de inserção (0, 10, 100, 1000 ins/s) em latência p99 de leitura
-- [ ] `Makefile` estendido com `seed`, `bench-A`, `bench-B`, `bench-C-dryrun` (alvos básicos `up`, `down`, `smoke`, `test*`, `lint`, `fmt`, `clean` já vieram do Dia 1)
-- [ ] `code/README.md` finalizado em PT-BR com:
-  - Pré-requisitos (Docker ≥ 24, Python 3.11+, ~8 GB livres em disco, ~12 GB RAM em pico)
-  - Comandos (mesmos do Makefile)
-  - Troubleshooting (porta ocupada, container saudável mas Python falha conectar, etc.)
-- [ ] CI estendido (decisão pendente — avaliar Dia 4): ampliar workflow para rodar testes de integração com `services:` do GitHub Actions. Custo: workflow mais frágil, runners gratuitos limitados. Recomendação atual: **manter integração local**, só ampliar se o orientador requisitar.
-- [ ] Smoke completo de validação: `make up && make seed N=10000 && make bench-A` produz JSON em `code/results/`
+- [x] `benchmarks/cenario_c.py` — **esqueleto apenas** (carga real = Etapa 4): `ConfigC`, `intervalo_entre_insercoes` (lógica pura testada), `executar` recusa com `NotImplementedError("Etapa 4")`. `tests/unit/test_cenario_c.py`: 5 testes.
+- [x] `Makefile` estendido: `seed`, `bench-A`, `bench-B`, `bench-C-dryrun` (+ var `SEL`). `make bench-C-dryrun` imprime o plano de carga sem rodar.
+- [x] `benchmarks/run_seed.py` + `make seed N=` — semeia N embeddings nos 3 SGBDs sem benchmark (critério de pronto #2), idempotente. `tests/unit/test_run_seed.py`: 4 testes. Smoke real validado (2 runs).
+- [x] `code/README.md` finalizado: status Etapa 2 concluída, reprodução mínima ≤15 min, comandos de benchmark, árvore final, nota de CI local, troubleshooting.
+- [x] **Decisão de CI**: ADR [[../../vault/decisões/2026-05-19-ci-integracao-local]] — CI roda só unit+lint; integração permanece local (custo/fragilidade de `services:` não justifica). Recomendação aceita pelo piloto.
+- [x] Smoke completo de validação: `make seed N=300` + `make bench-A`/`bench-B` produzem JSON em `code/results/` + GT em `data/ground_truth/`. Suíte final **175/175 verde** (150 unit + 25 integração), lint limpo.
 
 ## Definição de "pronto" para a Etapa 2
 1. `make up` sobe os 3 containers em ≤ 60 s; `make smoke` passa.
