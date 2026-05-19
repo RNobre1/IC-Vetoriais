@@ -139,10 +139,10 @@ Entregáveis:
 - [x] **Lição**: [[../../vault/lições/2026-05-10-torch-cpu-only-vs-cuda]] (pip puxa build CUDA ~3 GB sem `--extra-index-url`; disco estourou).
 - [x] **Lição**: [[../../vault/lições/2026-05-10-fake-encoder-hash-flake]] (flake preexistente do Dia 2: `hash()` Python no `FakeEncoder` → SHA-256).
 
-### Dia 3 — 2026-05-10 🔶 PARCIAL (2 de 4 entregáveis)
+### Dia 3 — 2026-05-10 🔶 PARCIAL (3 de 4 entregáveis)
 **Foco: ground truth + Cenário A + Cenário B.**
 
-> Datado 2026-05-07 no plano original; executado em 2026-05-10 (cronograma comprimido). Passos 1-2 concluídos; reporting + cenários A/B pendentes para a próxima sessão.
+> Datado 2026-05-07 no plano original; executado em 2026-05-10 (cronograma comprimido). Ground truth, métricas e reporting concluídos; cenários A/B pendentes para a próxima sessão.
 
 Entregáveis:
 - [x] `ground_truth/exact_search.py`:
@@ -151,7 +151,9 @@ Entregáveis:
 - [x] `tests/unit/test_ground_truth.py`: 12 testes (recall vs. si = 1.0, determinismo bit-a-bit, 6 validações de borda).
 - [x] `lib/metrics.py`: p50/p95/p99 (via `numpy.percentile`), QPS, recall@K (consome `top_k_exato`).
 - [x] `tests/unit/test_metrics.py`: 21 testes (percentis em distribuição conhecida, recall em casos de canto e bordas).
-- [ ] `lib/reporting.py`: JSON normalizado em `code/results/` (inclui persistir o ground truth em `data/ground_truth/`)
+- [x] `lib/reporting.py`: JSON normalizado em `code/results/` (inclui persistir o ground truth em `data/ground_truth/`).
+  - `ResultadoBenchmark` (dataclass `frozen/slots`); `salvar_resultado` (JSON `sort_keys` + `ensure_ascii=False`, nome determinístico); `salvar_ground_truth`/`carregar_ground_truth` (`.npz` round-trip).
+- [x] `tests/unit/test_reporting.py`: 11 testes (imutabilidade, padrão do nome, determinismo do JSON, acentos sem escape, round-trip semântico, round-trip do `.npz`, validações de shape/2-D).
 - [ ] `benchmarks/cenario_a.py`:
   - Carga: 1000 queries de teste do MS MARCO (não usadas no seed)
   - Varre `efSearch ∈ {16, 32, 64, 128, 256}`
