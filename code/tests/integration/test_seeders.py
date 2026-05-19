@@ -23,6 +23,8 @@ import pytest
 import weaviate
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
+from qdrant_client.http.models import FieldCondition, Filter, Range
+from weaviate.classes.query import Filter as WvFilter
 
 from seeders.pgvector_seeder import seed_pgvector
 from seeders.qdrant_seeder import seed_qdrant
@@ -55,6 +57,21 @@ def vetores_1k() -> np.ndarray:
 def metadata_1k() -> list[dict[str, Any]]:
     """Metadata sintético: 50% cat-A, 50% cat-B (preparando Cenário B)."""
     return [{"categoria": "cat-A" if i % 2 == 0 else "cat-B"} for i in range(1000)]
+
+
+@pytest.fixture(scope="module")
+def metadata_1k_seletor() -> list[dict[str, Any]]:
+    """Metadata do Cenário B: atributo numérico `seletor[i] = i/1000`.
+
+    Com este `seletor`, o predicado `seletor < 0.1` mantém exatamente 100
+    itens (ids 0..99) — contagem determinística para validar a persistência
+    e a filtragem nos 3 SGBDs. Vide ADR
+    `vault/decisões/2026-05-19-cenario-b-seletividade-gt-filtrado`.
+    """
+    return [
+        {"categoria": "cat-A" if i % 2 == 0 else "cat-B", "seletor": i / 1000.0}
+        for i in range(1000)
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -235,5 +252,82 @@ def test_weaviate_busca_recupera_id_inserido(
         col = weaviate_client.collections.get(nome)
         resultado = col.query.near_vector(near_vector=vetores_1k[0].tolist(), limit=1)
         assert resultado.objects[0].properties["external_id"] == 0
+    finally:
+        weaviate_client.collections.delete(nome)
+
+
+# ---------------------------------------------------------------------------
+# Cenário B: o atributo numérico `seletor` é persistido e filtrável
+#
+# `seletor[i] = i/1000` ⇒ `seletor < 0.1` deve devolver exatamente 100 itens
+# nos 3 SGBDs. Prova que o seeder grava o campo e que o predicado de range
+# funciona ponta-a-ponta (pré-requisito do `cenario_b`).
+# ---------------------------------------------------------------------------
+
+
+def test_pgvector_seletor_persistido_e_filtravel(
+    pg_conn: psycopg.Connection,
+    vetores_1k: np.ndarray,
+    metadata_1k_seletor: list[dict[str, Any]],
+) -> None:
+    nome = f"seed_sel_{uuid.uuid4().hex[:8]}"
+    try:
+        seed_pgvector(
+            vetores=vetores_1k,
+            metadata=metadata_1k_seletor,
+            conn=pg_conn,
+            nome_tabela=nome,
+        )
+        with pg_conn.cursor() as cur:
+            cur.execute(f"SELECT count(*) FROM {nome} WHERE seletor < 0.1")
+            assert cur.fetchone()[0] == 100
+    finally:
+        with pg_conn.cursor() as cur:
+            cur.execute(f"DROP TABLE IF EXISTS {nome}")
+        pg_conn.commit()
+
+
+def test_qdrant_seletor_persistido_e_filtravel(
+    qdrant_client: QdrantClient,
+    vetores_1k: np.ndarray,
+    metadata_1k_seletor: list[dict[str, Any]],
+) -> None:
+    nome = f"seed_sel_{uuid.uuid4().hex[:8]}"
+    try:
+        seed_qdrant(
+            vetores=vetores_1k,
+            metadata=metadata_1k_seletor,
+            client=qdrant_client,
+            nome_colecao=nome,
+        )
+        resultado = qdrant_client.count(
+            collection_name=nome,
+            count_filter=Filter(must=[FieldCondition(key="seletor", range=Range(lt=0.1))]),
+            exact=True,
+        )
+        assert resultado.count == 100
+    finally:
+        qdrant_client.delete_collection(collection_name=nome)
+
+
+def test_weaviate_seletor_persistido_e_filtravel(
+    weaviate_client: weaviate.WeaviateClient,
+    vetores_1k: np.ndarray,
+    metadata_1k_seletor: list[dict[str, Any]],
+) -> None:
+    nome = f"SeedSel{uuid.uuid4().hex[:8]}"
+    try:
+        seed_weaviate(
+            vetores=vetores_1k,
+            metadata=metadata_1k_seletor,
+            client=weaviate_client,
+            nome_classe=nome,
+        )
+        col = weaviate_client.collections.get(nome)
+        agg = col.aggregate.over_all(
+            total_count=True,
+            filters=WvFilter.by_property("seletor").less_than(0.1),
+        )
+        assert agg.total_count == 100
     finally:
         weaviate_client.collections.delete(nome)

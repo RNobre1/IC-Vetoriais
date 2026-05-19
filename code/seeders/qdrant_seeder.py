@@ -14,6 +14,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.http.models import (
     Distance,
     HnswConfigDiff,
+    PayloadSchemaType,
     PointStruct,
     VectorParams,
 )
@@ -41,6 +42,17 @@ def seed_qdrant(
         vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
         hnsw_config=HnswConfigDiff(m=m, ef_construct=ef_construction),
     )
+
+    # Cenário B: índice de payload em `seletor` só quando o atributo existe.
+    # Necessário para o filtered-ANN do Qdrant ser comparável (pgvector usa a
+    # coluna; Weaviate indexa propriedades por padrão). Cenário A não tem
+    # `seletor` no metadata ⇒ nenhum índice criado ⇒ coleção idêntica.
+    if metadata is not None and any("seletor" in md for md in metadata):
+        client.create_payload_index(
+            collection_name=nome_colecao,
+            field_name="seletor",
+            field_schema=PayloadSchemaType.FLOAT,
+        )
 
     buffer: list[PointStruct] = []
     for i in range(n):

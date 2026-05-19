@@ -23,7 +23,11 @@ def seed_pgvector(
     m: int = 16,
     ef_construction: int = 200,
 ) -> int:
-    """Cria `<nome_tabela>` (id, embedding, categoria), insere e indexa via HNSW.
+    """Cria `<nome_tabela>` (id, embedding, categoria, seletor), insere e indexa HNSW.
+
+    `seletor` (`real`, nullable) é o atributo numérico do Cenário B — lido de
+    `metadata[i]["seletor"]` quando presente, `NULL` caso contrário (Cenário A
+    passa `metadata=None`/sem a chave, mantendo-se intacto).
 
     `m` é o parâmetro `M` do paper HNSW (Malkov & Yashunin, 2018) — número
     de conexões por nó nas camadas superiores. Mantido em minúsculo por PEP 8.
@@ -40,7 +44,7 @@ def seed_pgvector(
     with conn.cursor() as cur:
         cur.execute(
             f"CREATE TABLE {nome_tabela} (id integer PRIMARY KEY, "
-            f"embedding vector({dim}), categoria text)"
+            f"embedding vector({dim}), categoria text, seletor real)"
         )
 
         linhas = [
@@ -48,11 +52,13 @@ def seed_pgvector(
                 i,
                 vetores[i],
                 metadata[i].get("categoria") if metadata else None,
+                metadata[i].get("seletor") if metadata else None,
             )
             for i in range(n)
         ]
         cur.executemany(
-            f"INSERT INTO {nome_tabela} (id, embedding, categoria) VALUES (%s, %s, %s)",
+            f"INSERT INTO {nome_tabela} (id, embedding, categoria, seletor) "
+            f"VALUES (%s, %s, %s, %s)",
             linhas,
         )
 

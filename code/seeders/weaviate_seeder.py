@@ -26,7 +26,12 @@ def seed_weaviate(
     ef_construction: int = 200,
     batch_size: int = 100,
 ) -> int:
-    """Cria classe HNSW (parâmetro `m` = M do paper Malkov & Yashunin) e insere em batch."""
+    """Cria classe HNSW (parâmetro `m` = M do paper Malkov & Yashunin) e insere em batch.
+
+    Propriedades: `external_id` (int), `categoria` (text), `seletor` (number,
+    atributo do Cenário B). `seletor`/`categoria` só são gravados quando
+    presentes em `metadata[i]` — Cenário A (`metadata=None`) fica intacto.
+    """
     if vetores.ndim != 2:
         raise ValueError(f"vetores precisa ser 2D, recebido shape={vetores.shape}")
     n, _dim = vetores.shape
@@ -45,6 +50,7 @@ def seed_weaviate(
         properties=[
             Property(name="external_id", data_type=DataType.INT),
             Property(name="categoria", data_type=DataType.TEXT),
+            Property(name="seletor", data_type=DataType.NUMBER),
         ],
     )
 
@@ -56,5 +62,8 @@ def seed_weaviate(
                 cat = metadata[i].get("categoria")
                 if cat is not None:
                     props["categoria"] = cat
+                sel = metadata[i].get("seletor")
+                if sel is not None:
+                    props["seletor"] = float(sel)
             batch.add_object(properties=props, vector=vetores[i].tolist())
     return n
