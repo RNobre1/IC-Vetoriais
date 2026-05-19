@@ -33,7 +33,7 @@ Na prática, desenvolvedores e pesquisadores frequentemente precisam decidir ent
 
 \subsection{Justificativa}
 
-Bancos de dados vetoriais representam uma evolução natural de SGBDs na direção de suportar dados e consultas para IA. O desafio central de sistemas de recuperação é transformar informação não-estruturada em representações organizadas que permitam busca eficiente e quantificação de similaridade entre entidades semânticas \cite{paiva2014semrelext,costa2014sense}.
+Bancos de dados vetoriais estendem o escopo dos SGBDs para suportar dados e consultas voltados à IA. O desafio central de sistemas de recuperação é transformar informação não-estruturada em representações organizadas que permitam busca eficiente e quantificação de similaridade entre entidades semânticas \cite{paiva2014semrelext,costa2014sense}.
 
 A motivação para enriquecer representações vetoriais com semântica explícita já era central no \textit{framework} SENSE proposto por \citeonline{costa2014sense}, que estendia o VSM clássico com ontologias de domínio para capturar relações implícitas entre documentos. Sistemas RAG atuais retomam esse princípio, substituindo a engenharia ontológica manual por \textit{embeddings} densos aprendidos, mas preservando a premissa de que a qualidade da recuperação depende de quão bem a representação captura semântica além de palavras explícitas. Por isso o desempenho da camada vetorial é um fator decisivo no projeto desses sistemas.
 
@@ -50,6 +50,6 @@ Além disso, empresas e instituições têm usado RAG e busca semântica para co
     \item a qualidade da recuperação (\textit{recall} de passagens relevantes).
 \end{itemize}
 
-A seleção apropriada de parâmetros e da solução de armazenamento vetorial representa um \textit{trade-off} entre qualidade de resposta, custo computacional e limitações de \textit{hardware}. Estudos acadêmicos que explorem comparativamente essas soluções podem servir como referência para equipes de engenharia que precisam tomar decisões fundamentadas sobre a arquitetura de dados em aplicações de IA.
+A seleção apropriada de parâmetros e da solução de armazenamento vetorial representa um compromisso entre qualidade de resposta, custo computacional e limitações de \textit{hardware}. Estudos acadêmicos que explorem comparativamente essas soluções podem servir como referência para equipes de engenharia que precisam tomar decisões fundamentadas sobre a arquitetura de dados em aplicações de IA.
 
 Dessa forma, o projeto é justificado tanto como contribuição para a formação em bancos de dados e sistemas de IA, quanto como estudo aplicado com potencial de orientar decisões técnicas em ambientes reais.

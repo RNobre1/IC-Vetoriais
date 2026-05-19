@@ -4,7 +4,7 @@
 
 \section{Fundamentação Teórica}
 
-Esta seção apresenta os conceitos fundamentais que sustentam o estudo experimental proposto. A discussão parte do \textit{Vector Space Model} clássico, atravessa a evolução para \textit{embeddings} densos gerados por modelos neurais, descreve algoritmos de busca aproximada de vizinhos próximos em espaços de alta dimensão, caracteriza a arquitetura de bancos de dados vetoriais e contextualiza as metodologias de \textit{benchmarking} aplicáveis.
+Esta seção apresenta os conceitos fundamentais que sustentam o estudo experimental proposto: o \textit{Vector Space Model} clássico, a evolução para \textit{embeddings} densos gerados por modelos neurais, os algoritmos de busca aproximada de vizinhos próximos, a arquitetura de bancos de dados vetoriais e as metodologias de \textit{benchmarking} aplicáveis.
 
 \subsection{Vector Space Model e Recuperação de Informação}
 
@@ -40,7 +40,7 @@ Qdrant e Weaviate representam a primeira categoria. Qdrant é um banco vetorial 
 
 A combinação de busca vetorial com filtros estruturados, central ao Cenário B deste estudo, é um eixo no qual os três sistemas adotam estratégias distintas, tipicamente classificadas como pré-filtragem, pós-filtragem e filtragem \textit{inline} durante a navegação no grafo HNSW. \citeonline{patel2024acorn} sistematizam o \textit{trade-off} entre essas estratégias e demonstram, com a proposta ACORN, ganhos expressivos de \textit{throughput} sob \textit{recall} fixo quando a filtragem é integrada ao percurso do índice. Essa caracterização fornece base para interpretar diferenças observadas entre pgvector, Qdrant e Weaviate quando consultas vetoriais são combinadas com predicados sobre metadados.
 
-A decisão entre uma solução integrada e uma especializada envolve um \textit{trade-off} explícito: a primeira reduz a complexidade de \textit{stack} ao custo de potencial perda de desempenho em cargas vetoriais intensivas; a segunda otimiza para o caso vetorial mas exige operar um sistema adicional, com seu próprio modelo de dados, ferramental e perfil operacional. Caracterizar esse \textit{trade-off} de forma quantitativa, em cenários representativos, é o objetivo central deste estudo.
+A decisão entre uma solução integrada e uma especializada envolve um compromisso explícito: a primeira reduz a complexidade de \textit{stack} ao custo de potencial perda de desempenho em cargas vetoriais intensivas; a segunda otimiza para o caso vetorial mas exige operar um sistema adicional, com seu próprio modelo de dados, ferramental e perfil operacional. Caracterizar esse \textit{trade-off} de forma quantitativa, em cenários representativos, é o objetivo central deste estudo.
 
 \subsection{Retrieval-Augmented Generation (RAG)}
 

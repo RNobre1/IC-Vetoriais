@@ -10,7 +10,7 @@ A metodologia segue uma abordagem experimental de \textit{benchmark}, estruturad
 
 Serão considerados três cenários que se aproximam de aplicações reais:
 
-\textbf{Cenário A --- Busca semântica básica:} coleção de documentos textuais curtos (parágrafos de artigos, seções de relatórios ou FAQs institucionais). Cada documento é convertido em \textit{embedding}, e consultas semânticas recuperam os K documentos mais similares, sem filtros estruturados.
+\textbf{Cenário A --- Busca semântica básica:} coleção de documentos textuais curtos (no estudo, o \textit{subset} de \textit{passages} do MS MARCO descrito na Seção 4.2; em aplicações reais, parágrafos de artigos, seções de relatórios ou FAQs institucionais). Cada documento é convertido em \textit{embedding}, e consultas semânticas recuperam os K documentos mais similares, sem filtros estruturados.
 
 \textbf{Cenário B --- Busca com filtros de metadados:} mesma coleção do Cenário A, mas a consulta combina similaridade vetorial com um predicado sobre metadados (por exemplo, categoria, área temática ou intervalo de datas), padrão típico de RAG corporativo. Desafia a integração entre filtragem estruturada e busca vetorial; a operacionalização controlada do predicado é descrita na Seção 4.2.
 
