@@ -17,7 +17,7 @@ tags: [defesa, relatório-parcial, estudo, bibliografia, decisões]
 "O trabalho compara experimentalmente três formas de guardar e buscar embeddings para busca semântica e RAG: PostgreSQL com a extensão pgvector (um relacional estendido) contra dois bancos vetoriais especializados, Qdrant e Weaviate. Os três usam o mesmo índice (HNSW), então as diferenças que medirmos refletem implementação e arquitetura, não algoritmo. Medimos latência (p50/p95/p99), throughput (QPS), recall@K contra busca exata e consumo de recursos, em três cenários: busca pura (A), busca com filtro de metadados (B) e carga mista RAG (C). A metodologia é inspirada no ANN-Benchmarks: reportamos curvas recall×QPS, não números soltos. Esta parcial fecha a fundamentação teórica e o ambiente experimental reproduzível; os experimentos em escala são a próxima etapa."
 
 ### Estado honesto (não seja pego nisto)
-- **Pronto e sólido:** fundamentação teórica (11 referências fechadas); ambiente Docker dos 3 SGBDs reproduzível; pipeline de embeddings determinístico; ground truth exato (FAISS); Cenários A e B **implementados em TDD** (175 testes verde) com smoke real ponta-a-ponta nos 3 sistemas; esqueleto do C.
+- **Pronto e sólido:** fundamentação teórica (13 referências fechadas, todas verificadas contra os PDFs); ambiente Docker dos 3 SGBDs reproduzível; pipeline de embeddings determinístico; ground truth exato (FAISS); Cenários A e B **implementados em TDD** (175 testes verde) com smoke real ponta-a-ponta nos 3 sistemas; esqueleto do C.
 - **Ainda NÃO existe:** resultados em 100k/500k (latência/QPS/recall reais), footprint de memória/disco, tempo de indexação, Cenário C executado. Só rodamos smoke com N=200/300 para validar o pipeline.
 - **O relatório foi corrigido (2026-05-19) e agora é honesto:** removidos os overclaims — o Resumo, Resultados e Considerações **não afirmam mais** que a fase 100k/500k foi concluída nem que há resultados preliminares; a Seção 5 está com `\todo` explícitos e a Seção 6 não conclui nada (depende dos resultados). Se perguntarem pelos números: *"O ambiente e os scripts dos Cenários A e B estão prontos, testados (175 testes) e validados em smoke ponta-a-ponta nos três sistemas; a execução em escala 100k/500k é o passo imediato da Etapa 3. A seção de resultados está com os placeholders demarcando exatamente o que será preenchido."* Honestidade > fingir.
 - **Cenário B — relatório já alinhado ao implementado (2026-05-19):** a Seção 4 agora descreve o que de fato existe — o filtro categórico (categoria/área/data) entra como **motivação** de RAG corporativo, e a **operacionalização experimental** é o predicado de seletividade controlada (atributo numérico uniforme, `seletor < p`, varredura 1/10/50/100%, GT filtrado por seletividade), citando ACORN. Não há mais contradição texto×código. A justificativa de por que seletividade numérica está em Q7.
@@ -39,6 +39,7 @@ Para cada um: **o que é · por que está no trabalho · pergunta provável + re
 - **O que é:** o framework SENSE estende o VSM clássico incorporando relações de uma **ontologia de domínio** (relações explícitas entre conceitos) à representação, melhorando o recall ao capturar significado além da palavra literal.
 - **Por que está no trabalho:** é a **ponte histórica** VSM → embeddings. Argumento: a necessidade de "capturar semântica além de palavras explícitas" já estava em SENSE (resolvida com engenharia manual de ontologia); RAG/embeddings resolvem o mesmo problema com aprendizado automático sobre grandes corpora. Justifica por que a camada vetorial é decisiva.
 - **Pergunta provável:** *"Por que citar trabalho de ontologia num estudo de banco vetorial?"* → Para mostrar continuidade do problema de pesquisa (qualidade da representação semântica) e ancorar a justificativa; não usamos ontologias, usamos embeddings densos como evolução dessa linha.
+- **Munição extra (verificado nos PDFs):** Costa (2014, tese de Doutoramento) e Paiva (2014, dissertação de Mestrado), ambas FCT-UNL, foram **orientadas/co-orientadas pelo Prof. Celson Pantoja Lima** — o seu próprio orientador. Se ele perguntar por que essas duas referências, esse é o vínculo direto (linha de pesquisa do orientador em enriquecimento semântico). São citações de **apoio/contextuais**; a fonte primária do VSM é Salton (1975).
 
 ### 1.3 Embeddings densos / Sentence-BERT (Reimers & Gurevych, 2019)
 - **O que é:** Sentence-BERT adapta o BERT com **redes siamesas** (dois encoders idênticos com pesos compartilhados) para produzir embeddings de sentença comparáveis diretamente por cosseno/produto interno — sem precisar passar todo par de frases pelo modelo (o que era inviável em escala com BERT puro).
@@ -56,9 +57,11 @@ Para cada um: **o que é · por que está no trabalho · pergunta provável + re
 - **Por que no trabalho:** os 3 SGBDs usam HNSW como índice principal. Decisão deliberada (ADR `2026-04-28-índice-hnsw-em-todos`): fixar o algoritmo para que diferenças observadas sejam de **implementação/arquitetura**, não de algoritmo.
 
 ### 1.5 Bancos de dados vetoriais — taxonomia (Pan, Wang & Li, 2023)
-- **VDBMS:** sistemas para armazenar, indexar e consultar vetores densos por similaridade em escala. Pan et al. dividem em duas categorias:
-  - **(i) Especializados** — projetados desde o início para vetores (índices nativos, otimizações). Ex.: Qdrant, Weaviate, Milvus, Pinecone.
-  - **(ii) Extensões de SGBD existente** — adicionam tipo vetorial + operadores a um banco maduro. Ex.: PostgreSQL + pgvector.
+- **VDBMS:** sistemas para armazenar, indexar e consultar vetores densos por similaridade em escala. Pan et al. classificam em **três** categorias (cuidado — se ele perguntar, são três, não duas):
+  - **(i) Nativos / especializados** — projetados desde o início para vetores (índices nativos, otimizações). Ex.: Qdrant, Weaviate, Milvus.
+  - **(ii) Estendidos** — adicionam tipo vetorial + operadores a um SGBD maduro. Ex.: PostgreSQL + pgvector.
+  - **(iii) Motores de busca e bibliotecas** — só capacidade de busca. Ex.: Elasticsearch, Lucene, Faiss.
+  - **Este estudo foca nas duas primeiras** (é entre elas que está o trade-off investigado). O relatório §3.4 foi corrigido para refletir as três.
 - **Trade-off central do trabalho:** integrada (menos complexidade de stack, reaproveita o Postgres e junta filtro relacional + vetor no mesmo plano) **vs.** especializada (otimizada para o caso vetorial, mas é mais um sistema para operar). O estudo quantifica esse compromisso.
 - **Os três sistemas:**
   - **pgvector:** extensão do PostgreSQL; tipo `vector`, índices HNSW e IVFFlat; vetor e metadado estruturado no mesmo banco.
@@ -74,7 +77,7 @@ Para cada um: **o que é · por que está no trabalho · pergunta provável + re
 
 ### 1.7 RAG — Retrieval-Augmented Generation (Lewis et al., 2020; Jing 2024; Pawlik 2025; Bovas 2025)
 - **O que é (Lewis 2020):** LLM + recuperação. Consulta → embedding → recupera trechos similares do banco vetorial → injeta como contexto no LLM → resposta fundamentada. Acessa conhecimento atualizado/de domínio sem retreinar; reduz alucinação.
-- **Por que a camada vetorial importa (Pawlik 2025):** contexto ruim na recuperação degrada a resposta mesmo com bom gerador; configuração/tuning da camada vetorial impacta precisão e robustez do RAG.
+- **Por que a camada vetorial importa (Pawlik 2025):** contexto ruim na recuperação degrada a resposta mesmo com bom gerador; configuração/tuning da camada vetorial (chunking, embedding) impacta a **qualidade das respostas e a eficiência** do RAG, como trade-off com custo/hardware (termos do paper — não dizer "robustez", que não é medida lá; o relatório foi corrigido).
 - **Evidência aplicada (Bovas 2025 — NAVI):** chatbot RAG acadêmico com scores de relevância 0,7–0,85 condicionados à qualidade dessa camada.
 - **Survey (Jing 2024):** LLMs + bancos vetoriais como memória externa.
 - **Por que no trabalho:** motiva os cenários — A e B são os perfis de recuperação típicos de RAG; C simula RAG em produção (escrita concorrente com leitura).
