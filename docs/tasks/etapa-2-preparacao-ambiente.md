@@ -142,7 +142,7 @@ Entregáveis:
 ### Dia 3 — 2026-05-10 🔶 PARCIAL
 **Foco: ground truth + Cenário A + Cenário B.**
 
-> Datado 2026-05-07 no plano original; executado em 2026-05-10 (cronograma comprimido). Concluídos: `ground_truth`, `lib/metrics`, `lib/reporting` e a **lógica de orquestração** do Cenário A (`medir_sistema` + Protocol, em TDD) + ADR metodológica. Pendentes: adaptadores concretos por SGBD + CLI/smoke do Cenário A, e `cenario_b.py`.
+> Datado 2026-05-07 no plano original; executado em 2026-05-10 (cronograma comprimido). Concluídos: `ground_truth`, `lib/metrics`, `lib/reporting` (+`salvar_curva`), **Cenário A completo** (orquestração + 3 adaptadores + CLI `make bench-A` + smoke real, em TDD) + ADR metodológica. **Pendente: só `cenario_b.py`.**
 
 Entregáveis:
 - [x] `ground_truth/exact_search.py`:
@@ -154,14 +154,16 @@ Entregáveis:
 - [x] `lib/reporting.py`: JSON normalizado em `code/results/` (inclui persistir o ground truth em `data/ground_truth/`).
   - `ResultadoBenchmark` (dataclass `frozen/slots`); `salvar_resultado` (JSON `sort_keys` + `ensure_ascii=False`, nome determinístico); `salvar_ground_truth`/`carregar_ground_truth` (`.npz` round-trip).
 - [x] `tests/unit/test_reporting.py`: 11 testes (imutabilidade, padrão do nome, determinismo do JSON, acentos sem escape, round-trip semântico, round-trip do `.npz`, validações de shape/2-D).
-- [~] `benchmarks/cenario_a.py` — **lógica de orquestração entregue; adaptadores + CLI + smoke pendentes**:
+- [x] `benchmarks/cenario_a.py` — **Cenário A completo (orquestração + adaptadores + CLI + smoke real)**:
   - [x] Decisões metodológicas fixadas em ADR [[../../vault/decisões/2026-05-10-cenario-a-queries-warmup]]: queries = passages held-out (ANN-Bench); warmup descartado (default 50, registrado no JSON); escopo Etapa 2 = script + smoke N pequeno.
   - [x] Protocol `BuscadorVetorial` (`nome`, `configurar_ef_search`, `buscar_uma`) — desacopla orquestração da API de cada SGBD.
   - [x] `medir_sistema(...)`: varre `efSearch`, warmup+descarte, mede latência por query, calcula p50/p95/p99 + QPS + recall@k (consome `lib.metrics` + `lib.reporting`). 1 `ResultadoBenchmark` por ef.
   - [x] `tests/unit/test_cenario_a.py`: 12 testes (estrutura, ordem dos ef, warmup descartado, recall 1.0/0.0, métricas plausíveis, 4 validações de borda).
   - [x] Adaptadores concretos `PgvectorBuscador` / `QdrantBuscador` / `WeaviateBuscador` em `benchmarks/buscadores.py` (`configurar_ef_search`: `SET hnsw.ef_search` / `SearchParams(hnsw_ef=)` / `Reconfigure.Vectors.update`).
   - [x] Smoke de integração ponta-a-ponta `tests/integration/test_buscadores.py`: seed pequeno (N=300) + queries held-out + ground truth FAISS + `medir_sistema` real nos 3 SGBDs com sweep `efSearch ∈ {16,64}`. 3/3 verde. Pegadinha Weaviate registrada em [[../../vault/lições/2026-05-10-weaviate-config-update-vector-config]].
-  - [ ] CLI executável + alvo `make bench-A` (orquestra seed + ground truth + os 3 buscadores em N configurável, grava JSON em `code/results/`).
+  - [x] CLI `benchmarks/run_cenario_a.py` + alvo `make bench-A` (vars `N Q K EF WARMUP SYS`): pipeline → split held-out → ground truth → seed idempotente → `medir_sistema` nos 3 SGBDs → `salvar_curva`. Partes puras (`parse_args`, `split_embeddings`, `timestamp_utc`) com 10 testes unitários.
+  - [x] `lib/reporting.salvar_curva`: 1 JSON por sistema com a curva inteira (corrige perda de ponto em sweep). 6 testes.
+  - [x] **Smoke real validado**: `make bench-A N=200 Q=20 EF=16,64 WARMUP=2` gravou 3 curvas em `results/`. Weaviate exibiu `ef↑ → recall↑` (0.905→1.0), provando o controle de efSearch ponta-a-ponta. 3 bugs encontrados e corrigidos no caminho — [[../../vault/lições/2026-05-10-smoke-cli-cenario-a-make-or-e-colisao-nome]].
 - [ ] `benchmarks/cenario_b.py`:
   - Adiciona predicado de seletividade variável (1%, 10%, 50%, 100%)
   - Sintetiza coluna `categoria` no metadata durante o seed
