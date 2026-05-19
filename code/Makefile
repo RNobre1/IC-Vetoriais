@@ -1,4 +1,4 @@
-.PHONY: help up down logs smoke clean test test-unit test-integration lint fmt deps ui-up ui-down ui-logs
+.PHONY: help up down logs smoke clean test test-unit test-integration lint fmt deps ui-up ui-down ui-logs bench-A
 
 # Compose principal (3 SGBDs) e merge com UI (Verba). Vide:
 #   vault/decisões/2026-05-05-isolamento-ui-vs-benchmark.md
@@ -52,6 +52,20 @@ test-unit:  ## Testes unitários (sem Docker)
 
 test-integration:  ## Testes de integração (requer 'make up')
 	$(PYTEST) tests/integration -v
+
+# Defaults sobrescrevíveis na linha de comando (ex.: make bench-A N=200 SYS=pgvector).
+# `?=` evita a pegadinha de $(or ...) tratar vírgulas de listas como argumentos.
+N      ?= 10000
+Q      ?= 1000
+K      ?= 10
+EF     ?= 16,32,64,128,256
+WARMUP ?= 50
+SYS    ?= pgvector,qdrant,weaviate
+
+bench-A:  ## Cenário A — busca pura (requer 'make up'). Vars: N Q K EF WARMUP SYS
+	$(PYTHON) -m benchmarks.run_cenario_a \
+		--n $(N) --queries $(Q) --k $(K) \
+		--ef-search $(EF) --warmup $(WARMUP) --sistemas $(SYS)
 
 lint:  ## Lint via ruff (check + format)
 	$(RUFF) check .

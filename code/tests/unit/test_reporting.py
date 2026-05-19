@@ -23,6 +23,7 @@ import pytest
 from lib.reporting import (
     ResultadoBenchmark,
     carregar_ground_truth,
+    salvar_curva,
     salvar_ground_truth,
     salvar_resultado,
 )
@@ -125,6 +126,71 @@ def test_salvar_resultado_roundtrip_semantico(
     caminho = salvar_resultado(resultado, results_dir=tmp_path)
     dados = json.loads(caminho.read_text(encoding="utf-8"))
     assert dados == dataclasses.asdict(resultado)
+
+
+# ---------------------------------------------------------------------------
+# salvar_curva — sweep de efSearch num único arquivo (sem perda de ponto)
+# ---------------------------------------------------------------------------
+
+
+def _ponto(ef: int) -> ResultadoBenchmark:
+    return ResultadoBenchmark(
+        cenario="A",
+        sistema="pgvector",
+        n=200,
+        timestamp_utc="2026-05-10T18-30-00Z",
+        parametros={"ef_search": ef, "k": 10, "warmup": 2},
+        metricas={"p50": 1.0, "p95": 2.0, "p99": 3.0, "qps": 100.0, "recall_at_k": 0.9},
+    )
+
+
+def test_salvar_curva_preserva_todos_os_pontos(tmp_path: Path) -> None:
+    """Regressão: um sweep [16,64] não pode colidir num único arquivo e perder ponto."""
+    pontos = [_ponto(16), _ponto(64)]
+    caminho = salvar_curva(pontos, results_dir=tmp_path)
+    dados = json.loads(caminho.read_text(encoding="utf-8"))
+    assert len(dados["pontos"]) == 2
+    assert [p["parametros"]["ef_search"] for p in dados["pontos"]] == [16, 64]
+
+
+def test_salvar_curva_nome_sem_ef_e_unico_por_sistema(tmp_path: Path) -> None:
+    caminho = salvar_curva([_ponto(16), _ponto(64)], results_dir=tmp_path)
+    assert caminho.name == "cenario_A_pgvector_200_2026-05-10T18-30-00Z.json"
+    assert len(list(tmp_path.glob("*.json"))) == 1
+
+
+def test_salvar_curva_metadados_no_topo(tmp_path: Path) -> None:
+    caminho = salvar_curva([_ponto(16), _ponto(64)], results_dir=tmp_path)
+    dados = json.loads(caminho.read_text(encoding="utf-8"))
+    assert dados["cenario"] == "A"
+    assert dados["sistema"] == "pgvector"
+    assert dados["n"] == 200
+    assert dados["timestamp_utc"] == "2026-05-10T18-30-00Z"
+
+
+def test_salvar_curva_json_deterministico(tmp_path: Path) -> None:
+    c1 = salvar_curva([_ponto(16), _ponto(64)], results_dir=tmp_path / "a")
+    c2 = salvar_curva([_ponto(16), _ponto(64)], results_dir=tmp_path / "b")
+    assert c1.read_text(encoding="utf-8") == c2.read_text(encoding="utf-8")
+
+
+def test_salvar_curva_lista_vazia_levanta(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="vazia"):
+        salvar_curva([], results_dir=tmp_path)
+
+
+def test_salvar_curva_levanta_se_sistemas_misturados(tmp_path: Path) -> None:
+    p = _ponto(16)
+    outro = ResultadoBenchmark(
+        cenario="A",
+        sistema="qdrant",
+        n=200,
+        timestamp_utc="2026-05-10T18-30-00Z",
+        parametros={"ef_search": 16},
+        metricas={},
+    )
+    with pytest.raises(ValueError, match="mesmo"):
+        salvar_curva([p, outro], results_dir=tmp_path)
 
 
 # ---------------------------------------------------------------------------
