@@ -126,17 +126,32 @@ Entregáveis:
 
 **Resultado da suíte ao final do Dia 2:** 46/46 testes verde (34 unit + 12 integration). Lint+format limpos.
 
-### Dia 3 — 2026-05-07
-**Foco: ground truth + Cenário A + Cenário B.**
+### Pré-Dia 3 — 2026-05-10 ✅ CONCLUÍDO
+**Foco: habilitar geração real de embeddings antes do ground truth.**
+
+> Não estava no plano original; inserido porque o Dia 2 fechou com `sentence-transformers` ainda não instalado (apenas o `FakeEncoder` nos testes). Vide [[../../vault/sessões/2026-05-10]].
 
 Entregáveis:
-- [ ] `ground_truth/exact_search.py`:
-  - FAISS `IndexFlatIP` (produto interno, vetores já normalizados)
-  - Calcula top-K exato para um conjunto de queries; salva em `data/ground_truth/`
-- [ ] `tests/unit/test_ground_truth.py`: recall vs. ele mesmo = 1.0; consistência entre execuções
-- [ ] `lib/metrics.py`: p50/p95/p99 (via `numpy.percentile`), QPS, recall@K
-- [ ] `tests/unit/test_metrics.py`: cálculo de percentis em distribuições conhecidas, recall em casos de canto
-- [ ] `lib/reporting.py`: JSON normalizado em `code/results/`
+- [x] MD5 de `data/ms_marco/collection.tar.gz` conferido (`87dd01826da3e2ad45447ba5af577628`); `collection.tsv` descompactado.
+- [x] `sentence-transformers==5.4.1` + `torch==2.11.0+cpu` pinados com `--extra-index-url` CPU-only do PyTorch. `requirements.lock` regenerado (39 → 70 entries).
+- [x] `tests/integration/test_embeddings_real.py` (4 testes, marker `slow`) — encoder real, cache, subset MS MARCO.
+- [x] **Experimento**: [[../../vault/experimentos/2026-05-10-validacao-embeddings-100-passages]] — 100 passages, shape `(100,384)`, norma L2 `1.0 ± 1.2e-7`, determinismo confirmado.
+- [x] **Lição**: [[../../vault/lições/2026-05-10-torch-cpu-only-vs-cuda]] (pip puxa build CUDA ~3 GB sem `--extra-index-url`; disco estourou).
+- [x] **Lição**: [[../../vault/lições/2026-05-10-fake-encoder-hash-flake]] (flake preexistente do Dia 2: `hash()` Python no `FakeEncoder` → SHA-256).
+
+### Dia 3 — 2026-05-10 🔶 PARCIAL (2 de 4 entregáveis)
+**Foco: ground truth + Cenário A + Cenário B.**
+
+> Datado 2026-05-07 no plano original; executado em 2026-05-10 (cronograma comprimido). Passos 1-2 concluídos; reporting + cenários A/B pendentes para a próxima sessão.
+
+Entregáveis:
+- [x] `ground_truth/exact_search.py`:
+  - FAISS `IndexFlatIP` (produto interno, vetores já normalizados). API: `top_k_exato(base, queries, k) -> (scores, ids)`.
+  - ⚠️ Retorna em memória; **persistência em `data/ground_truth/` ainda não** — será feita junto com `lib/reporting.py` / `cenario_a.py`.
+- [x] `tests/unit/test_ground_truth.py`: 12 testes (recall vs. si = 1.0, determinismo bit-a-bit, 6 validações de borda).
+- [x] `lib/metrics.py`: p50/p95/p99 (via `numpy.percentile`), QPS, recall@K (consome `top_k_exato`).
+- [x] `tests/unit/test_metrics.py`: 21 testes (percentis em distribuição conhecida, recall em casos de canto e bordas).
+- [ ] `lib/reporting.py`: JSON normalizado em `code/results/` (inclui persistir o ground truth em `data/ground_truth/`)
 - [ ] `benchmarks/cenario_a.py`:
   - Carga: 1000 queries de teste do MS MARCO (não usadas no seed)
   - Varre `efSearch ∈ {16, 32, 64, 128, 256}`
