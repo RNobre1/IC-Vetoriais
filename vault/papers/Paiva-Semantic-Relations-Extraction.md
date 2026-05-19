@@ -3,18 +3,18 @@ tipo: paper
 autores: ["Paiva, L. M. S. S."]
 ano: 2014
 titulo: "Semantic relations extraction in unstructured information for domain ontologies enrichment"
-venue: "Dissertação de Mestrado, Universidade Nova de Lisboa, Lisboa"
+venue: "Dissertação (Mestrado em Engenharia Electrotécnica e de Computadores), Universidade Nova de Lisboa, Lisboa"
 tags: [dissertação, ontologia, extração-de-relações, motivação]
-citacao_abnt: "PAIVA, L. M. S. S. Semantic relations extraction in unstructured information for domain ontologies enrichment. 2014. Dissertação de Mestrado, Universidade Nova de Lisboa, Lisboa, 2014."
+citacao_abnt: "PAIVA, L. M. S. S. Semantic relations extraction in unstructured information for domain ontologies enrichment. 2014. Dissertação (Mestrado em Engenharia Electrotécnica e de Computadores) — Universidade Nova de Lisboa, Lisboa, 2014."
 arquivo_local: "Semantic-relations-extraction-in-unstructured-information-for-domain-ontologies-enrichment.pdf"
 ---
 
 # Semantic relations extraction in unstructured information for domain ontologies enrichment
 
-> **Status do fichamento:** trabalho ainda não lido; **ano e tipo de publicação não confirmados**. Todo conteúdo abaixo é provisório a partir do título — verificar contra o PDF antes de qualquer uso no relatório.
+> **Status do fichamento:** **metadados verificados na capa do PDF** em 2026-05-20; **conteúdo (corpo) não lido em profundidade**. Capa confirma: autor **Luís Miguel Sintra Salvo Paiva**; Dissertação de **Mestrado** em Engenharia Electrotécnica e de Computadores, FCT — Universidade Nova de Lisboa; **Setembro 2014**; orientador Prof. Pedro Maló, **co-orientador Prof. Celson Lima** (o orientador desta IC — explica a presença na bibliografia). Usado no relatório como citação **secundária/de apoio** para fundamentos de RI (VSM/TF-IDF); a fonte primária desses conceitos é Salton (1975). Se um trecho específico precisar ser citado diretamente, ler o capítulo de fundamentação do PDF antes.
 
 ## Síntese
-*[1–2 frases após leitura. Possível escopo a partir do título: extração automática de relações semânticas a partir de texto não-estruturado, com objetivo de enriquecer ontologias de domínio existentes. Confirmar com leitura.]*
+Dissertação de mestrado sobre extração automática de relações semânticas a partir de informação não-estruturada (texto) para enriquecer ontologias de domínio. Mesmo grupo de pesquisa de [[papers/Costa-2014-Semantic-Enrichment]] (Ruben Costa foi membro do júri desta dissertação; ambos sob orientação de Celson Lima na FCT-UNL).
 
 ## Contribuições
 *[Extrair do PDF.]*

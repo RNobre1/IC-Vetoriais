@@ -11,7 +11,7 @@ arquivo_local: "Retrieval-Augmented Generation for_Knowledge-Intensive NLP Tasks
 
 # Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks
 
-> **Status do fichamento:** preenchido a partir de conhecimento prévio + título e citação. Verificar números (datasets, métricas) contra o PDF.
+> **Status do fichamento:** **verificado contra o PDF** em 2026-05-20 (lidas p. 1–2: autores, resumo, introdução e Fig. 1; arXiv:2005.11401v4, publicado em NeurIPS 33, 2020, p. 9459–9474). Autores e venue conferidos: Patrick Lewis et al. (FAIR/UCL/NYU). Métricas numéricas específicas não foram extraídas em profundidade (não citadas no relatório — Lewis é usado só para definir RAG).
 
 ## Síntese
 Paper que introduz **RAG (Retrieval-Augmented Generation)** como arquitetura híbrida combinando um recuperador denso (DPR) com um gerador seq2seq (BART). O modelo trata o índice de embeddings como uma "memória externa" diferenciável, permitindo que o gerador condicione cada resposta em passages recuperados em tempo de inferência. Estabelece a base conceitual sobre a qual sistemas RAG modernos (incluindo a motivação aplicada desta IC) operam.
@@ -44,7 +44,10 @@ Paper que introduz **RAG (Retrieval-Augmented Generation)** como arquitetura hí
 **Sustenta §3.5 do relatório parcial** — paper canônico para definir RAG. É a **motivação aplicada principal** da IC: a busca vetorial em produção é o componente cuja latência e throughput este estudo mede. O **Cenário C** ([[decisões/2026-04-28-cenarios-A-B-C]]) simula carga RAG mista (busca concorrente com inserção), inspirado no comportamento descrito por Lewis et al.
 
 ## Citáveis
-> *[Selecionar frase definindo RAG e relação retriever-gerador para citar em §3.5.]*
+> "...retrieval-augmented generation (RAG) — models which combine pre-trained parametric and non-parametric memory for language generation. We introduce RAG models where the parametric memory is a pre-trained seq2seq model and the non-parametric memory is a dense vector index of Wikipedia, accessed with a pre-trained neural retriever." (Resumo)
+> "For query x, we use Maximum Inner Product Search (MIPS) to find the top-K documents zi." (Fig. 1)
+
+**Verificação §3.5:** o relatório descreve RAG como "combina um modelo de linguagem com um mecanismo de recuperação ... converte a consulta em embedding, recupera os trechos mais similares e injeta no LLM". Confere exatamente com resumo + Fig. 1 do paper. Atribuição "propostos por Lewis et al." correta (o paper cunha o termo RAG).
 
 ## Backlinks
 - [[referência/rag-retrieval-augmented-generation]]
