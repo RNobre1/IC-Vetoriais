@@ -1,4 +1,4 @@
-.PHONY: help up down logs smoke clean test test-unit test-integration lint fmt deps ui-up ui-down ui-logs bench-A bench-B
+.PHONY: help up down logs smoke clean test test-unit test-integration lint fmt deps ui-up ui-down ui-logs seed bench-A bench-B bench-C-dryrun
 
 # Compose principal (3 SGBDs) e merge com UI (Verba). Vide:
 #   vault/decisões/2026-05-05-isolamento-ui-vs-benchmark.md
@@ -63,6 +63,9 @@ WARMUP ?= 50
 SYS    ?= pgvector,qdrant,weaviate
 SEL    ?= 0.01,0.1,0.5,1.0
 
+seed:  ## Semeia N embeddings nos SGBDs sem benchmark (requer 'make up'). Vars: N SYS
+	$(PYTHON) -m benchmarks.run_seed --n $(N) --sistemas $(SYS)
+
 bench-A:  ## Cenário A — busca pura (requer 'make up'). Vars: N Q K EF WARMUP SYS
 	$(PYTHON) -m benchmarks.run_cenario_a \
 		--n $(N) --queries $(Q) --k $(K) \
@@ -73,6 +76,12 @@ bench-B:  ## Cenário B — busca com filtro (requer 'make up'). Vars: N Q K EF 
 		--n $(N) --queries $(Q) --k $(K) \
 		--ef-search $(EF) --warmup $(WARMUP) --sistemas $(SYS) \
 		--seletividades $(SEL)
+
+bench-C-dryrun:  ## Cenário C — esqueleto: imprime o plano de carga (Etapa 4), não roda
+	$(PYTHON) -c "from benchmarks.cenario_c import ConfigC, intervalo_entre_insercoes as iv; \
+c=ConfigC(); print('Cenário C (esqueleto — execução real na Etapa 4)'); \
+print('n_base=%d duracao_s=%d sistemas=%s' % (c.n_base, c.duracao_s, c.sistemas)); \
+[print('  taxa=%4d ins/s -> intervalo=%s s' % (t, iv(t))) for t in c.taxas_insercao]"
 
 lint:  ## Lint via ruff (check + format)
 	$(RUFF) check .
