@@ -138,10 +138,10 @@ Entregáveis:
 - [x] **Lição**: [[../../vault/lições/2026-05-10-torch-cpu-only-vs-cuda]] (pip puxa build CUDA ~3 GB sem `--extra-index-url`; disco estourou).
 - [x] **Lição**: [[../../vault/lições/2026-05-10-fake-encoder-hash-flake]] (flake preexistente do Dia 2: `hash()` Python no `FakeEncoder` → SHA-256).
 
-### Dia 3 — 2026-05-10 🔶 PARCIAL
+### Dia 3 — 2026-05-10 / 2026-05-19 ✅ CONCLUÍDO
 **Foco: ground truth + Cenário A + Cenário B.**
 
-> Datado 2026-05-07 no plano original; executado em 2026-05-10 (data real de execução). Concluídos: `ground_truth`, `lib/metrics`, `lib/reporting` (+`salvar_curva`), **Cenário A completo** (orquestração + 3 adaptadores + CLI `make bench-A` + smoke real, em TDD) + ADR metodológica. **Pendente: só `cenario_b.py`.**
+> Datado 2026-05-07 no plano original; executado em 2026-05-10/2026-05-19 (datas reais). **Dia 3 CONCLUÍDO:** `ground_truth` (+`top_k_exato_filtrado`), `lib/metrics`, `lib/reporting` (+`salvar_curva`), **Cenário A completo** e **Cenário B completo** (GT filtrado + seeders com `seletor` + adaptadores `BuscadorFiltravel` + orquestração + CLI `make bench-B` + smoke real, em TDD) + 2 ADRs metodológicas.
 
 Entregáveis:
 - [x] `ground_truth/exact_search.py`:
@@ -163,10 +163,14 @@ Entregáveis:
   - [x] CLI `benchmarks/run_cenario_a.py` + alvo `make bench-A` (vars `N Q K EF WARMUP SYS`): pipeline → split held-out → ground truth → seed idempotente → `medir_sistema` nos 3 SGBDs → `salvar_curva`. Partes puras (`parse_args`, `split_embeddings`, `timestamp_utc`) com 10 testes unitários.
   - [x] `lib/reporting.salvar_curva`: 1 JSON por sistema com a curva inteira (corrige perda de ponto em sweep). 6 testes.
   - [x] **Smoke real validado**: `make bench-A N=200 Q=20 EF=16,64 WARMUP=2` gravou 3 curvas em `results/`. Weaviate exibiu `ef↑ → recall↑` (0.905→1.0), provando o controle de efSearch ponta-a-ponta. 3 bugs encontrados e corrigidos no caminho — [[../../vault/lições/2026-05-10-smoke-cli-cenario-a-make-or-e-colisao-nome]].
-- [ ] `benchmarks/cenario_b.py`:
-  - Adiciona predicado de seletividade variável (1%, 10%, 50%, 100%)
-  - Sintetiza coluna `categoria` no metadata durante o seed
-  - Mede mesmas métricas
+- [x] `benchmarks/cenario_b.py` — **Cenário B completo (GT filtrado + seeders + adaptadores + orquestração + CLI + smoke real)**:
+  - [x] Decisões metodológicas em ADR [[../../vault/decisões/2026-05-19-cenario-b-seletividade-gt-filtrado]]: predicado = atributo numérico `seletor` uniforme decorrelacionado (`seletor < p`); recall@K contra GT **filtrado por seletividade** (não o GT global do A); p=1.0 = âncora sem filtro.
+  - [x] `ground_truth.exact_search.top_k_exato_filtrado(base, queries, *, seletor, p, k)` — FAISS no subconjunto filtrado, ids remapeados para os originais, `k` clampado se `|subconjunto|<k`. +10 testes (22/22 em `test_ground_truth.py`).
+  - [x] Seeders gravam `seletor`: pgvector coluna `real`, Weaviate `DataType.NUMBER`, Qdrant payload + **índice de payload** condicional (filtered-ANN comparável). Cenário A intacto (`metadata=None`). +3 testes integração (9/9 em `test_seeders.py`).
+  - [x] `BuscadorFiltravel` (Protocol estende `BuscadorVetorial`) + `buscar_uma_filtrada(query, k, *, p_max)` nos 3 adaptadores (`WHERE seletor<%s` / Qdrant `Filter(Range(lt))` / Weaviate `Filter.less_than`). Smoke `tests/integration/test_buscadores_filtrado.py` 3/3 verde.
+  - [x] `cenario_b.medir_sistema_filtrado(...)`: varre `seletividade × efSearch`, recall vs `gt_por_seletividade[p]`, `cenario="B"`, padding `-1` p/ subconjunto < k. `tests/unit/test_cenario_b.py`: 15 testes.
+  - [x] CLI `benchmarks/run_cenario_b.py` + alvo `make bench-B` (vars `N Q K EF WARMUP SYS SEL`): pipeline → `sintetizar_seletor` (permutação determinística decorrelacionada) → GT por p → seed idempotente com `seletor` → `medir_sistema_filtrado` → `salvar_curva`. Partes puras com 10 testes.
+  - [x] **Smoke real validado** (2 runs consecutivos, idempotente): `make bench-B N=200 Q=20 EF=16,64 WARMUP=2 SEL=0.1,1.0` gravou 3 curvas + GT npz por seletividade; recall ponta-a-ponta nos 3 SGBDs. Diferenciação real virá em 100k/500k (Etapa 3).
 
 ### Dia 4 — 2026-05-08
 **Foco: Cenário C esqueleto, ferramental, README.**
