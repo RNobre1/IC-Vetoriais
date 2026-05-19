@@ -7,6 +7,9 @@ um SGBD. Contrato (vide `cenario_a.BuscadorVetorial`):
 - `configurar_ef_search(ef)`: ajusta o parâmetro de busca HNSW *daquele* SGBD.
 - `buscar_uma(query, k)`: retorna os ids (`0..N-1`, consistentes com os
   seeders) dos `k` vizinhos mais próximos.
+- `buscar_uma_filtrada(query, k, *, p_max)`: idem, mas restrito ao
+  subconjunto com `seletor < p_max` (Cenário B — `BuscadorFiltravel` em
+  `cenario_b`). Vide [[../../vault/decisões/2026-05-19-cenario-b-seletividade-gt-filtrado]].
 
 A consistência de id é garantida pelos seeders: pgvector usa `id` inteiro,
 Qdrant usa point id inteiro, Weaviate guarda `external_id` (UUID interno é
@@ -19,8 +22,9 @@ import numpy as np
 import psycopg
 import weaviate
 from qdrant_client import QdrantClient
-from qdrant_client.http.models import SearchParams
+from qdrant_client.http.models import FieldCondition, Filter, Range, SearchParams
 from weaviate.classes.config import Reconfigure
+from weaviate.classes.query import Filter as WvFilter
 
 
 class PgvectorBuscador:
@@ -49,6 +53,16 @@ class PgvectorBuscador:
             )
             return [linha[0] for linha in cur.fetchall()]
 
+    def buscar_uma_filtrada(self, query: np.ndarray, k: int, *, p_max: float) -> list[int]:
+        """Top-K com predicado `seletor < p_max` (Cenário B)."""
+        with self._conn.cursor() as cur:
+            cur.execute(
+                f"SELECT id FROM {self._tabela} WHERE seletor < %s "
+                f"ORDER BY embedding <=> %s LIMIT %s",
+                (p_max, query, k),
+            )
+            return [linha[0] for linha in cur.fetchall()]
+
 
 class QdrantBuscador:
     """`hnsw_ef` passado em `SearchParams` a cada `query_points`."""
@@ -69,6 +83,17 @@ class QdrantBuscador:
             query=query.tolist(),
             limit=k,
             search_params=SearchParams(hnsw_ef=self._ef),
+        )
+        return [p.id for p in resposta.points]
+
+    def buscar_uma_filtrada(self, query: np.ndarray, k: int, *, p_max: float) -> list[int]:
+        """Top-K com predicado `seletor < p_max` (Cenário B)."""
+        resposta = self._client.query_points(
+            collection_name=self._colecao,
+            query=query.tolist(),
+            limit=k,
+            search_params=SearchParams(hnsw_ef=self._ef),
+            query_filter=Filter(must=[FieldCondition(key="seletor", range=Range(lt=p_max))]),
         )
         return [p.id for p in resposta.points]
 
@@ -100,5 +125,15 @@ class WeaviateBuscador:
             near_vector=query.tolist(),
             limit=k,
             return_properties=["external_id"],
+        )
+        return [int(o.properties["external_id"]) for o in resultado.objects]
+
+    def buscar_uma_filtrada(self, query: np.ndarray, k: int, *, p_max: float) -> list[int]:
+        """Top-K com predicado `seletor < p_max` (Cenário B)."""
+        resultado = self._col.query.near_vector(
+            near_vector=query.tolist(),
+            limit=k,
+            return_properties=["external_id"],
+            filters=WvFilter.by_property("seletor").less_than(p_max),
         )
         return [int(o.properties["external_id"]) for o in resultado.objects]
