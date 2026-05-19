@@ -159,8 +159,9 @@ Entregáveis:
   - [x] Protocol `BuscadorVetorial` (`nome`, `configurar_ef_search`, `buscar_uma`) — desacopla orquestração da API de cada SGBD.
   - [x] `medir_sistema(...)`: varre `efSearch`, warmup+descarte, mede latência por query, calcula p50/p95/p99 + QPS + recall@k (consome `lib.metrics` + `lib.reporting`). 1 `ResultadoBenchmark` por ef.
   - [x] `tests/unit/test_cenario_a.py`: 12 testes (estrutura, ordem dos ef, warmup descartado, recall 1.0/0.0, métricas plausíveis, 4 validações de borda).
-  - [ ] Adaptadores concretos `PgvectorBuscador` / `QdrantBuscador` / `WeaviateBuscador` (`configurar_ef_search` por API nativa: `SET hnsw.ef_search` / `hnsw_ef` / `ef`).
-  - [ ] CLI + alvo `make bench-A` + smoke de integração com N pequeno (~10k) contra containers de pé.
+  - [x] Adaptadores concretos `PgvectorBuscador` / `QdrantBuscador` / `WeaviateBuscador` em `benchmarks/buscadores.py` (`configurar_ef_search`: `SET hnsw.ef_search` / `SearchParams(hnsw_ef=)` / `Reconfigure.Vectors.update`).
+  - [x] Smoke de integração ponta-a-ponta `tests/integration/test_buscadores.py`: seed pequeno (N=300) + queries held-out + ground truth FAISS + `medir_sistema` real nos 3 SGBDs com sweep `efSearch ∈ {16,64}`. 3/3 verde. Pegadinha Weaviate registrada em [[../../vault/lições/2026-05-10-weaviate-config-update-vector-config]].
+  - [ ] CLI executável + alvo `make bench-A` (orquestra seed + ground truth + os 3 buscadores em N configurável, grava JSON em `code/results/`).
 - [ ] `benchmarks/cenario_b.py`:
   - Adiciona predicado de seletividade variável (1%, 10%, 50%, 100%)
   - Sintetiza coluna `categoria` no metadata durante o seed
