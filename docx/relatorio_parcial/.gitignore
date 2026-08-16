@@ -17,3 +17,4 @@
 
 # PDF é entregável, gerado por compilação. Versionado só nos releases (tag).
 main.pdf
+main-*.pdf

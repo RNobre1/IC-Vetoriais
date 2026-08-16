@@ -12,8 +12,6 @@ O \textit{Vector Space Model} (VSM), originalmente proposto por \citeonline{salt
 
 Embora o VSM clássico ofereça uma base sólida para recuperação de informação baseada em palavras explícitas, ele é limitado quanto a capturar relações semânticas implícitas entre termos. \citeonline{costa2014sense} propôs o \textit{framework} SENSE (\textit{Semantic Enrichment kNowledge SourcEs}), que estende o VSM com suporte ontológico, incorporando relações entre conceitos de uma ontologia de domínio à representação vetorial. O \textit{framework} demonstra que a qualidade da recuperação aumenta quando a representação captura mais do que apenas a ocorrência de palavras explícitas. As representações vetoriais densas adotadas hoje em sistemas de busca semântica e RAG seguem essa mesma linha, substituindo a engenharia manual de ontologias por aprendizado automático de relações semânticas a partir de grandes \textit{corpora} textuais.
 
-\todo{Expandir esta subseção com a descrição formal de TF-IDF, similaridade de cosseno e limitações do VSM clássico (sinonímia, polissemia, vocabulary mismatch).}
-
 \subsection{Embeddings Densos e Modelos de Linguagem}
 
 Embora o VSM clássico ofereça uma representação vetorial bem definida, sua dimensionalidade é determinada pelo tamanho do vocabulário e seus vetores são esparsos: cada documento ativa um pequeno subconjunto das dimensões do espaço, e termos sinônimos ou semanticamente relacionados ocupam dimensões independentes. Essa propriedade dificulta a captura de relações de significado que não estão expressas pela coincidência exata de palavras.
