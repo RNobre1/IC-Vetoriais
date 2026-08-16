@@ -13,7 +13,13 @@ from typing import Any
 
 import numpy as np
 import weaviate
-from weaviate.classes.config import Configure, DataType, Property, VectorDistances
+from weaviate.classes.config import (
+    Configure,
+    DataType,
+    Property,
+    VectorDistances,
+    VectorFilterStrategy,
+)
 
 
 def seed_weaviate(
@@ -25,12 +31,24 @@ def seed_weaviate(
     m: int = 16,
     ef_construction: int = 200,
     batch_size: int = 100,
+    flat_search_cutoff: int | None = None,
+    filter_strategy: str | None = None,
 ) -> int:
     """Cria classe HNSW (parâmetro `m` = M do paper Malkov & Yashunin) e insere em batch.
 
     Propriedades: `external_id` (int), `categoria` (text), `seletor` (number,
     atributo do Cenário B). `seletor`/`categoria` só são gravados quando
     presentes em `metadata[i]` — Cenário A (`metadata=None`) fica intacto.
+
+    `flat_search_cutoff` é o limiar de objetos elegíveis abaixo do qual o
+    Weaviate troca o HNSW por busca exata (*flat*) em consultas filtradas —
+    default do servidor é **40000**. Com o default, as seletividades baixas do
+    Cenário B são respondidas por varredura exata, produzindo `recall = 1,0`
+    que mede o *fallback*, não a qualidade do ANN filtrado. A documentação
+    oficial indica `flatSearchCutoff: 0` para forçar o índice vetorial.
+    `filter_strategy` registra explicitamente a estratégia (`acorn` é default a
+    partir da v1.34; nossa imagem é a 1.37.2). `None` em ambos preserva o
+    default do servidor. Vide `vault/decisões/2026-08-16-equalizacao-cenario-b`.
     """
     if vetores.ndim != 2:
         raise ValueError(f"vetores precisa ser 2D, recebido shape={vetores.shape}")
@@ -38,6 +56,9 @@ def seed_weaviate(
     if metadata is not None and len(metadata) != n:
         raise ValueError(f"metadata len={len(metadata)} != vetores N={n}")
 
+    estrategia = (
+        VectorFilterStrategy(filter_strategy) if filter_strategy is not None else None
+    )
     client.collections.create(
         name=nome_classe,
         vector_config=Configure.Vectors.self_provided(
@@ -45,6 +66,8 @@ def seed_weaviate(
                 distance_metric=VectorDistances.COSINE,
                 max_connections=m,
                 ef_construction=ef_construction,
+                flat_search_cutoff=flat_search_cutoff,
+                filter_strategy=estrategia,
             ),
         ),
         properties=[

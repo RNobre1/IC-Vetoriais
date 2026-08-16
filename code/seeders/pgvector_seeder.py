@@ -22,8 +22,15 @@ def seed_pgvector(
     nome_tabela: str,
     m: int = 16,
     ef_construction: int = 200,
+    indexar_seletor: bool = False,
 ) -> int:
     """Cria `<nome_tabela>` (id, embedding, categoria, seletor), insere e indexa HNSW.
+
+    `indexar_seletor=True` cria B-tree em `seletor`. Sem ele, o pgvector é o
+    único dos três sistemas sem índice no atributo de filtro (o Qdrant recebe
+    índice de payload e o Weaviate indexa propriedades por padrão) — assimetria
+    que invalidaria a comparação do Cenário B. Default `False` preserva o que
+    rodou em julho/2026. Vide `vault/decisões/2026-08-16-equalizacao-cenario-b`.
 
     `seletor` (`real`, nullable) é o atributo numérico do Cenário B — lido de
     `metadata[i]["seletor"]` quando presente, `NULL` caso contrário (Cenário A
@@ -67,5 +74,10 @@ def seed_pgvector(
             f"CREATE INDEX ON {nome_tabela} USING hnsw (embedding vector_cosine_ops) "
             f"WITH (m = {m}, ef_construction = {ef_construction})"
         )
+
+        # Cenário B equalizado: índice no atributo de filtro. Só faz sentido
+        # quando `seletor` foi de fato gravado (Cenário A passa metadata=None).
+        if indexar_seletor and metadata is not None:
+            cur.execute(f"CREATE INDEX ON {nome_tabela} USING btree (seletor)")
     conn.commit()
     return n
