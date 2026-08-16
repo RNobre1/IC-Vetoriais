@@ -53,7 +53,7 @@ implementação e arquitetura, não algoritmo.
 
 ```
 .
-├── docs/metodologia.md       # fonte de verdade do projeto (metodologia, decisões, cronograma)
+├── docs/           # metodologia do projeto, planos de tarefa e relatórios de pesquisa
 ├── code/           # docker-compose, scripts Python, benchmarks
 ├── docx/           # entregáveis canônicos (relatório parcial e final)
 └── vault/          # workspace Obsidian — notas, fichamentos, drafts (parcialmente gitignored)
