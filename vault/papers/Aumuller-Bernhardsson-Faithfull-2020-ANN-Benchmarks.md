@@ -18,7 +18,7 @@ Paper que introduz o framework open-source **ANN-Benchmarks** e estabelece a met
 
 ## Contribuições
 - Framework reproduzível para avaliar bibliotecas de ANN (FAISS, Annoy, HNSW, IVF-PQ, ScaNN etc.) sob condições controladas.
-- Conjunto de datasets padronizados (SIFT-1M, GIST-1M, GloVe, MNIST, MS MARCO etc.).
+- Conjunto de datasets padronizados. O repositório oficial lista DEEP1B, Fashion-MNIST, GIST, GloVe (25/50/100/200-d), Kosarak, MNIST, MovieLens-10M, NYTimes, SIFT, Last.fm e COCO. **Não inclui MS MARCO** — corrigido em 2026-08-16; a lista anterior o citava por engano, e o erro havia se propagado para [[../decisões/2026-04-28-dataset-ms-marco]]. O benchmark de ANN que usa MS MARCO é o Big-ANN Challenge da NeurIPS'23, na *sparse track*.
 - Metodologia explícita: para cada algoritmo, varrer parâmetros em uma grade; plotar (recall, QPS) e extrair a fronteira de Pareto.
 - Apresentação visual padrão (eixos log-QPS × recall) que se tornou referência da literatura.
 
