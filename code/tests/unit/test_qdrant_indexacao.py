@@ -76,7 +76,10 @@ def test_seed_sem_espera_quando_desligado(vetores, monkeypatch):
     client = FakeQdrantComStatus(viradas=3)
 
     seed_qdrant(
-        vetores=vetores, metadata=None, client=client, nome_colecao="c",
+        vetores=vetores,
+        metadata=None,
+        client=client,
+        nome_colecao="c",
         aguardar_indexacao=False,
     )
 
@@ -90,7 +93,10 @@ def test_seed_desiste_apos_limite_de_tentativas(vetores, monkeypatch):
 
     with pytest.raises(TimeoutError, match="green"):
         seed_qdrant(
-            vetores=vetores, metadata=None, client=client, nome_colecao="c",
+            vetores=vetores,
+            metadata=None,
+            client=client,
+            nome_colecao="c",
             tentativas_indexacao=5,
         )
 
@@ -102,7 +108,4 @@ def test_seed_retorna_contagem_apos_espera(vetores, monkeypatch):
     monkeypatch.setattr("seeders.qdrant_seeder.time.sleep", lambda s: None)
     client = FakeQdrantComStatus(viradas=1)
 
-    assert (
-        seed_qdrant(vetores=vetores, metadata=None, client=client, nome_colecao="c")
-        == 4
-    )
+    assert seed_qdrant(vetores=vetores, metadata=None, client=client, nome_colecao="c") == 4

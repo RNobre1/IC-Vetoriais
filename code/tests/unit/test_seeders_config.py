@@ -32,9 +32,7 @@ from seeders.weaviate_seeder import seed_weaviate
 @pytest.fixture(autouse=True)
 def _sem_register_vector(monkeypatch: pytest.MonkeyPatch) -> None:
     """`register_vector` exige conexão psycopg real; irrelevante para estes testes."""
-    monkeypatch.setattr(
-        "seeders.pgvector_seeder.register_vector", lambda conn: None
-    )
+    monkeypatch.setattr("seeders.pgvector_seeder.register_vector", lambda conn: None)
 
 
 @pytest.fixture
@@ -164,7 +162,10 @@ def test_qdrant_sem_full_scan_threshold_preserva_comportamento(vetores):
     """Default (None) não deve tocar em `full_scan_threshold` — regressão."""
     client = FakeQdrant()
     seed_qdrant(
-        vetores=vetores, metadata=None, client=client, nome_colecao="c",
+        vetores=vetores,
+        metadata=None,
+        client=client,
+        nome_colecao="c",
     )
     hnsw = client.create_kwargs["hnsw_config"]
     assert hnsw.full_scan_threshold is None
@@ -174,7 +175,10 @@ def test_qdrant_full_scan_threshold_minimo_forca_hnsw(vetores):
     """`FULL_SCAN_MINIMO` ⇒ nenhum subconjunto de interesse é 'pequeno'."""
     client = FakeQdrant()
     seed_qdrant(
-        vetores=vetores, metadata=None, client=client, nome_colecao="c",
+        vetores=vetores,
+        metadata=None,
+        client=client,
+        nome_colecao="c",
         full_scan_threshold=FULL_SCAN_MINIMO,
     )
     hnsw = client.create_kwargs["hnsw_config"]
@@ -194,8 +198,13 @@ def test_qdrant_preserva_m_e_ef_construction_com_threshold(vetores):
     """O limiar não pode atropelar os parâmetros de construção do grafo."""
     client = FakeQdrant()
     seed_qdrant(
-        vetores=vetores, metadata=None, client=client, nome_colecao="c",
-        m=16, ef_construction=200, full_scan_threshold=0,
+        vetores=vetores,
+        metadata=None,
+        client=client,
+        nome_colecao="c",
+        m=16,
+        ef_construction=200,
+        full_scan_threshold=0,
     )
     hnsw = client.create_kwargs["hnsw_config"]
     assert (hnsw.m, hnsw.ef_construct) == (16, 200)
@@ -210,7 +219,10 @@ def test_weaviate_sem_cutoff_preserva_comportamento(vetores):
     """Default (None) mantém o `flatSearchCutoff` padrão do servidor (40000)."""
     client = FakeWeaviate()
     seed_weaviate(
-        vetores=vetores, metadata=None, client=client, nome_classe="C",
+        vetores=vetores,
+        metadata=None,
+        client=client,
+        nome_classe="C",
     )
     cfg = client.collections.create_kwargs["vector_config"]
     assert cfg.vectorIndexConfig.flatSearchCutoff is None
@@ -220,7 +232,10 @@ def test_weaviate_cutoff_zero_forca_indice_vetorial(vetores):
     """`flat_search_cutoff=0` ⇒ nunca cai em busca exata (doc oficial)."""
     client = FakeWeaviate()
     seed_weaviate(
-        vetores=vetores, metadata=None, client=client, nome_classe="C",
+        vetores=vetores,
+        metadata=None,
+        client=client,
+        nome_classe="C",
         flat_search_cutoff=0,
     )
     cfg = client.collections.create_kwargs["vector_config"]
@@ -231,7 +246,10 @@ def test_weaviate_filter_strategy_explicito(vetores):
     """A estratégia de filtro precisa ser registrável (ACORN é default em 1.34+)."""
     client = FakeWeaviate()
     seed_weaviate(
-        vetores=vetores, metadata=None, client=client, nome_classe="C",
+        vetores=vetores,
+        metadata=None,
+        client=client,
+        nome_classe="C",
         filter_strategy="acorn",
     )
     cfg = client.collections.create_kwargs["vector_config"]
@@ -243,13 +261,14 @@ def test_weaviate_filter_strategy_explicito(vetores):
 # ---------------------------------------------------------------------------
 
 
-def test_pgvector_sem_indice_seletor_preserva_comportamento(
-    vetores, metadata_seletor
-):
+def test_pgvector_sem_indice_seletor_preserva_comportamento(vetores, metadata_seletor):
     """Default: nenhum índice em `seletor` — reproduz o que rodou em julho."""
     conn = FakePg()
     seed_pgvector(
-        vetores=vetores, metadata=metadata_seletor, conn=conn, nome_tabela="t",
+        vetores=vetores,
+        metadata=metadata_seletor,
+        conn=conn,
+        nome_tabela="t",
     )
     assert not any("USING btree (seletor)" in s for s in conn.sql)
 
@@ -258,7 +277,10 @@ def test_pgvector_indexar_seletor_emite_btree(vetores, metadata_seletor):
     """`indexar_seletor=True` ⇒ B-tree no atributo de filtro (equalização)."""
     conn = FakePg()
     seed_pgvector(
-        vetores=vetores, metadata=metadata_seletor, conn=conn, nome_tabela="t",
+        vetores=vetores,
+        metadata=metadata_seletor,
+        conn=conn,
+        nome_tabela="t",
         indexar_seletor=True,
     )
     assert any("USING btree (seletor)" in s for s in conn.sql)
@@ -268,7 +290,10 @@ def test_pgvector_indice_seletor_ignorado_sem_metadata(vetores):
     """Cenário A (metadata=None) não deve criar índice de filtro."""
     conn = FakePg()
     seed_pgvector(
-        vetores=vetores, metadata=None, conn=conn, nome_tabela="t",
+        vetores=vetores,
+        metadata=None,
+        conn=conn,
+        nome_tabela="t",
         indexar_seletor=True,
     )
     assert not any("USING btree (seletor)" in s for s in conn.sql)

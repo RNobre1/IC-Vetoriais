@@ -87,33 +87,41 @@ def test_nome_weaviate_separa_o_equalizado():
 # ---------------------------------------------------------------------------
 
 
-def test_seed_qdrant_equalizado_minimiza_full_scan_threshold(
-    vetores, metadata, capturas
-):
+def test_seed_qdrant_equalizado_minimiza_full_scan_threshold(vetores, metadata, capturas):
     """O Qdrant rejeita 0 (HTTP 422); o mínimo aceito é 10 KB (~7 vetores 384-D)."""
     from seeders.qdrant_seeder import FULL_SCAN_MINIMO
 
     _seed_b(
-        "qdrant", vetores=vetores, metadata=metadata, recurso=object(),
-        nome_recurso="c", equalizado=True,
+        "qdrant",
+        vetores=vetores,
+        metadata=metadata,
+        recurso=object(),
+        nome_recurso="c",
+        equalizado=True,
     )
     assert capturas["qdrant"]["full_scan_threshold"] == FULL_SCAN_MINIMO
 
 
-def test_seed_weaviate_equalizado_zera_flat_search_cutoff(
-    vetores, metadata, capturas
-):
+def test_seed_weaviate_equalizado_zera_flat_search_cutoff(vetores, metadata, capturas):
     _seed_b(
-        "weaviate", vetores=vetores, metadata=metadata, recurso=object(),
-        nome_recurso="C", equalizado=True,
+        "weaviate",
+        vetores=vetores,
+        metadata=metadata,
+        recurso=object(),
+        nome_recurso="C",
+        equalizado=True,
     )
     assert capturas["weaviate"]["flat_search_cutoff"] == 0
 
 
 def test_seed_pgvector_equalizado_indexa_seletor(vetores, metadata, capturas):
     _seed_b(
-        "pgvector", vetores=vetores, metadata=metadata, recurso=object(),
-        nome_recurso="t", equalizado=True,
+        "pgvector",
+        vetores=vetores,
+        metadata=metadata,
+        recurso=object(),
+        nome_recurso="t",
+        equalizado=True,
     )
     assert capturas["pgvector"]["indexar_seletor"] is True
 
@@ -122,8 +130,12 @@ def test_seed_default_preserva_configuracao_de_julho(vetores, metadata, capturas
     """Sem equalização, nenhum limiar é tocado — reprodutibilidade do histórico."""
     for sistema, nome in [("qdrant", "c"), ("weaviate", "C"), ("pgvector", "t")]:
         _seed_b(
-            sistema, vetores=vetores, metadata=metadata, recurso=object(),
-            nome_recurso=nome, equalizado=False,
+            sistema,
+            vetores=vetores,
+            metadata=metadata,
+            recurso=object(),
+            nome_recurso=nome,
+            equalizado=False,
         )
     assert capturas["qdrant"].get("full_scan_threshold") is None
     assert capturas["weaviate"].get("flat_search_cutoff") is None

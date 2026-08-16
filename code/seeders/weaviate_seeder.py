@@ -56,9 +56,7 @@ def seed_weaviate(
     if metadata is not None and len(metadata) != n:
         raise ValueError(f"metadata len={len(metadata)} != vetores N={n}")
 
-    estrategia = (
-        VectorFilterStrategy(filter_strategy) if filter_strategy is not None else None
-    )
+    estrategia = VectorFilterStrategy(filter_strategy) if filter_strategy is not None else None
     client.collections.create(
         name=nome_classe,
         vector_config=Configure.Vectors.self_provided(

@@ -40,19 +40,23 @@ def _medir_footprint(sistema: str, recurso, nome_recurso: str) -> dict:
     if sistema == "pgvector":
         with recurso.cursor() as cur:
             cur.execute(
-                "SELECT pg_total_relation_size(%s::regclass)", (nome_recurso,),
+                "SELECT pg_total_relation_size(%s::regclass)",
+                (nome_recurso,),
             )
             total_bytes = cur.fetchone()[0]
             cur.execute(
-                "SELECT pg_relation_size(%s::regclass)", (nome_recurso,),
+                "SELECT pg_relation_size(%s::regclass)",
+                (nome_recurso,),
             )
             table_bytes = cur.fetchone()[0]
             cur.execute(
-                "SELECT pg_indexes_size(%s::regclass)", (nome_recurso,),
+                "SELECT pg_indexes_size(%s::regclass)",
+                (nome_recurso,),
             )
             index_bytes = cur.fetchone()[0]
         return {
-            "total_bytes": total_bytes, "table_bytes": table_bytes,
+            "total_bytes": total_bytes,
+            "table_bytes": table_bytes,
             "index_bytes": index_bytes,
             "total_mb": round(total_bytes / 1024 / 1024, 2),
         }
@@ -123,19 +127,18 @@ def run_remaining() -> dict:
 
     for sistema in ["qdrant", "weaviate"]:
         log(f"\n--- Cenário B (retomada): {sistema} (N={n_base}) ---")
-        nome_recurso = (
-            f"bench_b_{n_base}" if sistema != "weaviate" else f"BenchB{n_base}"
-        )
-        buscador, recurso = _construir_buscador(
-            sistema, nome_recurso=nome_recurso, env=env
-        )
+        nome_recurso = f"bench_b_{n_base}" if sistema != "weaviate" else f"BenchB{n_base}"
+        buscador, recurso = _construir_buscador(sistema, nome_recurso=nome_recurso, env=env)
         try:
             _limpar_recurso(sistema, recurso=recurso, nome_recurso=nome_recurso)
             log(f"  Seedando {n_base} vetores + seletor em {sistema}...")
             t0 = time.perf_counter()
             _seed_b(
-                sistema, vetores=base, metadata=metadata_b,
-                recurso=recurso, nome_recurso=nome_recurso,
+                sistema,
+                vetores=base,
+                metadata=metadata_b,
+                recurso=recurso,
+                nome_recurso=nome_recurso,
             )
             t_seed = time.perf_counter() - t0
             log(f"  Seed B {sistema}: {t_seed:.1f}s")
@@ -153,9 +156,15 @@ def run_remaining() -> dict:
             log(f"  Rodando benchmark B ({sistema})...")
             t0 = time.perf_counter()
             resultados = medir_sistema_filtrado(
-                buscador, queries=queries, gt_por_seletividade=gt_por_sel_100k,
-                ef_search_values=EF_SEARCH, seletividades=SELETIVIDADES,
-                k=K, n_base=n_base, timestamp_utc=ts_b, warmup=WARMUP,
+                buscador,
+                queries=queries,
+                gt_por_seletividade=gt_por_sel_100k,
+                ef_search_values=EF_SEARCH,
+                seletividades=SELETIVIDADES,
+                k=K,
+                n_base=n_base,
+                timestamp_utc=ts_b,
+                warmup=WARMUP,
                 ambiente={"sistema": sistema},
             )
             t_bench = time.perf_counter() - t0
@@ -203,8 +212,10 @@ def run_remaining() -> dict:
     exp_info["tempo_gt_cenario_a_s"] = round(t_gt_a, 2)
     log(f"  GT Cenário A calculado em {t_gt_a:.1f}s")
     salvar_ground_truth(
-        np.zeros_like(gt_ids_a, dtype=np.float32), gt_ids_a,
-        dest_dir=GT_DIR, nome=f"cenario_a_n{n_base}_q{N_QUERIES}_k{K}",
+        np.zeros_like(gt_ids_a, dtype=np.float32),
+        gt_ids_a,
+        dest_dir=GT_DIR,
+        nome=f"cenario_a_n{n_base}_q{N_QUERIES}_k{K}",
     )
 
     # Ground truth B
@@ -219,7 +230,9 @@ def run_remaining() -> dict:
         tempos_gt_b[str(p)] = round(t_gt_b, 2)
         gt_por_seletividade[p] = gt_ids_b
         salvar_ground_truth(
-            scores_b, gt_ids_b, dest_dir=GT_DIR,
+            scores_b,
+            gt_ids_b,
+            dest_dir=GT_DIR,
             nome=f"cenario_b_n{n_base}_q{N_QUERIES}_k{K}_p{p}",
         )
         log(f"  GT p={p}: {t_gt_b:.1f}s")
@@ -234,12 +247,8 @@ def run_remaining() -> dict:
 
     for sistema in SISTEMAS:
         log(f"\n--- Cenário A: {sistema} (N={n_base}) ---")
-        nome_recurso = (
-            f"bench_a_{n_base}" if sistema != "weaviate" else f"BenchA{n_base}"
-        )
-        buscador, recurso = _construir_buscador(
-            sistema, nome_recurso=nome_recurso, env=env
-        )
+        nome_recurso = f"bench_a_{n_base}" if sistema != "weaviate" else f"BenchA{n_base}"
+        buscador, recurso = _construir_buscador(sistema, nome_recurso=nome_recurso, env=env)
         try:
             _limpar_recurso(sistema, recurso=recurso, nome_recurso=nome_recurso)
             log(f"  Seedando {n_base} vetores em {sistema}...")
@@ -269,17 +278,21 @@ def run_remaining() -> dict:
             log(f"  Rodando benchmark A ({sistema})...")
             t0 = time.perf_counter()
             resultados = medir_sistema(
-                buscador, queries=queries, gt_ids=gt_ids_a,
-                ef_search_values=EF_SEARCH, k=K, n_base=n_base,
-                timestamp_utc=ts, warmup=WARMUP,
+                buscador,
+                queries=queries,
+                gt_ids=gt_ids_a,
+                ef_search_values=EF_SEARCH,
+                k=K,
+                n_base=n_base,
+                timestamp_utc=ts,
+                warmup=WARMUP,
                 ambiente={"sistema": sistema},
             )
             t_bench = time.perf_counter() - t0
             log(f"  Benchmark A {sistema}: {t_bench:.1f}s")
             salvar_curva(resultados, results_dir=RESULTS_DIR)
             resultados_a[sistema] = [
-                {"ef_search": r.parametros.get("ef_search"), **r.metricas}
-                for r in resultados
+                {"ef_search": r.parametros.get("ef_search"), **r.metricas} for r in resultados
             ]
         finally:
             if hasattr(recurso, "close"):
@@ -296,19 +309,18 @@ def run_remaining() -> dict:
 
     for sistema in SISTEMAS:
         log(f"\n--- Cenário B: {sistema} (N={n_base}) ---")
-        nome_recurso = (
-            f"bench_b_{n_base}" if sistema != "weaviate" else f"BenchB{n_base}"
-        )
-        buscador, recurso = _construir_buscador(
-            sistema, nome_recurso=nome_recurso, env=env
-        )
+        nome_recurso = f"bench_b_{n_base}" if sistema != "weaviate" else f"BenchB{n_base}"
+        buscador, recurso = _construir_buscador(sistema, nome_recurso=nome_recurso, env=env)
         try:
             _limpar_recurso(sistema, recurso=recurso, nome_recurso=nome_recurso)
             log(f"  Seedando {n_base} vetores + seletor em {sistema}...")
             t0 = time.perf_counter()
             _seed_b(
-                sistema, vetores=base, metadata=metadata_b,
-                recurso=recurso, nome_recurso=nome_recurso,
+                sistema,
+                vetores=base,
+                metadata=metadata_b,
+                recurso=recurso,
+                nome_recurso=nome_recurso,
             )
             t_seed = time.perf_counter() - t0
             tempos_seed_b[sistema] = round(t_seed, 2)
@@ -326,9 +338,15 @@ def run_remaining() -> dict:
             log(f"  Rodando benchmark B ({sistema})...")
             t0 = time.perf_counter()
             resultados = medir_sistema_filtrado(
-                buscador, queries=queries, gt_por_seletividade=gt_por_seletividade,
-                ef_search_values=EF_SEARCH, seletividades=SELETIVIDADES,
-                k=K, n_base=n_base, timestamp_utc=ts_b, warmup=WARMUP,
+                buscador,
+                queries=queries,
+                gt_por_seletividade=gt_por_seletividade,
+                ef_search_values=EF_SEARCH,
+                seletividades=SELETIVIDADES,
+                k=K,
+                n_base=n_base,
+                timestamp_utc=ts_b,
+                warmup=WARMUP,
                 ambiente={"sistema": sistema},
             )
             t_bench = time.perf_counter() - t0

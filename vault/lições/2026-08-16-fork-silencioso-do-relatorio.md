@@ -54,7 +54,8 @@ O fork nasce de uma necessidade legítima ("preciso de um PDF estável para envi
 ## Consequência
 
 - Melhorias da cópia portadas para a fonte canônica; `relatorio_parcial_envio/` eliminado.
-- Citação corrigida para `aumuller2020annbench`; orçamento permanece em 13 referências.
+- Citação corrigida para `aumuller2020annbench`, sem criar a duplicata.
+- O orçamento foi para 14 referências, mas por outro motivo e com decisão explícita: a auditoria de proveniência mostrou que a §4.2 reportava o tamanho do MS MARCO sem fonte, e `bajaj2016msmarco` foi acrescentada para cobrir isso (vide [[../decisões/2026-04-28-dataset-ms-marco]]). A duplicata que o fork teria introduzido seria um 14º item *sem* decisão — a diferença entre as duas situações é exatamente o ponto desta lição.
 - O `Makefile` do projeto canônico passa a ser o único caminho de geração do entregável.
 
 ## Backlinks

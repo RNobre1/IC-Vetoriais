@@ -64,14 +64,20 @@ def _seed(
 
         # `seed_qdrant` já bloqueia até o status `green` (aguardar_indexacao=True).
         seed_qdrant(
-            vetores=vetores, metadata=metadata, client=recurso, nome_colecao=nome,
+            vetores=vetores,
+            metadata=metadata,
+            client=recurso,
+            nome_colecao=nome,
             full_scan_threshold=FULL_SCAN_MINIMO if forcar_hnsw else None,
         )
     elif sistema == "weaviate":
         from seeders.weaviate_seeder import seed_weaviate
 
         seed_weaviate(
-            vetores=vetores, metadata=metadata, client=recurso, nome_classe=nome,
+            vetores=vetores,
+            metadata=metadata,
+            client=recurso,
+            nome_classe=nome,
             flat_search_cutoff=0 if forcar_hnsw else None,
         )
 
@@ -96,9 +102,7 @@ def executar() -> dict[str, Any]:
     env = dict(os.environ)
 
     log(f"Carregando embeddings ({N_BASE + N_QUERIES} passages, cache esperado)...")
-    passages = sample_passages(
-        MS_MARCO_DIR / "collection.tsv", n=N_BASE + N_QUERIES
-    )
+    passages = sample_passages(MS_MARCO_DIR / "collection.tsv", n=N_BASE + N_QUERIES)
     embs = gerar_embeddings([p.text for p in passages], cache_dir=EMBEDDINGS_DIR)
     base, queries = split_embeddings(embs, n_base=N_BASE, n_queries=N_QUERIES)
 
@@ -107,8 +111,7 @@ def executar() -> dict[str, Any]:
 
     log("Calculando ground truth filtrado...")
     gt = {
-        p: top_k_exato_filtrado(base, queries, seletor=seletor, p=p, k=K)[1]
-        for p in SELETIVIDADES
+        p: top_k_exato_filtrado(base, queries, seletor=seletor, p=p, k=K)[1] for p in SELETIVIDADES
     }
     for p in SELETIVIDADES:
         log(f"  p={p}: {int(round(p * N_BASE))} elegíveis de {N_BASE}")
@@ -123,24 +126,31 @@ def executar() -> dict[str, Any]:
                 else f"Contraprova{'Forced' if forcar_hnsw else 'Default'}"
             )
             log(f"\n--- {sistema} | {rotulo} ---")
-            buscador, recurso = _construir_buscador(
-                sistema, nome_recurso=nome, env=env
-            )
+            buscador, recurso = _construir_buscador(sistema, nome_recurso=nome, env=env)
             try:
                 _limpar_recurso(sistema, recurso=recurso, nome_recurso=nome)
                 t0 = time.perf_counter()
                 _seed(
-                    sistema, vetores=base, metadata=metadata, recurso=recurso,
-                    nome=nome, forcar_hnsw=forcar_hnsw,
+                    sistema,
+                    vetores=base,
+                    metadata=metadata,
+                    recurso=recurso,
+                    nome=nome,
+                    forcar_hnsw=forcar_hnsw,
                 )
                 log(f"    seed em {time.perf_counter() - t0:.1f}s")
 
                 resultados = medir_sistema_filtrado(
-                    buscador, queries=queries, gt_por_seletividade=gt,
-                    ef_search_values=EF_SEARCH, seletividades=SELETIVIDADES,
-                    k=K, n_base=N_BASE,
+                    buscador,
+                    queries=queries,
+                    gt_por_seletividade=gt,
+                    ef_search_values=EF_SEARCH,
+                    seletividades=SELETIVIDADES,
+                    k=K,
+                    n_base=N_BASE,
                     timestamp_utc=datetime.now(UTC).strftime("%Y-%m-%dT%H-%M-%SZ"),
-                    warmup=WARMUP, ambiente={"sistema": sistema},
+                    warmup=WARMUP,
+                    ambiente={"sistema": sistema},
                 )
                 for r in resultados:
                     achados.append(
