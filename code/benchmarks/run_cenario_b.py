@@ -55,6 +55,7 @@ class Config:
     embeddings_dir: Path = Path("../data/embeddings")
     results_dir: Path = Path("./results")
     colecao_prefixo: str = "bench_b"
+    equalizado: bool = False
 
 
 def _lista_int(texto: str) -> list[int]:
@@ -107,6 +108,16 @@ def parse_args(argv: Sequence[str]) -> Config:
     p.add_argument("--ms-marco-dir", type=Path, default=Path("../data/ms_marco"))
     p.add_argument("--embeddings-dir", type=Path, default=Path("../data/embeddings"))
     p.add_argument("--results-dir", type=Path, default=Path("./results"))
+    p.add_argument(
+        "--equalizado",
+        action="store_true",
+        help=(
+            "equipara o tratamento do atributo de filtro nos 3 SGBDs: B-tree em "
+            "`seletor` no pgvector, full_scan_threshold no mínimo (10 KB) no "
+            "Qdrant e flatSearchCutoff=0 no Weaviate. Sem isso, seletividades "
+            "baixas são respondidas por busca exata e o recall medido não é de ANN."
+        ),
+    )
     a = p.parse_args(argv)
 
     if a.n <= 0:
@@ -139,23 +150,58 @@ def parse_args(argv: Sequence[str]) -> Config:
         ms_marco_dir=a.ms_marco_dir,
         embeddings_dir=a.embeddings_dir,
         results_dir=a.results_dir,
+        equalizado=a.equalizado,
+        # Prefixo próprio: um re-run equalizado não pode reaproveitar nem
+        # sobrescrever os recursos semeados na configuração default.
+        colecao_prefixo="bench_b_eq" if a.equalizado else "bench_b",
     )
 
 
-def _seed_b(sistema: str, *, vetores: np.ndarray, metadata, recurso, nome_recurso: str) -> None:
-    """Igual ao seed do Cenário A, porém passando o `metadata` com `seletor`."""
+def nome_classe_weaviate(colecao_prefixo: str) -> str:
+    """`bench_b` -> `BenchB`; `bench_b_eq` -> `BenchBEq`.
+
+    O Weaviate exige nome de classe em CamelCase, então o prefixo não pode ser
+    reaproveitado cru. Derivar em vez de manter uma segunda lista de nomes
+    garante que um prefixo novo já nasça coberto nos três sistemas.
+    """
+    return "".join(parte.capitalize() for parte in colecao_prefixo.split("_"))
+
+
+def _seed_b(
+    sistema: str,
+    *,
+    vetores: np.ndarray,
+    metadata,
+    recurso,
+    nome_recurso: str,
+    equalizado: bool = False,
+) -> None:
+    """Igual ao seed do Cenário A, porém passando o `metadata` com `seletor`.
+
+    Com `equalizado=True`, os três sistemas passam a tratar o atributo de filtro
+    da mesma forma: índice dedicado em `seletor` nos três e limiar de busca
+    exata zerado nos dois especializados, de modo que toda seletividade seja
+    respondida por HNSW. Vide `vault/decisões/2026-08-16-equalizacao-cenario-b`.
+    """
     if sistema == "pgvector":
         from seeders.pgvector_seeder import seed_pgvector
 
-        seed_pgvector(vetores=vetores, metadata=metadata, conn=recurso, nome_tabela=nome_recurso)
+        seed_pgvector(
+            vetores=vetores,
+            metadata=metadata,
+            conn=recurso,
+            nome_tabela=nome_recurso,
+            indexar_seletor=equalizado,
+        )
     elif sistema == "qdrant":
-        from seeders.qdrant_seeder import seed_qdrant
+        from seeders.qdrant_seeder import FULL_SCAN_MINIMO, seed_qdrant
 
         seed_qdrant(
             vetores=vetores,
             metadata=metadata,
             client=recurso,
             nome_colecao=nome_recurso,
+            full_scan_threshold=FULL_SCAN_MINIMO if equalizado else None,
         )
     elif sistema == "weaviate":
         from seeders.weaviate_seeder import seed_weaviate
@@ -165,6 +211,7 @@ def _seed_b(sistema: str, *, vetores: np.ndarray, metadata, recurso, nome_recurs
             metadata=metadata,
             client=recurso,
             nome_classe=nome_recurso,
+            flat_search_cutoff=0 if equalizado else None,
         )
 
 
@@ -212,7 +259,7 @@ def executar(cfg: Config) -> list[Path]:
         nome_recurso = (
             f"{cfg.colecao_prefixo}_{cfg.n_base}"
             if sistema != "weaviate"
-            else f"BenchB{cfg.n_base}"
+            else f"{nome_classe_weaviate(cfg.colecao_prefixo)}{cfg.n_base}"
         )
         buscador, recurso = _construir_buscador(sistema, nome_recurso=nome_recurso, env=env)
         try:
@@ -223,6 +270,7 @@ def executar(cfg: Config) -> list[Path]:
                 metadata=metadata,
                 recurso=recurso,
                 nome_recurso=nome_recurso,
+                equalizado=cfg.equalizado,
             )
             resultados = medir_sistema_filtrado(
                 buscador,
@@ -234,7 +282,9 @@ def executar(cfg: Config) -> list[Path]:
                 n_base=cfg.n_base,
                 timestamp_utc=ts,
                 warmup=cfg.warmup,
-                ambiente={"sistema": sistema},
+                # `equalizado` vai para o JSON: sem isso, duas curvas do mesmo
+                # sistema e mesmo N ficam indistinguíveis no diretório.
+                ambiente={"sistema": sistema, "equalizado": cfg.equalizado},
             )
             escritos.append(salvar_curva(resultados, results_dir=cfg.results_dir))
         finally:

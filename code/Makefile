@@ -71,11 +71,11 @@ bench-A:  ## Cenário A — busca pura (requer 'make up'). Vars: N Q K EF WARMUP
 		--n $(N) --queries $(Q) --k $(K) \
 		--ef-search $(EF) --warmup $(WARMUP) --sistemas $(SYS)
 
-bench-B:  ## Cenário B — busca com filtro (requer 'make up'). Vars: N Q K EF WARMUP SYS SEL
+bench-B:  ## Cenário B — busca com filtro (requer 'make up'). Vars: N Q K EF WARMUP SYS SEL EQ
 	$(PYTHON) -m benchmarks.run_cenario_b \
 		--n $(N) --queries $(Q) --k $(K) \
 		--ef-search $(EF) --warmup $(WARMUP) --sistemas $(SYS) \
-		--seletividades $(SEL)
+		--seletividades $(SEL) $(if $(EQ),--equalizado,)
 
 bench-C-dryrun:  ## Cenário C — esqueleto: imprime o plano de carga (Etapa 4), não roda
 	$(PYTHON) -c "from benchmarks.cenario_c import ConfigC, intervalo_entre_insercoes as iv; \
