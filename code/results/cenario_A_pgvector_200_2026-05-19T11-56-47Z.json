@@ -1,0 +1,42 @@
+{
+  "cenario": "A",
+  "n": 200,
+  "pontos": [
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.18099099997925805,
+        "p95": 0.3142830000797403,
+        "p99": 0.3404573997613624,
+        "qps": 4940.524728763939,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "warmup": 2
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.43335250029485906,
+        "p95": 0.602482599947507,
+        "p99": 0.614226119828345,
+        "qps": 2184.7921207139816,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "warmup": 2
+      }
+    }
+  ],
+  "sistema": "pgvector",
+  "timestamp_utc": "2026-05-19T11-56-47Z"
+}

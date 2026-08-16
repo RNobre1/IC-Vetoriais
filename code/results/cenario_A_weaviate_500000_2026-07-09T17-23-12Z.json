@@ -1,0 +1,93 @@
+{
+  "cenario": "A",
+  "n": 500000,
+  "pontos": [
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 0.8915570006138296,
+        "p95": 2.0835705010540546,
+        "p99": 3.5938618294858315,
+        "qps": 974.4476488647089,
+        "recall_at_k": 0.8454
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 0.9690830011095386,
+        "p95": 1.3170531003197539,
+        "p99": 1.7721873810296525,
+        "qps": 1010.8177554101297,
+        "recall_at_k": 0.9179
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 1.1186010005985736,
+        "p95": 1.572417901661538,
+        "p99": 1.818130159317661,
+        "qps": 860.0771351275413,
+        "recall_at_k": 0.9592
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 1.4938565000193194,
+        "p95": 2.2197765002601955,
+        "p99": 2.5179412101897465,
+        "qps": 634.9355528824102,
+        "recall_at_k": 0.9782000000000001
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 2.226231999884476,
+        "p95": 3.336422648408188,
+        "p99": 3.7224084285844574,
+        "qps": 431.01685844362424,
+        "recall_at_k": 0.9917999999999999
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "warmup": 50
+      }
+    }
+  ],
+  "sistema": "weaviate",
+  "timestamp_utc": "2026-07-09T17-23-12Z"
+}

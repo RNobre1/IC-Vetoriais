@@ -1,0 +1,42 @@
+{
+  "cenario": "A",
+  "n": 200,
+  "pontos": [
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 1.6094615000383783,
+        "p95": 2.3880805000317196,
+        "p99": 2.4084864998894773,
+        "qps": 587.8660796421602,
+        "recall_at_k": 0.905
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "warmup": 2
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 1.508795000063401,
+        "p95": 1.8292117997134483,
+        "p99": 1.8479503599246527,
+        "qps": 665.0694359101511,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "warmup": 2
+      }
+    }
+  ],
+  "sistema": "weaviate",
+  "timestamp_utc": "2026-05-19T11-56-47Z"
+}

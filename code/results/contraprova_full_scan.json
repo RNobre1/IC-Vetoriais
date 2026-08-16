@@ -1,0 +1,151 @@
+{
+  "achados": [
+    {
+      "ef_search": 16,
+      "forcar_hnsw": false,
+      "p50": 1.7285845001424605,
+      "qps": 565.3332564724341,
+      "recall_at_k": 1.0,
+      "seletividade": 0.01,
+      "sistema": "qdrant"
+    },
+    {
+      "ef_search": 256,
+      "forcar_hnsw": false,
+      "p50": 1.7123930001616827,
+      "qps": 574.462768872461,
+      "recall_at_k": 1.0,
+      "seletividade": 0.01,
+      "sistema": "qdrant"
+    },
+    {
+      "ef_search": 16,
+      "forcar_hnsw": false,
+      "p50": 2.383683999596542,
+      "qps": 410.5970162747731,
+      "recall_at_k": 1.0,
+      "seletividade": 0.1,
+      "sistema": "qdrant"
+    },
+    {
+      "ef_search": 256,
+      "forcar_hnsw": false,
+      "p50": 3.6672255000667064,
+      "qps": 275.48763643066707,
+      "recall_at_k": 1.0,
+      "seletividade": 0.1,
+      "sistema": "qdrant"
+    },
+    {
+      "ef_search": 16,
+      "forcar_hnsw": true,
+      "p50": 1.856552999925043,
+      "qps": 529.4516059415569,
+      "recall_at_k": 0.997,
+      "seletividade": 0.01,
+      "sistema": "qdrant"
+    },
+    {
+      "ef_search": 256,
+      "forcar_hnsw": true,
+      "p50": 3.4457224996913283,
+      "qps": 288.8492337100094,
+      "recall_at_k": 1.0,
+      "seletividade": 0.01,
+      "sistema": "qdrant"
+    },
+    {
+      "ef_search": 16,
+      "forcar_hnsw": true,
+      "p50": 3.2278309995490417,
+      "qps": 304.4757708449738,
+      "recall_at_k": 0.8755000000000002,
+      "seletividade": 0.1,
+      "sistema": "qdrant"
+    },
+    {
+      "ef_search": 256,
+      "forcar_hnsw": true,
+      "p50": 4.626517499673355,
+      "qps": 216.44738014768657,
+      "recall_at_k": 1.0,
+      "seletividade": 0.1,
+      "sistema": "qdrant"
+    },
+    {
+      "ef_search": 16,
+      "forcar_hnsw": false,
+      "p50": 75.68227550018491,
+      "qps": 11.357748333298835,
+      "recall_at_k": 1.0,
+      "seletividade": 0.01,
+      "sistema": "weaviate"
+    },
+    {
+      "ef_search": 256,
+      "forcar_hnsw": false,
+      "p50": 71.25472300003821,
+      "qps": 13.557247330196592,
+      "recall_at_k": 1.0,
+      "seletividade": 0.01,
+      "sistema": "weaviate"
+    },
+    {
+      "ef_search": 16,
+      "forcar_hnsw": false,
+      "p50": 78.27055800044036,
+      "qps": 15.731473351122848,
+      "recall_at_k": 1.0,
+      "seletividade": 0.1,
+      "sistema": "weaviate"
+    },
+    {
+      "ef_search": 256,
+      "forcar_hnsw": false,
+      "p50": 10.108994500114932,
+      "qps": 86.3816270356028,
+      "recall_at_k": 1.0,
+      "seletividade": 0.1,
+      "sistema": "weaviate"
+    },
+    {
+      "ef_search": 16,
+      "forcar_hnsw": true,
+      "p50": 73.28903650022767,
+      "qps": 11.741860106378333,
+      "recall_at_k": 0.4005,
+      "seletividade": 0.01,
+      "sistema": "weaviate"
+    },
+    {
+      "ef_search": 256,
+      "forcar_hnsw": true,
+      "p50": 77.24856300001193,
+      "qps": 11.667560951089692,
+      "recall_at_k": 0.7454999999999999,
+      "seletividade": 0.01,
+      "sistema": "weaviate"
+    },
+    {
+      "ef_search": 16,
+      "forcar_hnsw": true,
+      "p50": 8.746623000206455,
+      "qps": 26.42780246606239,
+      "recall_at_k": 0.7830000000000001,
+      "seletividade": 0.1,
+      "sistema": "weaviate"
+    },
+    {
+      "ef_search": 256,
+      "forcar_hnsw": true,
+      "p50": 10.238073000436998,
+      "qps": 92.84486955512881,
+      "recall_at_k": 0.9760000000000001,
+      "seletividade": 0.1,
+      "sistema": "weaviate"
+    }
+  ],
+  "k": 10,
+  "n_base": 100000,
+  "n_queries": 200
+}

@@ -1,0 +1,93 @@
+{
+  "cenario": "A",
+  "n": 500000,
+  "pontos": [
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.2788049994014727,
+        "p95": 2.911026199944898,
+        "p99": 4.874694449908925,
+        "qps": 690.4179046965311,
+        "recall_at_k": 0.8900000000000001
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.901823499792954,
+        "p95": 4.266841149910761,
+        "p99": 5.797992059824537,
+        "qps": 463.90114396294337,
+        "recall_at_k": 0.9444000000000001
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 2.6775819997055805,
+        "p95": 6.446660600749963,
+        "p99": 8.30255731941179,
+        "qps": 326.7972242522742,
+        "recall_at_k": 0.9753
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 3.3766465003282065,
+        "p95": 7.658262750237552,
+        "p99": 10.029031899821346,
+        "qps": 263.5323951453334,
+        "recall_at_k": 0.99
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 7.892293499935477,
+        "p95": 18.382840999856846,
+        "p99": 21.64462343985178,
+        "qps": 111.10616310913635,
+        "recall_at_k": 0.9969000000000001
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "warmup": 50
+      }
+    }
+  ],
+  "sistema": "pgvector",
+  "timestamp_utc": "2026-07-09T16-58-40Z"
+}

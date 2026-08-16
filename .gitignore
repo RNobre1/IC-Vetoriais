@@ -38,3 +38,10 @@ vault/papers/*_files/
 *.log
 results/
 
+# Exceção: os JSONs de resultado de benchmark SÃO o dado científico do trabalho.
+# Sem eles versionados, nenhum número do relatório é rastreável até a fonte e a
+# reprodutibilidade que o próprio relatório afirma não existe. São ~80 KB.
+!code/results/
+code/results/*
+!code/results/*.json
+

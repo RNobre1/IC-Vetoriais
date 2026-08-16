@@ -1,0 +1,388 @@
+{
+  "cenario": "B",
+  "n": 500000,
+  "pontos": [
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.7851054999482585,
+        "p95": 4.53240859997095,
+        "p99": 8.978811870301794,
+        "qps": 452.46182117523006,
+        "recall_at_k": 0.0159
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 2.404476499577868,
+        "p95": 5.6094160502652795,
+        "p99": 11.598653579649152,
+        "qps": 328.83688993520815,
+        "recall_at_k": 0.0344
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 5.432786999790551,
+        "p95": 12.44284509971294,
+        "p99": 20.83873681051045,
+        "qps": 147.12887026438383,
+        "recall_at_k": 0.0659
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 10.713760500038916,
+        "p95": 25.14841430024717,
+        "p99": 35.493118750327994,
+        "qps": 82.88234230121242,
+        "recall_at_k": 0.13620000000000002
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 16.642676000174106,
+        "p95": 42.19928144984805,
+        "p99": 53.820830849708706,
+        "qps": 52.70630326725662,
+        "recall_at_k": 0.26439999999999997
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.4013765007803158,
+        "p95": 3.1104665502425632,
+        "p99": 4.266800819996205,
+        "qps": 636.1941870209739,
+        "recall_at_k": 0.1603
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 2.0507535004981037,
+        "p95": 4.633152849419274,
+        "p99": 6.227939250038613,
+        "qps": 441.7856974171849,
+        "recall_at_k": 0.3251
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 4.239334500198311,
+        "p95": 9.68536310069794,
+        "p99": 13.757373699190792,
+        "qps": 211.21147331271388,
+        "recall_at_k": 0.6221
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 5.007549500078312,
+        "p95": 14.592716400375133,
+        "p99": 20.57856487939716,
+        "qps": 164.63806136915545,
+        "recall_at_k": 0.9384
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 6.1264485002539,
+        "p95": 13.426701549724385,
+        "p99": 15.509363380615467,
+        "qps": 149.26717762020098,
+        "recall_at_k": 0.9865
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.9478025003772927,
+        "p95": 2.0041436000610697,
+        "p99": 2.6464399193628196,
+        "qps": 972.4560838732341,
+        "recall_at_k": 0.7499000000000001
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.260207000086666,
+        "p95": 2.6418042503792085,
+        "p99": 3.1577002499761875,
+        "qps": 730.5281119731177,
+        "recall_at_k": 0.9307000000000001
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 2.1348294994822936,
+        "p95": 4.265316250393879,
+        "p99": 5.536076499538467,
+        "qps": 435.6911968461483,
+        "recall_at_k": 0.9671000000000001
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 3.292012000201794,
+        "p95": 7.100867299823221,
+        "p99": 8.301971809905808,
+        "qps": 276.80483293284004,
+        "recall_at_k": 0.9855999999999999
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 5.700887499642704,
+        "p95": 12.404123899705153,
+        "p99": 14.118329889697634,
+        "qps": 159.3653791906277,
+        "recall_at_k": 0.9946000000000002
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.9036259998538299,
+        "p95": 1.7750741502368326,
+        "p99": 2.2114875703027788,
+        "qps": 1033.0085965790825,
+        "recall_at_k": 0.9027000000000001
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.3808980002067983,
+        "p95": 2.7975727502052905,
+        "p99": 3.329577690456062,
+        "qps": 674.7585811974457,
+        "recall_at_k": 0.9489000000000001
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 2.197770999828208,
+        "p95": 4.7699938498226375,
+        "p99": 6.188268349478674,
+        "qps": 401.1441941769313,
+        "recall_at_k": 0.9732999999999999
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 3.308388500045112,
+        "p95": 7.233047449335572,
+        "p99": 8.154471419666152,
+        "qps": 275.09913914126673,
+        "recall_at_k": 0.9877
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 5.770707500232675,
+        "p95": 12.489642950095003,
+        "p99": 14.327338779676207,
+        "qps": 158.07052868242556,
+        "recall_at_k": 0.9957999999999999
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    }
+  ],
+  "sistema": "pgvector",
+  "timestamp_utc": "2026-08-16T14-51-52Z"
+}

@@ -1,0 +1,368 @@
+{
+  "cenario": "B",
+  "n": 500000,
+  "pontos": [
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 5.308998999680625,
+        "p95": 156.79789355062894,
+        "p99": 180.75532676011787,
+        "qps": 56.721867461974206,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 4.968468500010204,
+        "p95": 8.022538350360263,
+        "p99": 8.47773837911518,
+        "qps": 184.83665164849478,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 7.740950999505003,
+        "p95": 11.138709000351808,
+        "p99": 13.511828849459562,
+        "qps": 141.43428695692756,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 4.99509300061618,
+        "p95": 8.164696050425846,
+        "p99": 8.84377147984196,
+        "qps": 182.81220546991042,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 7.720417500422627,
+        "p95": 11.175388599622233,
+        "p99": 13.525659179449576,
+        "qps": 140.41968839773224,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 25.80408850008098,
+        "p95": 33.13633870047851,
+        "p99": 43.090733309036274,
+        "qps": 37.25601722203357,
+        "recall_at_k": 0.7650000000000001
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 26.84792899981403,
+        "p95": 48.95331024981715,
+        "p99": 55.122478550674714,
+        "qps": 31.764715476397043,
+        "recall_at_k": 0.8558000000000001
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 27.176793001672195,
+        "p95": 48.733868149793125,
+        "p99": 54.25053485980242,
+        "qps": 33.45065325400913,
+        "recall_at_k": 0.9166
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 28.42858799976966,
+        "p95": 50.31553580038235,
+        "p99": 55.48316372987756,
+        "qps": 32.10642238154991,
+        "recall_at_k": 0.9499000000000001
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 31.43189549973613,
+        "p95": 57.55185429943594,
+        "p99": 65.2838206495653,
+        "qps": 25.68274118240443,
+        "recall_at_k": 0.9695
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 86.98474699940562,
+        "p95": 161.4038442509809,
+        "p99": 186.08571377923,
+        "qps": 9.321456408547997,
+        "recall_at_k": 0.8969000000000001
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 87.60054249978566,
+        "p95": 161.584605400094,
+        "p99": 189.4000691304609,
+        "qps": 9.327504488835785,
+        "recall_at_k": 0.9522
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 86.89888049957517,
+        "p95": 159.868894450301,
+        "p99": 182.9507375499452,
+        "qps": 9.861467438692234,
+        "recall_at_k": 0.977
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 87.94179149936099,
+        "p95": 163.05600629939363,
+        "p99": 184.0411258707536,
+        "qps": 9.58399843442923,
+        "recall_at_k": 0.991
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 87.91658600057417,
+        "p95": 160.62658630016813,
+        "p99": 182.24702449955655,
+        "qps": 9.798731197429467,
+        "recall_at_k": 0.9955
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 158.01733850094024,
+        "p95": 288.82012025051154,
+        "p99": 319.4487266691249,
+        "qps": 5.650647564007971,
+        "recall_at_k": 0.8437
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 157.76180749980995,
+        "p95": 285.99780900049154,
+        "p99": 320.40927277126684,
+        "qps": 5.787941382714347,
+        "recall_at_k": 0.9187000000000001
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 159.20132100018236,
+        "p95": 294.82872904955,
+        "p99": 322.12774142073613,
+        "qps": 5.354111636046703,
+        "recall_at_k": 0.963
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 159.0553934993295,
+        "p95": 292.72057554999265,
+        "p99": 329.6271255200554,
+        "qps": 5.478710822294996,
+        "recall_at_k": 0.9798
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 160.53808650030987,
+        "p95": 295.9685864014318,
+        "p99": 325.00847148861794,
+        "qps": 5.4145474616200175,
+        "recall_at_k": 0.9913
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    }
+  ],
+  "sistema": "weaviate",
+  "timestamp_utc": "2026-07-09T17-27-34Z"
+}

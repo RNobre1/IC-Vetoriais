@@ -1,0 +1,93 @@
+{
+  "cenario": "A",
+  "n": 100000,
+  "pontos": [
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 0.8615320000444626,
+        "p95": 1.0877680998760297,
+        "p99": 1.4328703598948778,
+        "qps": 1157.2984592783737,
+        "recall_at_k": 0.849
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 0.9301604999336632,
+        "p95": 1.182126450009946,
+        "p99": 1.4037564800605646,
+        "qps": 1074.2859426047269,
+        "recall_at_k": 0.9276000000000001
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 1.0613739999598693,
+        "p95": 1.4040513999816537,
+        "p99": 1.641389800022352,
+        "qps": 912.7783802348318,
+        "recall_at_k": 0.9728000000000001
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 1.4315099999748782,
+        "p95": 2.479482549881594,
+        "p99": 2.9443416601270656,
+        "qps": 651.5469430183913,
+        "recall_at_k": 0.9903
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 2.940696999985448,
+        "p95": 4.28689654993377,
+        "p99": 4.674471270059257,
+        "qps": 323.1097100039041,
+        "recall_at_k": 0.996
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "warmup": 50
+      }
+    }
+  ],
+  "sistema": "weaviate",
+  "timestamp_utc": "2026-07-09T15-32-12Z"
+}

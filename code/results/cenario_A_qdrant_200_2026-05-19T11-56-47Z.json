@@ -1,0 +1,42 @@
+{
+  "cenario": "A",
+  "n": 200,
+  "pontos": [
+    {
+      "ambiente": {
+        "sistema": "qdrant"
+      },
+      "metricas": {
+        "p50": 2.888277499778269,
+        "p95": 3.6957406502097006,
+        "p99": 3.963711329952275,
+        "qps": 346.7048434891849,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "warmup": 2
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "qdrant"
+      },
+      "metricas": {
+        "p50": 3.628902000173184,
+        "p95": 3.927497049971862,
+        "p99": 3.9922346099956485,
+        "qps": 287.44767733466614,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "warmup": 2
+      }
+    }
+  ],
+  "sistema": "qdrant",
+  "timestamp_utc": "2026-05-19T11-56-47Z"
+}

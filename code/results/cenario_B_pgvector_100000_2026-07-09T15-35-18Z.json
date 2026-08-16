@@ -1,0 +1,368 @@
+{
+  "cenario": "B",
+  "n": 100000,
+  "pontos": [
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.1547590000873242,
+        "p95": 2.311215150052702,
+        "p99": 16.519584740103685,
+        "qps": 638.1165254614687,
+        "recall_at_k": 0.0161
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.4669879999473778,
+        "p95": 2.838468550010019,
+        "p99": 4.855487090169389,
+        "qps": 615.4574738099182,
+        "recall_at_k": 0.0281
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 2.3812125001541062,
+        "p95": 4.86597424996944,
+        "p99": 7.6827081700685085,
+        "qps": 377.8830342840995,
+        "recall_at_k": 0.0593
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 3.4990509999488495,
+        "p95": 7.804327149813161,
+        "p99": 10.791986050141986,
+        "qps": 248.68499836728674,
+        "recall_at_k": 0.1269
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 4.461418500000036,
+        "p95": 9.34144660005813,
+        "p99": 11.987764650089048,
+        "qps": 200.5425671935696,
+        "recall_at_k": 0.25260000000000005
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.5144164999819623,
+        "p95": 0.8986786000150454,
+        "p99": 1.109922120062947,
+        "qps": 1878.8375326965167,
+        "recall_at_k": 0.15940000000000004
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.7741805001160174,
+        "p95": 1.4340042000981155,
+        "p99": 1.755533140128591,
+        "qps": 1217.9584039923047,
+        "recall_at_k": 0.3196
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.3463929999488755,
+        "p95": 2.3572287499632685,
+        "p99": 2.8236882500232237,
+        "qps": 713.3081285522411,
+        "recall_at_k": 0.6320999999999999
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 2.0812294999359437,
+        "p95": 3.84991940003374,
+        "p99": 4.543904080057928,
+        "qps": 451.8471364083143,
+        "recall_at_k": 0.9415000000000001
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 3.5282415000210676,
+        "p95": 6.483926150076513,
+        "p99": 7.4111875099742965,
+        "qps": 265.96160854205806,
+        "recall_at_k": 0.992
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.4950160000589676,
+        "p95": 0.8698829500531247,
+        "p99": 1.0218312199526736,
+        "qps": 1950.2368135576692,
+        "recall_at_k": 0.7295
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.7547374999603562,
+        "p95": 1.3471339999455265,
+        "p99": 1.668021140028486,
+        "qps": 1253.2129356270475,
+        "recall_at_k": 0.9393
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.4282605001199045,
+        "p95": 3.0535216001112526,
+        "p99": 4.023218599966185,
+        "qps": 630.7301204650264,
+        "recall_at_k": 0.9788000000000001
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 3.205835000017032,
+        "p95": 5.757630249877365,
+        "p99": 6.754570200137095,
+        "qps": 291.756303514996,
+        "recall_at_k": 0.9948
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 3.473666999980196,
+        "p95": 6.312216350011112,
+        "p99": 7.294025480084655,
+        "qps": 270.39387023133236,
+        "recall_at_k": 0.9985
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.5450505000226258,
+        "p95": 0.9483315000124999,
+        "p99": 1.2511632499649747,
+        "qps": 1752.190154036458,
+        "recall_at_k": 0.905
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.7516370000075767,
+        "p95": 1.3036152500148999,
+        "p99": 1.5231575898451408,
+        "qps": 1266.5228031754255,
+        "recall_at_k": 0.9595
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.1656640000410334,
+        "p95": 2.148160600074789,
+        "p99": 2.529571250099707,
+        "qps": 806.7147990531537,
+        "recall_at_k": 0.9866
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.9658119999803603,
+        "p95": 3.6291871000685196,
+        "p99": 5.308042090196067,
+        "qps": 473.30043768046386,
+        "recall_at_k": 0.9975
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 4.339755499927378,
+        "p95": 58.308316249951986,
+        "p99": 73.92058884994184,
+        "qps": 67.39156043720054,
+        "recall_at_k": 0.9997
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    }
+  ],
+  "sistema": "pgvector",
+  "timestamp_utc": "2026-07-09T15-35-18Z"
+}

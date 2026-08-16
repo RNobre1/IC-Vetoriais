@@ -1,0 +1,80 @@
+{
+  "cenario": "B",
+  "n": 200,
+  "pontos": [
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.16730400011510937,
+        "p95": 0.3553036504399643,
+        "p99": 0.42312073038374354,
+        "qps": 4792.489976494986,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 2
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.15350749981735134,
+        "p95": 0.21295700016708,
+        "p99": 0.24943700007497677,
+        "qps": 6804.825026269913,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 2
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.08965400002125534,
+        "p95": 0.09800719935810775,
+        "p99": 0.10048783939055284,
+        "qps": 11004.92581551866,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 2
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.09181299992633285,
+        "p95": 0.10334274938941235,
+        "p99": 0.10391654988779919,
+        "qps": 10614.990070612073,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 2
+      }
+    }
+  ],
+  "sistema": "pgvector",
+  "timestamp_utc": "2026-05-19T12-51-47Z"
+}

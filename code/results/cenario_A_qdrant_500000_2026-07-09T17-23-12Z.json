@@ -1,0 +1,93 @@
+{
+  "cenario": "A",
+  "n": 500000,
+  "pontos": [
+    {
+      "ambiente": {
+        "sistema": "qdrant"
+      },
+      "metricas": {
+        "p50": 2.7727770002456964,
+        "p95": 4.2067807501553025,
+        "p99": 4.42258040942761,
+        "qps": 363.03300647622734,
+        "recall_at_k": 0.9444000000000001
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "qdrant"
+      },
+      "metricas": {
+        "p50": 3.1918390004648245,
+        "p95": 4.441647949897742,
+        "p99": 4.882767289909679,
+        "qps": 315.4205980928299,
+        "recall_at_k": 0.9755
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "qdrant"
+      },
+      "metricas": {
+        "p50": 2.405865499895299,
+        "p95": 2.8423556511370403,
+        "p99": 3.32670282881736,
+        "qps": 415.9905414686382,
+        "recall_at_k": 0.9874
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "qdrant"
+      },
+      "metricas": {
+        "p50": 2.8759184997397824,
+        "p95": 3.372395350925217,
+        "p99": 3.913181259595148,
+        "qps": 348.1959873626496,
+        "recall_at_k": 0.9943
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "qdrant"
+      },
+      "metricas": {
+        "p50": 3.5439490002318053,
+        "p95": 4.145540100307699,
+        "p99": 4.6007307206309624,
+        "qps": 282.16152043453246,
+        "recall_at_k": 0.9987
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "warmup": 50
+      }
+    }
+  ],
+  "sistema": "qdrant",
+  "timestamp_utc": "2026-07-09T17-23-12Z"
+}

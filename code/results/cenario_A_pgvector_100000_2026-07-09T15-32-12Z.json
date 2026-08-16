@@ -1,0 +1,93 @@
+{
+  "cenario": "A",
+  "n": 100000,
+  "pontos": [
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.1973445000421634,
+        "p95": 9.143253449963137,
+        "p99": 28.585905389948035,
+        "qps": 417.75176416826014,
+        "recall_at_k": 0.9074000000000001
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.2456134999183632,
+        "p95": 2.2527979501091973,
+        "p99": 3.0221797300623603,
+        "qps": 738.306174491234,
+        "recall_at_k": 0.9597
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.994545000115977,
+        "p95": 3.47492009994994,
+        "p99": 4.097444279971112,
+        "qps": 412.5834661461295,
+        "recall_at_k": 0.9872000000000001
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 2.5233535000097618,
+        "p95": 4.907441549937629,
+        "p99": 6.0523514600663475,
+        "qps": 373.4454947095466,
+        "recall_at_k": 0.9975999999999999
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 3.4191629999895667,
+        "p95": 6.294862650076993,
+        "p99": 7.0846229700964605,
+        "qps": 275.68536932167535,
+        "recall_at_k": 0.9997
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "warmup": 50
+      }
+    }
+  ],
+  "sistema": "pgvector",
+  "timestamp_utc": "2026-07-09T15-32-12Z"
+}
