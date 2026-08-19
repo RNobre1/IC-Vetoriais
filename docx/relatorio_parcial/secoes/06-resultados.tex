@@ -24,7 +24,7 @@ A geração de \textit{embeddings} utiliza o modelo \code{all-MiniLM-L6-v2} (384
 
 As estratégias de construção do índice diferem entre os sistemas, e essa diferença é qualitativa, não apenas de magnitude: o pgvector constrói o índice HNSW após a inserção completa dos dados (\code{CREATE INDEX ... USING hnsw}), em uma operação única e bloqueante, enquanto Qdrant e Weaviate o constroem de forma incremental e assíncrona, em paralelo com a inserção. No Qdrant, essa assincronia exige aguardar explicitamente que a coleção atinja o estado \code{green} antes de medir, sob pena de as consultas atingirem um índice ainda em construção.
 
-Os tempos de indexação e o \textit{footprint} de armazenamento medidos na Etapa 3 foram registrados apenas na saída de console da execução e não persistidos em arquivo, o que os torna não verificáveis a posteriori. Por essa razão, não são reportados aqui. A instrumentação passou a gravar essas medidas junto às curvas de desempenho, e os valores serão apresentados no relatório final, obtidos em execução dedicada.
+Os tempos de indexação e o \textit{footprint} de armazenamento medidos na Etapa 3 foram registrados apenas na saída de console da execução e não persistidos em arquivo, o que os torna não verificáveis a posteriori. Por essa razão, não são reportados aqui. A instrumentação será estendida para persistir essas medidas junto às curvas de desempenho, e os valores serão apresentados no relatório final, obtidos em execução dedicada.
 
 \subsection{Resultados preliminares --- Cenário A}
 
