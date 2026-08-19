@@ -20,6 +20,7 @@ htmlcov/
 # obsidian — workspace local do usuário, não compartilhar
 vault/.obsidian/workspace*
 vault/.obsidian/cache/
+.obsidian/
 .trash/
 
 # vault/papers — fichamentos .md versionados; PDFs/HTML/_files ignorados (volume + direitos autorais)

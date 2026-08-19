@@ -72,6 +72,8 @@ Notebook Dell G15 5530, Fedora Linux. Intel i5-13450HX (10c/16t, até 4,6 GHz), 
 
 Possível extensão para o Cluster HPC do IEG/UFOPA na etapa final, condicionada a viabilidade técnica e disponibilidade de acesso.
 
+Desde 19/08/2026 o trabalho é conduzido em duas máquinas com papéis distintos: o Dell acima é a **máquina de referência** e produz todo número que entra em tabela do relatório; um MacBook Air M4 (ARM64, Docker sob VM) é a **máquina de trabalho** e cuida de código, testes, análise e redação. A separação preserva a homogeneidade de hardware afirmada no relatório. O procedimento operacional está em `docs/runbook-medicao-dell.md`; a comparação entre as duas arquiteturas, se realizada, será experimento próprio e declarado.
+
 ## Prática de desenvolvimento
 
 - **TDD é inegociável**: nenhum código de produção nasce sem teste que falhe antes. A suíte cobre funções puras de métricas, ground truth, seeders e cenários de benchmark.
