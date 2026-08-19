@@ -30,7 +30,7 @@ Os tempos de indexação e o \textit{footprint} de armazenamento medidos na Etap
 
 A Tabela~\ref{tab:cenario_a_100k} apresenta os resultados do Cenário A (busca pura, sem filtros) para os três sistemas com 100 mil vetores. Para cada valor de $ef\_search$, são reportados o \textit{recall@10} (fração dos 10 vizinhos mais próximos recuperados, medida contra busca exata via FAISS), a latência mediana (p50), os percentis p95 e p99, e o \textit{throughput} (QPS).
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \caption{Cenário A --- busca pura, 100k vetores, $K = 10$.}
 \label{tab:cenario_a_100k}
@@ -66,7 +66,7 @@ A Tabela~\ref{tab:cenario_a_100k} apresenta os resultados do Cenário A (busca p
 
 A Tabela~\ref{tab:cenario_a_500k} repete o experimento com 500 mil vetores, quintuplicando a base.
 
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \caption{Cenário A --- busca pura, 500k vetores, $K = 10$.}
 \label{tab:cenario_a_500k}
@@ -120,6 +120,8 @@ A causa é uma otimização documentada e presente nos dois sistemas: quando o s
 O \textit{recall} perfeito nessas condições, portanto, não mede a qualidade da busca aproximada com filtro: mede que ela não foi utilizada. Para que a comparação incidisse sobre o objeto de estudo, o cenário foi reexecutado em uma segunda condição, aqui chamada \textbf{equalizada}, em que os três sistemas recebem índice dedicado no atributo de filtro e os limiares de varredura exata são levados ao mínimo, forçando o uso do índice HNSW em toda seletividade. As duas condições são reportadas lado a lado: a condição \textbf{padrão} responde ao que um usuário encontra ao instalar cada sistema sem ajuste, e a equalizada isola a capacidade de busca aproximada sob filtro.
 
 \subsubsection{Resultados}
+
+As duas condições foram executadas no mesmo varrimento de $ef\_search$ do Cenário A ($\{16, 32, 64, 128, 256\}$). As tabelas a seguir reportam o ponto $ef\_search = 64$, escolhido por dois motivos: é o valor intermediário do varrimento e é o primeiro ponto em que os três sistemas ultrapassam \textit{recall@10} de 0,95 nas duas escalas do Cenário A (Tabelas~\ref{tab:cenario_a_100k} e \ref{tab:cenario_a_500k}), o que o torna um ponto de operação comparável entre eles. Reportar um único ponto é necessário para que a tabela comporte simultaneamente as duas condições, os três sistemas e os quatro níveis de seletividade; a escolha não condiciona as conclusões: sob seletividade restritiva ($p = 1\%$ e $p = 10\%$), a ordenação Qdrant $>$ Weaviate $>$ pgvector observada em $ef\_search = 64$ se repete nos cinco valores de $ef\_search$, tanto em 100 mil quanto em 500 mil vetores. As curvas completas estão nos arquivos de resultado versionados no repositório.
 
 A Tabela~\ref{tab:cenario_b_100k} apresenta o \textit{recall@10} nas duas condições, para 100 mil vetores.
 
