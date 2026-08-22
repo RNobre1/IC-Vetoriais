@@ -49,7 +49,25 @@ O motivo da separação é operacional, não hierárquico. Dado bruto é commuta
 
    O Verba compartilha a instância do Weaviate e contamina a medição. Derrubar também qualquer outro contêiner pesado.
 
-4. Suíte unitária verde antes de medir.
+4. **Linha de base limpa — obrigatório antes de cada sessão de medição.**
+
+   ```bash
+   make reset-medicao
+   ```
+
+   O alvo é **destrutivo**: zera os volumes dos três SGBDs e sobe os contêineres de novo, esperando os três ficarem `healthy`. Não toca em `code/results/` nem no cache de embeddings de `data/`.
+
+   O motivo é medido, não teórico. Os três sistemas acumulam as coleções de todas as execuções anteriores, e o Weaviate mantém o grafo HNSW de cada uma residente em memória. Numa tentativa de rodar as seis medições em sequência sem reset, ao fim da segunda escala o Weaviate estava com **6,1 GiB** residentes contra 65 MiB do Qdrant; o host de 16 GiB ficou com 334 MiB livres, entrou em 4,7 GiB de swap, e o backend do PostgreSQL foi derrubado no meio do `CREATE INDEX ... USING hnsw`. Sem o reset, a medição não só quebra: as que sobrevivem medem o histórico do contêiner e são cronometradas com a máquina em swap.
+
+   Depois do reset, conferir que os três partiram do mesmo patamar:
+
+   ```bash
+   docker stats --no-stream --format '{{.Name}}\t{{.MemUsage}}'
+   ```
+
+   Esperado: dezenas de MiB em cada um. Centenas de MiB ou mais significa que o reset não surtiu efeito.
+
+5. Suíte unitária verde antes de medir.
 
    ```bash
    make up
@@ -71,6 +89,8 @@ make bench-B N=500000 Q=1000 K=10 EQ=1
 
 Regras de execução:
 
+- **Um `make reset-medicao` antes de cada comando da lista acima**, não só no começo da sessão. As seis execuções criam coleções que ficam residentes, e a última rodaria em condição diferente da primeira.
+- Acompanhar a memória do host durante a execução (`free -h`). Se o swap começar a crescer, **interromper**: latência medida sob swap não é dado, e as execuções afetadas precisam ser descartadas, inclusive as que terminarem sem erro.
 - Sequencial, nunca em paralelo. A máquina fica reservada para a medição — sem navegador, sem compilação, sem outra carga.
 - Ordens de grandeza de referência da última execução completa: o seed de 500 mil no pgvector leva cerca de 21 minutos; o Cenário B equalizado nas duas escalas levou 1h12min.
 - `EQ=1` ativa a condição equalizada (índice dedicado no atributo de filtro e limiares de varredura exata no mínimo), conforme o registro de decisão de 2026-08-16.

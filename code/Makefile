@@ -1,4 +1,4 @@
-.PHONY: help up down logs smoke clean test test-unit test-integration lint fmt deps ui-up ui-down ui-logs seed bench-A bench-B bench-C-dryrun
+.PHONY: help up down logs smoke clean test test-unit test-integration lint fmt deps ui-up ui-down ui-logs seed bench-A bench-B bench-C-dryrun reset-medicao
 
 # Compose principal (3 SGBDs) e merge com UI (Verba). Vide:
 #   vault/decisões/2026-05-05-isolamento-ui-vs-benchmark.md
@@ -41,6 +41,19 @@ ui-down:  ## Derruba Verba (preserva os 3 SGBDs)
 
 ui-logs:  ## Acompanha logs do Verba
 	$(COMPOSE_UI) logs -f verba
+
+reset-medicao:  ## DESTRUTIVO: zera volumes e reinicia os 3 SGBDs (linha de base limpa)
+	@echo "Isto APAGA os volumes dos 3 SGBDs (coleções de execuções anteriores)."
+	@echo "Os JSONs de code/results/ não são tocados. Ctrl-C em 5s para abortar."
+	@sleep 5
+	$(COMPOSE) down -v
+	$(COMPOSE) up -d
+	@echo "Aguardando healthcheck dos 3 serviços..."
+	@for i in $$(seq 1 60); do \
+		n=$$($(COMPOSE) ps --format '{{.Health}}' | grep -c healthy); \
+		[ "$$n" = "3" ] && echo "3/3 healthy" && exit 0; \
+		sleep 2; \
+	done; echo "ERRO: nem todos ficaram healthy" >&2; exit 1
 
 smoke:  ## Smoke test integrado (requer 'make up')
 	$(PYTEST) tests/integration/test_smoke.py -v
