@@ -63,7 +63,18 @@ O aparente continua sendo gravado, em `aparente_bytes`, para que a pré-alocaç�
 
 ### Memória
 
-`docker stats --no-stream`, mesmo instrumento nos três contêineres. O valor é **medida pontual do contêiner no instante da coleta**, não a memória atribuível ao conjunto de dados: inclui estruturas de servidor, conexões e cache. Comparável entre os três porque o instrumento e o instante relativo (logo após o índice ficar utilizável) são os mesmos; **não** interpretável como "custo de RAM do índice".
+`docker stats --no-stream`, mesmo instrumento nos três contêineres, medido **duas vezes**: uma linha de base logo antes do seed e o valor final logo após o índice ficar utilizável. O que entra na comparação é o **delta**.
+
+A primeira versão desta decisão registrava só o valor absoluto, com a ressalva de que ele não era atribuível ao dado medido. A tentativa de execução completa mostrou que a ressalva era fraca demais para o tamanho do problema. Ao final de duas escalas, o Weaviate estava com **6,1 GiB residentes** enquanto o Qdrant reportava 65 MiB — não porque um gaste cem vezes mais que o outro, mas porque o Weaviate mantém em RAM o grafo de **todas** as classes já criadas na instância (eram oito, de `bencha200` a `benchbeq500000`), ao passo que o Qdrant usa mmap e devolve ao sistema. Comparar os absolutos mediria o histórico do contêiner, não o custo do conjunto de dados.
+
+Com 16 GiB no host, o efeito não ficou só na interpretação: sobraram 334 MiB de memória livre, o sistema entrou em 4,7 GiB de swap, e o backend do PostgreSQL foi derrubado no meio de um `CREATE INDEX ... USING hnsw` (`server closed the connection unexpectedly`, seguido de recuperação automática). Não houve OOM no cgroup — o contêiner não tem limite; a exaustão foi do host.
+
+Duas consequências fixadas aqui:
+
+1. **Toda sessão de medição começa de volumes zerados**, via `make reset-medicao`. Sem isso, cada execução herda a memória e o disco de todas as anteriores, e as medidas deixam de significar o mesmo entre a primeira e a última.
+2. **Latência medida sob pressão de memória não é dado.** A rodada que expôs o problema foi descartada inteira, inclusive as duas execuções que haviam terminado com sucesso, porque rodaram enquanto o consumo crescia.
+
+Mesmo com a linha de base, o delta continua **não** sendo "o custo de RAM do índice": inclui alocações de runtime do servidor durante a carga. É a melhor aproximação disponível com instrumento uniforme, e deve ser lido como ordem de grandeza.
 
 ### Tempo de indexação
 
