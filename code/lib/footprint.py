@@ -61,8 +61,8 @@ CRITERIO_INDICE_UTILIZAVEL = {
 # diferença precisa estar declarada no arquivo.
 INSTRUMENTO_DISCO = {
     "pgvector": "pg_total_relation_size",
-    "qdrant": "du_diretorio_colecao",
-    "weaviate": "du_diretorio_classe",
+    "qdrant": "du_sk_diretorio_colecao",
+    "weaviate": "du_sk_diretorio_classe",
 }
 
 # 1800 × 2 s = 1 h. Backstop contra fila que nunca drena, não expectativa de
@@ -110,6 +110,11 @@ def parse_du_bytes(saida: str) -> int:
     if not campos or not campos[0].isdigit():
         raise ValueError(f"saída de `du` sem contagem de bytes: {saida.strip()!r}")
     return int(campos[0])
+
+
+def parse_du_kib_bytes(saida: str) -> int:
+    """Converte a saída de `du -sk` (blocos alocados, em KiB) para bytes."""
+    return parse_du_bytes(saida) * 1024
 
 
 def parse_mem_usage_bytes(campo: str) -> int:
@@ -162,18 +167,45 @@ def medir_disco_pgvector(conn: Any, *, nome_tabela: str) -> dict[str, int]:
     }
 
 
+def _medir_diretorio(executar: Executor, *, container: str, caminho: str) -> dict[str, int]:
+    """Mede um diretório dentro de um contêiner: blocos alocados e tamanho aparente.
+
+    `total_bytes` vem de `du -sk` (blocos de fato alocados) — é o número
+    comparável entre sistemas, e o que "espaço em disco" significa.
+
+    `aparente_bytes` vem de `du -sb` (`--apparent-size`) e existe para deixar
+    visível o que ele esconde: o Qdrant pré-aloca arquivos esparsos de 32 MiB
+    para WAL e `payload_storage`, então a soma dos tamanhos declarados chega a
+    ser 450× maior que o disco realmente ocupado. Reportar o aparente como
+    footprint teria posto um número fabricado em tabela.
+
+    `-sk` é usado no lugar de `--block-size=1` porque o `du` da imagem do
+    Weaviate é BusyBox e não aceita a opção longa.
+    """
+    alocado = executar(["docker", "exec", container, "du", "-sk", caminho])
+    aparente = executar(["docker", "exec", container, "du", "-sb", caminho])
+    return {
+        "total_bytes": parse_du_kib_bytes(alocado),
+        "aparente_bytes": parse_du_bytes(aparente),
+    }
+
+
 def medir_disco_qdrant(executar: Executor, *, nome_colecao: str) -> dict[str, int]:
     """Bytes do diretório da coleção dentro do contêiner do Qdrant."""
-    caminho = f"{CAMINHO_COLECAO['qdrant']}/{nome_colecao}"
-    saida = executar(["docker", "exec", CONTAINER_POR_SISTEMA["qdrant"], "du", "-sb", caminho])
-    return {"total_bytes": parse_du_bytes(saida)}
+    return _medir_diretorio(
+        executar,
+        container=CONTAINER_POR_SISTEMA["qdrant"],
+        caminho=f"{CAMINHO_COLECAO['qdrant']}/{nome_colecao}",
+    )
 
 
 def medir_disco_weaviate(executar: Executor, *, nome_classe: str) -> dict[str, int]:
     """Bytes do diretório da classe dentro do contêiner do Weaviate."""
-    caminho = f"{CAMINHO_COLECAO['weaviate']}/{diretorio_weaviate(nome_classe)}"
-    saida = executar(["docker", "exec", CONTAINER_POR_SISTEMA["weaviate"], "du", "-sb", caminho])
-    return {"total_bytes": parse_du_bytes(saida)}
+    return _medir_diretorio(
+        executar,
+        container=CONTAINER_POR_SISTEMA["weaviate"],
+        caminho=f"{CAMINHO_COLECAO['weaviate']}/{diretorio_weaviate(nome_classe)}",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -240,6 +272,40 @@ def aguardar_fila_weaviate(
         f"fila de indexação da classe {nome_classe!r} não drenou após {tentativas} "
         f"consultas (situação: {pendente}); índice HNSW ainda em construção"
     )
+
+
+# ---------------------------------------------------------------------------
+# Cronometragem da indexação
+# ---------------------------------------------------------------------------
+
+
+def cronometrar_indexacao(
+    sistema: str,
+    *,
+    carregar: Callable[[], Any],
+    aguardar_indice: Callable[[], Any] | None = None,
+    relogio: Callable[[], float] = time.perf_counter,
+) -> tuple[float | None, float]:
+    """Mede `(tempo_carga_s, tempo_indice_utilizavel_s)` de um seed.
+
+    O segundo valor é o número comparável entre os três sistemas: tempo de
+    parede desde o início da carga até o índice estar de fato utilizável.
+
+    O primeiro só existe onde a construção do índice é separável da carga.
+    O pgvector constrói dentro do próprio seed (`CREATE INDEX` bloqueante após
+    o `INSERT`), então devolve `None` — declarar a ausência é mais honesto que
+    repetir o total e sugerir uma decomposição que não foi medida. Onde existe,
+    a diferença entre os dois números é exatamente o custo da indexação em
+    background, que uma medição ingênua deixaria invisível.
+    """
+    _validar_sistema(sistema)
+    inicio = relogio()
+    carregar()
+    fim_carga = relogio()
+    if aguardar_indice is None:
+        return None, fim_carga - inicio
+    aguardar_indice()
+    return fim_carga - inicio, relogio() - inicio
 
 
 # ---------------------------------------------------------------------------

@@ -33,12 +33,14 @@ from lib.footprint import (
     INSTRUMENTO_DISCO,
     MedidaRecursos,
     aguardar_fila_weaviate,
+    cronometrar_indexacao,
     diretorio_weaviate,
     medir_disco_pgvector,
     medir_disco_qdrant,
     medir_disco_weaviate,
     medir_rss_bytes,
     parse_du_bytes,
+    parse_du_kib_bytes,
     parse_mem_usage_bytes,
 )
 
@@ -48,15 +50,20 @@ from lib.footprint import (
 
 
 class ExecutorFake:
-    """Substitui a execução de `docker ...`, registrando o argv recebido."""
+    """Substitui a execução de `docker ...`, registrando o argv recebido.
 
-    def __init__(self, saida: str = "") -> None:
-        self.saida = saida
+    Aceita uma saída por chamada, na ordem — a coleta de disco emite dois
+    comandos (blocos alocados e tamanho aparente).
+    """
+
+    def __init__(self, *saidas: str) -> None:
+        self.saidas = saidas or ("",)
         self.chamadas: list[list[str]] = []
 
     def __call__(self, argv: Sequence[str]) -> str:
+        saida = self.saidas[min(len(self.chamadas), len(self.saidas) - 1)]
         self.chamadas.append(list(argv))
-        return self.saida
+        return saida
 
     @property
     def ultimo_argv(self) -> list[str]:
@@ -195,29 +202,53 @@ def test_disco_pgvector_consulta_a_tabela_pedida() -> None:
     assert "bench_b_500000" in str(conn._cursor.params)
 
 
-def test_disco_qdrant_mede_o_diretorio_da_colecao() -> None:
-    executar = ExecutorFake("626003482\t/qdrant/storage/collections/bench_a_100000\n")
+def test_disco_qdrant_reporta_blocos_alocados_e_nao_tamanho_aparente() -> None:
+    """O Qdrant pré-aloca arquivos esparsos de 32 MiB (WAL e `page_0.dat`).
 
-    medida = medir_disco_qdrant(executar, nome_colecao="bench_a_100000")
+    Medido com `--apparent-size`, `bench_a_200` — 200 vetores, ~300 KB de dado —
+    aparecia com 560 MB, inflação de 450×. Espaço em disco é bloco alocado.
+    """
+    executar = ExecutorFake(
+        "1276\t/qdrant/storage/collections/bench_a_200\n",
+        "587471615\t/qdrant/storage/collections/bench_a_200\n",
+    )
 
-    assert medida == {"total_bytes": 626_003_482}
-    assert executar.ultimo_argv == [
+    medida = medir_disco_qdrant(executar, nome_colecao="bench_a_200")
+
+    assert medida == {"total_bytes": 1276 * 1024, "aparente_bytes": 587_471_615}
+
+
+def test_disco_qdrant_usa_du_sk_para_o_numero_comparavel() -> None:
+    """`-sk` é o denominador comum: o `du` do Weaviate é BusyBox, sem `--block-size`."""
+    executar = ExecutorFake("1276\tx\n", "587471615\tx\n")
+
+    medir_disco_qdrant(executar, nome_colecao="bench_a_200")
+
+    assert executar.chamadas[0] == [
         "docker",
         "exec",
         "ic-qdrant",
         "du",
-        "-sb",
-        "/qdrant/storage/collections/bench_a_100000",
+        "-sk",
+        "/qdrant/storage/collections/bench_a_200",
     ]
+    assert "-sb" in executar.chamadas[1]
 
 
 def test_disco_weaviate_mede_o_diretorio_em_minusculas_da_classe() -> None:
-    executar = ExecutorFake("319709452\t/var/lib/weaviate/bencha100000\n")
+    executar = ExecutorFake(
+        "312252\t/var/lib/weaviate/bencha100000\n",
+        "319709452\t/var/lib/weaviate/bencha100000\n",
+    )
 
     medida = medir_disco_weaviate(executar, nome_classe="BenchA100000")
 
-    assert medida == {"total_bytes": 319_709_452}
-    assert executar.ultimo_argv[-1] == "/var/lib/weaviate/bencha100000"
+    assert medida == {"total_bytes": 312_252 * 1024, "aparente_bytes": 319_709_452}
+    assert executar.chamadas[0][-1] == "/var/lib/weaviate/bencha100000"
+
+
+def test_parse_du_kib_converte_para_bytes() -> None:
+    assert parse_du_kib_bytes("1276\t/x\n") == 1276 * 1024
 
 
 def test_disco_qdrant_propaga_falha_em_vez_de_engolir() -> None:
@@ -318,6 +349,71 @@ def test_espera_weaviate_levanta_se_a_classe_nao_aparece() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Cronometragem da indexação
+#
+# O relógio precisa parar quando o índice está utilizável, não quando a última
+# escrita foi aceita: pgvector constrói o índice em operação bloqueante dentro
+# da própria carga, enquanto Qdrant e Weaviate constroem em background. Parar no
+# retorno do upsert favoreceria artificialmente os dois últimos.
+# ---------------------------------------------------------------------------
+
+
+class RelogioFalso:
+    """Devolve, a cada chamada, o próximo instante da lista."""
+
+    def __init__(self, instantes: list[float]) -> None:
+        self._instantes = instantes
+        self.chamadas = 0
+
+    def __call__(self) -> float:
+        valor = self._instantes[min(self.chamadas, len(self._instantes) - 1)]
+        self.chamadas += 1
+        return valor
+
+
+def test_cronometra_pgvector_sem_separar_carga_de_indice() -> None:
+    """Sem construção assíncrona, só existe o tempo até o índice ficar pronto."""
+    carga, total = cronometrar_indexacao(
+        "pgvector",
+        carregar=lambda: None,
+        relogio=RelogioFalso([0.0, 873.9]),
+    )
+
+    assert carga is None
+    assert total == pytest.approx(873.9)
+
+
+def test_cronometra_qdrant_separando_carga_da_espera() -> None:
+    """A diferença entre os dois números é o custo da indexação em background."""
+    carga, total = cronometrar_indexacao(
+        "qdrant",
+        carregar=lambda: None,
+        aguardar_indice=lambda: None,
+        relogio=RelogioFalso([0.0, 19.8, 42.1]),
+    )
+
+    assert carga == pytest.approx(19.8)
+    assert total == pytest.approx(42.1)
+
+
+def test_espera_do_indice_ocorre_depois_da_carga() -> None:
+    ordem: list[str] = []
+    cronometrar_indexacao(
+        "weaviate",
+        carregar=lambda: ordem.append("carga"),
+        aguardar_indice=lambda: ordem.append("espera"),
+        relogio=RelogioFalso([0.0, 1.0, 2.0]),
+    )
+
+    assert ordem == ["carga", "espera"]
+
+
+def test_cronometrar_rejeita_sistema_desconhecido() -> None:
+    with pytest.raises(ValueError, match="sistema"):
+        cronometrar_indexacao("milvus", carregar=lambda: None)
+
+
+# ---------------------------------------------------------------------------
 # MedidaRecursos — o registro que vai ao JSON
 # ---------------------------------------------------------------------------
 
@@ -360,7 +456,7 @@ def test_medida_serializa_com_o_criterio_junto_do_numero() -> None:
 
     assert dados["tempo_indice_utilizavel_s"] == 88.4
     assert dados["criterio_indice_utilizavel"] == "fila_vetorial_drenada"
-    assert dados["instrumento_disco"] == "du_diretorio_classe"
+    assert dados["instrumento_disco"] == "du_sk_diretorio_classe"
     assert dados["disco"]["total_bytes"] == 319_709_452
 
 
