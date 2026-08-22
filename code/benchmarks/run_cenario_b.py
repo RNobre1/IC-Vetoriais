@@ -33,6 +33,7 @@ from benchmarks.run_cenario_a import (
     SISTEMAS_VALIDOS,
     _construir_buscador,
     _limpar_recurso,
+    _medir_recursos,
     split_embeddings,
     timestamp_utc,
 )
@@ -175,44 +176,65 @@ def _seed_b(
     recurso,
     nome_recurso: str,
     equalizado: bool = False,
-) -> None:
+) -> tuple[float | None, float]:
     """Igual ao seed do Cenário A, porém passando o `metadata` com `seletor`.
 
     Com `equalizado=True`, os três sistemas passam a tratar o atributo de filtro
     da mesma forma: índice dedicado em `seletor` nos três e limiar de busca
     exata zerado nos dois especializados, de modo que toda seletividade seja
     respondida por HNSW. Vide `vault/decisões/2026-08-16-equalizacao-cenario-b`.
+
+    Devolve `(tempo_carga_s, tempo_indice_utilizavel_s)`, como o Cenário A.
     """
+    from lib.footprint import INTERVALO_PADRAO, TENTATIVAS_PADRAO, cronometrar_indexacao
+
     if sistema == "pgvector":
         from seeders.pgvector_seeder import seed_pgvector
 
-        seed_pgvector(
-            vetores=vetores,
-            metadata=metadata,
-            conn=recurso,
-            nome_tabela=nome_recurso,
-            indexar_seletor=equalizado,
+        return cronometrar_indexacao(
+            sistema,
+            carregar=lambda: seed_pgvector(
+                vetores=vetores,
+                metadata=metadata,
+                conn=recurso,
+                nome_tabela=nome_recurso,
+                indexar_seletor=equalizado,
+            ),
         )
-    elif sistema == "qdrant":
-        from seeders.qdrant_seeder import FULL_SCAN_MINIMO, seed_qdrant
+    if sistema == "qdrant":
+        from seeders.qdrant_seeder import FULL_SCAN_MINIMO, aguardar_green, seed_qdrant
 
-        seed_qdrant(
-            vetores=vetores,
-            metadata=metadata,
-            client=recurso,
-            nome_colecao=nome_recurso,
-            full_scan_threshold=FULL_SCAN_MINIMO if equalizado else None,
+        return cronometrar_indexacao(
+            sistema,
+            carregar=lambda: seed_qdrant(
+                vetores=vetores,
+                metadata=metadata,
+                client=recurso,
+                nome_colecao=nome_recurso,
+                full_scan_threshold=FULL_SCAN_MINIMO if equalizado else None,
+                aguardar_indexacao=False,
+            ),
+            aguardar_indice=lambda: aguardar_green(
+                recurso, nome_recurso, tentativas=TENTATIVAS_PADRAO, intervalo=INTERVALO_PADRAO
+            ),
         )
-    elif sistema == "weaviate":
+    if sistema == "weaviate":
+        from lib.footprint import aguardar_fila_weaviate
         from seeders.weaviate_seeder import seed_weaviate
 
-        seed_weaviate(
-            vetores=vetores,
-            metadata=metadata,
-            client=recurso,
-            nome_classe=nome_recurso,
-            flat_search_cutoff=0 if equalizado else None,
+        return cronometrar_indexacao(
+            sistema,
+            carregar=lambda: seed_weaviate(
+                vetores=vetores,
+                metadata=metadata,
+                client=recurso,
+                nome_classe=nome_recurso,
+                flat_search_cutoff=0 if equalizado else None,
+                aguardar_indexacao=False,
+            ),
+            aguardar_indice=lambda: aguardar_fila_weaviate(recurso, nome_classe=nome_recurso),
         )
+    raise ValueError(f"sistema desconhecido: {sistema}")
 
 
 def executar(cfg: Config) -> list[Path]:
@@ -264,13 +286,20 @@ def executar(cfg: Config) -> list[Path]:
         buscador, recurso = _construir_buscador(sistema, nome_recurso=nome_recurso, env=env)
         try:
             _limpar_recurso(sistema, recurso=recurso, nome_recurso=nome_recurso)
-            _seed_b(
+            t_carga, t_indice = _seed_b(
                 sistema,
                 vetores=base,
                 metadata=metadata,
                 recurso=recurso,
                 nome_recurso=nome_recurso,
                 equalizado=cfg.equalizado,
+            )
+            recursos = _medir_recursos(
+                sistema,
+                recurso=recurso,
+                nome_recurso=nome_recurso,
+                tempo_carga_s=t_carga,
+                tempo_indice_utilizavel_s=t_indice,
             )
             resultados = medir_sistema_filtrado(
                 buscador,
@@ -286,7 +315,9 @@ def executar(cfg: Config) -> list[Path]:
                 # sistema e mesmo N ficam indistinguíveis no diretório.
                 ambiente={"sistema": sistema, "equalizado": cfg.equalizado},
             )
-            escritos.append(salvar_curva(resultados, results_dir=cfg.results_dir))
+            escritos.append(
+                salvar_curva(resultados, results_dir=cfg.results_dir, recursos=recursos)
+            )
         finally:
             if hasattr(recurso, "close"):
                 recurso.close()

@@ -103,7 +103,7 @@ def seed_qdrant(
         client.upsert(collection_name=nome_colecao, points=buffer, wait=False)
 
     if aguardar_indexacao:
-        _aguardar_green(
+        aguardar_green(
             client,
             nome_colecao,
             tentativas=tentativas_indexacao,
@@ -112,7 +112,7 @@ def seed_qdrant(
     return n
 
 
-def _aguardar_green(
+def aguardar_green(
     client: QdrantClient, nome_colecao: str, *, tentativas: int, intervalo: float
 ) -> None:
     """Bloqueia até a coleção sair de `yellow` (indexação em background)."""

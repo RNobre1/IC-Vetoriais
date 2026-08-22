@@ -35,6 +35,47 @@ def metadata() -> list[dict[str, Any]]:
     return [{"seletor": i / 4.0} for i in range(4)]
 
 
+class _ColecaoVerde:
+    status = "green"
+
+
+class _ShardPronto:
+    def __init__(self, collection: str) -> None:
+        self.collection = collection
+        self.vector_queue_length = 0
+        self.vector_indexing_status = "READY"
+
+
+class _NoPronto:
+    def __init__(self, collection: str) -> None:
+        self.shards = [_ShardPronto(collection)]
+
+
+class _ClusterPronto:
+    def nodes(self, collection: str | None = None, *, output: str | None = None) -> list[Any]:
+        return [_NoPronto(collection or "")]
+
+
+class RecursoIndexado:
+    """Recurso cujo índice já está pronto.
+
+    O CLI desliga a espera interna do seeder e a refaz por fora, para separar o
+    tempo de carga do tempo de indexação — então o dublê precisa responder às
+    consultas de status dos dois sistemas assíncronos.
+    """
+
+    def __init__(self) -> None:
+        self.cluster = _ClusterPronto()
+
+    def get_collection(self, nome: str) -> _ColecaoVerde:
+        return _ColecaoVerde()
+
+
+@pytest.fixture
+def recurso() -> RecursoIndexado:
+    return RecursoIndexado()
+
+
 @pytest.fixture
 def capturas(monkeypatch: pytest.MonkeyPatch) -> dict[str, dict[str, Any]]:
     """Substitui os três seeders por espiões que registram os kwargs."""
@@ -87,7 +128,7 @@ def test_nome_weaviate_separa_o_equalizado():
 # ---------------------------------------------------------------------------
 
 
-def test_seed_qdrant_equalizado_minimiza_full_scan_threshold(vetores, metadata, capturas):
+def test_seed_qdrant_equalizado_minimiza_full_scan_threshold(vetores, metadata, capturas, recurso):
     """O Qdrant rejeita 0 (HTTP 422); o mínimo aceito é 10 KB (~7 vetores 384-D)."""
     from seeders.qdrant_seeder import FULL_SCAN_MINIMO
 
@@ -95,48 +136,99 @@ def test_seed_qdrant_equalizado_minimiza_full_scan_threshold(vetores, metadata, 
         "qdrant",
         vetores=vetores,
         metadata=metadata,
-        recurso=object(),
+        recurso=recurso,
         nome_recurso="c",
         equalizado=True,
     )
     assert capturas["qdrant"]["full_scan_threshold"] == FULL_SCAN_MINIMO
 
 
-def test_seed_weaviate_equalizado_zera_flat_search_cutoff(vetores, metadata, capturas):
+def test_seed_weaviate_equalizado_zera_flat_search_cutoff(vetores, metadata, capturas, recurso):
     _seed_b(
         "weaviate",
         vetores=vetores,
         metadata=metadata,
-        recurso=object(),
+        recurso=recurso,
         nome_recurso="C",
         equalizado=True,
     )
     assert capturas["weaviate"]["flat_search_cutoff"] == 0
 
 
-def test_seed_pgvector_equalizado_indexa_seletor(vetores, metadata, capturas):
+def test_seed_pgvector_equalizado_indexa_seletor(vetores, metadata, capturas, recurso):
     _seed_b(
         "pgvector",
         vetores=vetores,
         metadata=metadata,
-        recurso=object(),
+        recurso=recurso,
         nome_recurso="t",
         equalizado=True,
     )
     assert capturas["pgvector"]["indexar_seletor"] is True
 
 
-def test_seed_default_preserva_configuracao_de_julho(vetores, metadata, capturas):
+def test_seed_default_preserva_configuracao_de_julho(vetores, metadata, capturas, recurso):
     """Sem equalização, nenhum limiar é tocado — reprodutibilidade do histórico."""
     for sistema, nome in [("qdrant", "c"), ("weaviate", "C"), ("pgvector", "t")]:
         _seed_b(
             sistema,
             vetores=vetores,
             metadata=metadata,
-            recurso=object(),
+            recurso=recurso,
             nome_recurso=nome,
             equalizado=False,
         )
     assert capturas["qdrant"].get("full_scan_threshold") is None
     assert capturas["weaviate"].get("flat_search_cutoff") is None
     assert capturas["pgvector"].get("indexar_seletor", False) is False
+
+
+# ---------------------------------------------------------------------------
+# Cronometragem — o seed passou a devolver tempo, não `None`
+# ---------------------------------------------------------------------------
+
+
+def test_seed_b_devolve_carga_e_indice_nos_assincronos(vetores, metadata, capturas, recurso):
+    """Nos sistemas de construção assíncrona os dois tempos são distinguíveis."""
+    t_carga, t_indice = _seed_b(
+        "qdrant",
+        vetores=vetores,
+        metadata=metadata,
+        recurso=recurso,
+        nome_recurso="c",
+        equalizado=False,
+    )
+
+    assert t_carga is not None
+    assert 0.0 <= t_carga <= t_indice
+
+
+def test_seed_b_pgvector_reporta_apenas_o_tempo_ate_o_indice(vetores, metadata, capturas, recurso):
+    """`CREATE INDEX` roda dentro do seed: não há carga separável para reportar."""
+    t_carga, t_indice = _seed_b(
+        "pgvector",
+        vetores=vetores,
+        metadata=metadata,
+        recurso=recurso,
+        nome_recurso="t",
+        equalizado=False,
+    )
+
+    assert t_carga is None
+    assert t_indice >= 0.0
+
+
+def test_seed_b_desliga_a_espera_interna_dos_seeders(vetores, metadata, capturas, recurso):
+    """A espera é refeita pelo CLI; deixá-la ligada mediria o mesmo trecho duas vezes."""
+    for sistema, nome in [("qdrant", "c"), ("weaviate", "C")]:
+        _seed_b(
+            sistema,
+            vetores=vetores,
+            metadata=metadata,
+            recurso=recurso,
+            nome_recurso=nome,
+            equalizado=False,
+        )
+
+    assert capturas["qdrant"]["aguardar_indexacao"] is False
+    assert capturas["weaviate"]["aguardar_indexacao"] is False

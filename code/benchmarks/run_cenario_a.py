@@ -173,19 +173,97 @@ def _limpar_recurso(sistema: str, *, recurso, nome_recurso: str) -> None:
             recurso.collections.delete(nome_recurso)
 
 
-def _seed(sistema: str, *, vetores: np.ndarray, recurso, nome_recurso: str) -> None:
+def _seed(
+    sistema: str, *, vetores: np.ndarray, recurso, nome_recurso: str
+) -> tuple[float | None, float]:
+    """Semeia e devolve `(tempo_carga_s, tempo_indice_utilizavel_s)`.
+
+    A espera pela indexação é desligada no seeder e refeita aqui para que os
+    dois tempos fiquem separados nos sistemas de construção assíncrona. O
+    comportamento final é o mesmo: nenhum caminho devolve o controle antes do
+    índice estar utilizável.
+    """
+    from lib.footprint import INTERVALO_PADRAO, TENTATIVAS_PADRAO, cronometrar_indexacao
+
     if sistema == "pgvector":
         from seeders.pgvector_seeder import seed_pgvector
 
-        seed_pgvector(vetores=vetores, metadata=None, conn=recurso, nome_tabela=nome_recurso)
-    elif sistema == "qdrant":
-        from seeders.qdrant_seeder import seed_qdrant
+        return cronometrar_indexacao(
+            sistema,
+            carregar=lambda: seed_pgvector(
+                vetores=vetores, metadata=None, conn=recurso, nome_tabela=nome_recurso
+            ),
+        )
+    if sistema == "qdrant":
+        from seeders.qdrant_seeder import aguardar_green, seed_qdrant
 
-        seed_qdrant(vetores=vetores, metadata=None, client=recurso, nome_colecao=nome_recurso)
-    elif sistema == "weaviate":
+        return cronometrar_indexacao(
+            sistema,
+            carregar=lambda: seed_qdrant(
+                vetores=vetores,
+                metadata=None,
+                client=recurso,
+                nome_colecao=nome_recurso,
+                aguardar_indexacao=False,
+            ),
+            aguardar_indice=lambda: aguardar_green(
+                recurso, nome_recurso, tentativas=TENTATIVAS_PADRAO, intervalo=INTERVALO_PADRAO
+            ),
+        )
+    if sistema == "weaviate":
+        from lib.footprint import aguardar_fila_weaviate
         from seeders.weaviate_seeder import seed_weaviate
 
-        seed_weaviate(vetores=vetores, metadata=None, client=recurso, nome_classe=nome_recurso)
+        return cronometrar_indexacao(
+            sistema,
+            carregar=lambda: seed_weaviate(
+                vetores=vetores,
+                metadata=None,
+                client=recurso,
+                nome_classe=nome_recurso,
+                aguardar_indexacao=False,
+            ),
+            aguardar_indice=lambda: aguardar_fila_weaviate(recurso, nome_classe=nome_recurso),
+        )
+    raise ValueError(f"sistema desconhecido: {sistema}")
+
+
+def _medir_recursos(
+    sistema: str,
+    *,
+    recurso,
+    nome_recurso: str,
+    tempo_carga_s: float | None,
+    tempo_indice_utilizavel_s: float,
+):
+    """Coleta disco e memória do sistema recém-semeado.
+
+    Chamada depois do índice estar utilizável — antes disso, o footprint
+    mediria uma estrutura em construção.
+    """
+    from lib.footprint import (
+        MedidaRecursos,
+        executar_docker,
+        medir_disco_pgvector,
+        medir_disco_qdrant,
+        medir_disco_weaviate,
+        medir_rss_bytes,
+    )
+
+    if sistema == "pgvector":
+        disco = medir_disco_pgvector(recurso, nome_tabela=nome_recurso)
+    elif sistema == "qdrant":
+        disco = medir_disco_qdrant(executar_docker, nome_colecao=nome_recurso)
+    else:
+        disco = medir_disco_weaviate(executar_docker, nome_classe=nome_recurso)
+
+    return MedidaRecursos.para_sistema(
+        sistema,
+        disco=disco,
+        memoria_rss_bytes=medir_rss_bytes(executar_docker, sistema=sistema),
+        tempo_carga_s=tempo_carga_s,
+        tempo_indice_utilizavel_s=tempo_indice_utilizavel_s,
+    )
 
 
 def executar(cfg: Config) -> list[Path]:
@@ -229,7 +307,16 @@ def executar(cfg: Config) -> list[Path]:
         buscador, recurso = _construir_buscador(sistema, nome_recurso=nome_recurso, env=env)
         try:
             _limpar_recurso(sistema, recurso=recurso, nome_recurso=nome_recurso)
-            _seed(sistema, vetores=base, recurso=recurso, nome_recurso=nome_recurso)
+            t_carga, t_indice = _seed(
+                sistema, vetores=base, recurso=recurso, nome_recurso=nome_recurso
+            )
+            recursos = _medir_recursos(
+                sistema,
+                recurso=recurso,
+                nome_recurso=nome_recurso,
+                tempo_carga_s=t_carga,
+                tempo_indice_utilizavel_s=t_indice,
+            )
             from benchmarks.cenario_a import medir_sistema
 
             resultados: list[ResultadoBenchmark] = medir_sistema(
@@ -243,7 +330,9 @@ def executar(cfg: Config) -> list[Path]:
                 warmup=cfg.warmup,
                 ambiente={"sistema": sistema},
             )
-            escritos.append(salvar_curva(resultados, results_dir=cfg.results_dir))
+            escritos.append(
+                salvar_curva(resultados, results_dir=cfg.results_dir, recursos=recursos)
+            )
         finally:
             if hasattr(recurso, "close"):
                 recurso.close()
