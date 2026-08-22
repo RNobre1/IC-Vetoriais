@@ -221,21 +221,32 @@ def _curva_para_pontos(dados: dict) -> list[ResultadoBenchmark]:
     ]
 
 
-def test_salvar_curva_sem_recursos_reproduz_os_json_versionados(tmp_path: Path) -> None:
-    """Contraprova de equivalência: o formato antigo tem de sair byte a byte igual.
+def test_todo_json_versionado_e_reproduzivel_pelo_reporting_atual(tmp_path: Path) -> None:
+    """Contraprova de equivalência: cada arquivo tem de sair byte a byte igual.
 
     Sem isto, "estender o reporting" viraria mudança silenciosa de formato, e os
-    28 arquivos que sustentam as tabelas do relatório deixariam de ser
+    arquivos que sustentam as tabelas do relatório deixariam de ser
     reprodutíveis pelo próprio código que os gerou.
+
+    A varredura é regra, não lista — vale para o arquivo que nascer amanhã. Por
+    isso trata os **dois** formatos: sem `recursos` (rodadas até 2026-08-19) e
+    com `recursos` (a partir da instrumentação de footprint). Assumir só o
+    primeiro deixaria o teste vermelho no dia em que a primeira medição fosse
+    versionada, e o vermelho apareceria no CI, não aqui.
     """
+    from lib.footprint import MedidaRecursos
+
     arquivos = sorted(RESULTS_VERSIONADOS.glob("cenario_*.json"))
     assert arquivos, f"nenhum JSON versionado encontrado em {RESULTS_VERSIONADOS}"
 
     for arquivo in arquivos:
         original = arquivo.read_text(encoding="utf-8")
+        dados = json.loads(original)
+        bruto = dados.get("recursos")
         regravado = salvar_curva(
-            _curva_para_pontos(json.loads(original)),
+            _curva_para_pontos(dados),
             results_dir=tmp_path / arquivo.stem,
+            recursos=None if bruto is None else MedidaRecursos(**bruto),
         )
         assert (
             regravado.read_text(encoding="utf-8") == original
