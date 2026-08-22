@@ -79,6 +79,27 @@ Onde a construção é separável da carga, os dois tempos são gravados: `tempo
 
 **Apenas `tempo_indice_utilizavel_s` é comparável entre os três.**
 
+### O que `green` significa no Qdrant — e o que não significa
+
+Ao verificar a primeira medição desta rodada, o Qdrant reportou `status: green` e `optimizer_status: ok` com **96.512 de 100.000 vetores indexados**. A checagem inicial foi se a indexação ainda estava em curso; não estava. Coleções semeadas em 2026-07-09, com seis semanas de idade e nenhuma escrita desde então, mostram a mesma fração fora do índice:
+
+| Coleção | Pontos | Indexados | Fora do HNSW |
+|---|---|---|---|
+| `bench_a_500000` (jul) | 500.000 | 497.664 | 2.336 (0,47%) |
+| `bench_b_500000` (jul) | 500.000 | 499.200 | 800 (0,16%) |
+| `bench_b_100000` (jul) | 100.000 | 98.048 | 1.952 (1,95%) |
+| `bench_b_eq_100000` (ago) | 100.000 | 96.256 | 3.744 (3,74%) |
+| `bench_a_100000` (esta rodada) | 100.000 | 96.512 | 3.488 (3,49%) |
+
+O mecanismo está na configuração da coleção, não em suposição: `optimizer_config.indexing_threshold = 10000` (KB). Segmentos cujo volume de vetores fica abaixo desse limiar não recebem índice HNSW — com 384 dimensões em float32 (1.536 B por vetor), 10.000 KB equivalem a ~6.667 vetores, o que explica os resíduos observados. É estado estacionário por projeto, não construção pendente.
+
+Duas consequências, e vale separar o que está provado do que não está:
+
+- **Para o tempo de indexação, `green` continua sendo o critério correto**: é quando o Qdrant considera a otimização encerrada, e esperar além disso seria esperar por algo que nunca acontece.
+- **Para recall e latência, é uma limitação a declarar**: entre 0,16% e 3,74% dos vetores são respondidos por varredura dentro do próprio segmento, não pelo grafo. É a mesma família de artefato do `full_scan_threshold` ([[2026-08-16-equalizacao-cenario-b]]), porém de magnitude muito menor e sem produzir `recall = 1,0000` — não invalida as curvas publicadas. **Não foi medido** qual o efeito quantitativo dessa fração sobre o recall reportado; afirmar que é desprezível seria dedução, não resultado.
+
+O `indexing_threshold` **não foi alterado**: mexer nele mudaria a configuração usada em todas as execuções anteriores e quebraria a comparabilidade com os 28 JSONs já versionados. Fica como candidato a experimento próprio, com decisão dedicada.
+
 ## Justificativa
 
 O critério que organiza tudo acima é único: *a grandeza medida é a mesma nos três?* Bytes que o SGBD passou a ocupar em disco para armazenar e indexar aquele conjunto de dados é a mesma grandeza, ainda que lida por instrumentos diferentes — o catálogo do Postgres soma o comprimento dos arquivos daquela relação, e `du -sk` soma os blocos daquele diretório. Contagem de pontos não é essa grandeza, e por isso o que existia não servia.
