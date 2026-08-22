@@ -113,9 +113,31 @@ class _FakeCollections:
         return _FakeCollection()
 
 
+class _FakeShard:
+    """Shard já indexado — estes testes cobrem configuração, não espera de fila."""
+
+    def __init__(self, collection: str) -> None:
+        self.collection = collection
+        self.vector_queue_length = 0
+        self.vector_indexing_status = "READY"
+
+
+class _FakeNode:
+    def __init__(self, collection: str) -> None:
+        self.shards = [_FakeShard(collection)]
+
+
+class _FakeCluster:
+    def nodes(self, collection: str | None = None, *, output: str | None = None) -> list[Any]:
+        return [_FakeNode(collection or "")]
+
+
 class FakeWeaviate:
     def __init__(self) -> None:
         self.collections = _FakeCollections()
+        # O seeder aguarda a fila de indexação drenar antes de retornar
+        # (vide tests/unit/test_weaviate_indexacao.py).
+        self.cluster = _FakeCluster()
 
 
 class _FakeCursor:

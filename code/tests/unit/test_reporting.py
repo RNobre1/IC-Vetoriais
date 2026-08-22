@@ -194,6 +194,101 @@ def test_salvar_curva_levanta_se_sistemas_misturados(tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Bloco `recursos` — footprint e tempo de indexação junto da curva
+#
+# O §4.4 do relatório lista uso de recursos e tempo de indexação como métrica; a
+# Etapa 3 mediu ambos apenas no console. O bloco passa a viver no mesmo JSON da
+# curva, e precisa entrar **sem quebrar os 28 arquivos já versionados**, que são
+# a fonte rastreável de todo número do relatório.
+# ---------------------------------------------------------------------------
+
+RESULTS_VERSIONADOS = Path(__file__).resolve().parents[2] / "results"
+
+
+def _curva_para_pontos(dados: dict) -> list[ResultadoBenchmark]:
+    """Reconstrói a lista de pontos a partir de um JSON de curva já gravado."""
+    return [
+        ResultadoBenchmark(
+            cenario=dados["cenario"],
+            sistema=dados["sistema"],
+            n=dados["n"],
+            timestamp_utc=dados["timestamp_utc"],
+            parametros=p["parametros"],
+            metricas=p["metricas"],
+            ambiente=p["ambiente"],
+        )
+        for p in dados["pontos"]
+    ]
+
+
+def test_salvar_curva_sem_recursos_reproduz_os_json_versionados(tmp_path: Path) -> None:
+    """Contraprova de equivalência: o formato antigo tem de sair byte a byte igual.
+
+    Sem isto, "estender o reporting" viraria mudança silenciosa de formato, e os
+    28 arquivos que sustentam as tabelas do relatório deixariam de ser
+    reprodutíveis pelo próprio código que os gerou.
+    """
+    arquivos = sorted(RESULTS_VERSIONADOS.glob("cenario_*.json"))
+    assert arquivos, f"nenhum JSON versionado encontrado em {RESULTS_VERSIONADOS}"
+
+    for arquivo in arquivos:
+        original = arquivo.read_text(encoding="utf-8")
+        regravado = salvar_curva(
+            _curva_para_pontos(json.loads(original)),
+            results_dir=tmp_path / arquivo.stem,
+        )
+        assert (
+            regravado.read_text(encoding="utf-8") == original
+        ), f"{arquivo.name} deixou de ser reproduzível pelo reporting atual"
+
+
+def test_todo_json_versionado_mantem_o_contrato_de_leitura() -> None:
+    """Guarda de varredura: vale para o arquivo que nascer amanhã, não para uma lista."""
+    for arquivo in sorted(RESULTS_VERSIONADOS.glob("cenario_*.json")):
+        dados = json.loads(arquivo.read_text(encoding="utf-8"))
+        assert {"cenario", "sistema", "n", "timestamp_utc", "pontos"} <= set(dados)
+        for ponto in dados["pontos"]:
+            assert {"parametros", "metricas", "ambiente"} <= set(ponto)
+
+
+def test_salvar_curva_grava_recursos_no_topo(tmp_path: Path) -> None:
+    from lib.footprint import MedidaRecursos
+
+    medida = MedidaRecursos.para_sistema(
+        "pgvector",
+        disco={"total_bytes": 370_925_568, "heap_bytes": 163_840_000},
+        memoria_rss_bytes=27_851_489,
+        tempo_carga_s=612.4,
+        tempo_indice_utilizavel_s=873.9,
+    )
+
+    caminho = salvar_curva([_ponto(16)], results_dir=tmp_path, recursos=medida)
+    dados = json.loads(caminho.read_text(encoding="utf-8"))
+
+    assert dados["recursos"]["disco"]["total_bytes"] == 370_925_568
+    assert dados["recursos"]["tempo_indice_utilizavel_s"] == 873.9
+    assert dados["recursos"]["criterio_indice_utilizavel"] == "create_index_retornou"
+
+
+def test_salvar_curva_sem_recursos_nao_cria_a_chave(tmp_path: Path) -> None:
+    """Ausência de medida é ausência de chave — nunca `null` ou zero."""
+    caminho = salvar_curva([_ponto(16)], results_dir=tmp_path)
+    assert "recursos" not in json.loads(caminho.read_text(encoding="utf-8"))
+
+
+def test_salvar_curva_com_recursos_continua_deterministica(tmp_path: Path) -> None:
+    from lib.footprint import MedidaRecursos
+
+    medida = MedidaRecursos.para_sistema("qdrant", disco={"total_bytes": 1})
+    c1 = salvar_curva([_ponto(16)], results_dir=tmp_path / "a", recursos=medida)
+    c2 = salvar_curva([_ponto(16)], results_dir=tmp_path / "b", recursos=medida)
+
+    texto = c1.read_text(encoding="utf-8")
+    assert texto == c2.read_text(encoding="utf-8")
+    assert texto.index('"pontos"') < texto.index('"recursos"')  # sort_keys ativo
+
+
+# ---------------------------------------------------------------------------
 # Ground truth — persistência round-trip
 # ---------------------------------------------------------------------------
 

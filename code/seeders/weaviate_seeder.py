@@ -21,6 +21,8 @@ from weaviate.classes.config import (
     VectorFilterStrategy,
 )
 
+from lib.footprint import INTERVALO_PADRAO, TENTATIVAS_PADRAO, aguardar_fila_weaviate
+
 
 def seed_weaviate(
     *,
@@ -33,6 +35,9 @@ def seed_weaviate(
     batch_size: int = 100,
     flat_search_cutoff: int | None = None,
     filter_strategy: str | None = None,
+    aguardar_indexacao: bool = True,
+    tentativas_indexacao: int = TENTATIVAS_PADRAO,
+    intervalo_indexacao: float = INTERVALO_PADRAO,
 ) -> int:
     """Cria classe HNSW (parâmetro `m` = M do paper Malkov & Yashunin) e insere em batch.
 
@@ -49,6 +54,14 @@ def seed_weaviate(
     `filter_strategy` registra explicitamente a estratégia (`acorn` é default a
     partir da v1.34; nossa imagem é a 1.37.2). `None` em ambos preserva o
     default do servidor. Vide `vault/decisões/2026-08-16-equalizacao-cenario-b`.
+
+    O bloco `batch` retorna quando os objetos foram **aceitos**, não quando o
+    HNSW terminou de indexá-los — o Weaviate enfileira os vetores e constrói o
+    grafo em background. Com `aguardar_indexacao=True` — o default — o seeder
+    só retorna depois que os shards desta classe ficam `READY` com fila zerada,
+    garantindo que ninguém meça latência ou recall sobre um índice pela metade.
+    É também o que torna o tempo de indexação comparável ao do pgvector, cujo
+    `CREATE INDEX` é bloqueante. Levanta `TimeoutError` se a fila não drenar.
     """
     if vetores.ndim != 2:
         raise ValueError(f"vetores precisa ser 2D, recebido shape={vetores.shape}")
@@ -87,4 +100,12 @@ def seed_weaviate(
                 if sel is not None:
                     props["seletor"] = float(sel)
             batch.add_object(properties=props, vector=vetores[i].tolist())
+
+    if aguardar_indexacao:
+        aguardar_fila_weaviate(
+            client,
+            nome_classe=nome_classe,
+            tentativas=tentativas_indexacao,
+            intervalo=intervalo_indexacao,
+        )
     return n

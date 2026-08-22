@@ -25,6 +25,8 @@ from typing import Any
 
 import numpy as np
 
+from lib.footprint import MedidaRecursos
+
 
 @dataclass(frozen=True, slots=True)
 class ResultadoBenchmark:
@@ -71,7 +73,12 @@ def salvar_resultado(resultado: ResultadoBenchmark, *, results_dir: Path) -> Pat
     return caminho
 
 
-def salvar_curva(resultados: list[ResultadoBenchmark], *, results_dir: Path) -> Path:
+def salvar_curva(
+    resultados: list[ResultadoBenchmark],
+    *,
+    results_dir: Path,
+    recursos: MedidaRecursos | None = None,
+) -> Path:
     """Grava um sweep (curva) de um sistema num **único** JSON.
 
     Cada ponto da curva (um `ResultadoBenchmark` por `efSearch`) compartilha
@@ -80,6 +87,11 @@ def salvar_curva(resultados: list[ResultadoBenchmark], *, results_dir: Path) -> 
     Aqui o arquivo é `cenario_<c>_<sistema>_<n>_<ts>.json` com a lista
     `pontos` preservando a ordem do sweep. Alinhado à metodologia de reportar
     **curvas** recall×QPS (docs/metodologia.md / ANN-Benchmarks).
+
+    `recursos` (opcional) acrescenta o bloco de topo `recursos` com footprint e
+    tempo de indexação. Quando ausente, a chave **não é criada** — os arquivos
+    continuam byte a byte idênticos ao formato que gerou os resultados já
+    versionados, e ausência de medida nunca vira `null` ou zero.
 
     Levanta `ValueError` se a lista for vazia ou misturar sistemas/cenários/n.
     """
@@ -117,6 +129,8 @@ def salvar_curva(resultados: list[ResultadoBenchmark], *, results_dir: Path) -> 
             for r in resultados
         ],
     }
+    if recursos is not None:
+        payload["recursos"] = recursos.para_json()
     caminho.write_text(
         json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
         encoding="utf-8",
