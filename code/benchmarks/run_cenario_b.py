@@ -34,6 +34,7 @@ from benchmarks.run_cenario_a import (
     _construir_buscador,
     _limpar_recurso,
     _medir_recursos,
+    _rss_baseline,
     split_embeddings,
     timestamp_utc,
 )
@@ -286,6 +287,7 @@ def executar(cfg: Config) -> list[Path]:
         buscador, recurso = _construir_buscador(sistema, nome_recurso=nome_recurso, env=env)
         try:
             _limpar_recurso(sistema, recurso=recurso, nome_recurso=nome_recurso)
+            rss_baseline = _rss_baseline(sistema)
             t_carga, t_indice = _seed_b(
                 sistema,
                 vetores=base,
@@ -300,6 +302,7 @@ def executar(cfg: Config) -> list[Path]:
                 nome_recurso=nome_recurso,
                 tempo_carga_s=t_carga,
                 tempo_indice_utilizavel_s=t_indice,
+                rss_baseline_bytes=rss_baseline,
             )
             resultados = medir_sistema_filtrado(
                 buscador,

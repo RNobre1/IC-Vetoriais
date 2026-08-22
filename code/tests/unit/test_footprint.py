@@ -460,6 +460,42 @@ def test_medida_serializa_com_o_criterio_junto_do_numero() -> None:
     assert dados["disco"]["total_bytes"] == 319_709_452
 
 
+def test_medida_calcula_o_delta_de_memoria_sobre_a_linha_de_base() -> None:
+    """RSS absoluto não é atribuível ao dado medido.
+
+    O Weaviate mantém residente o grafo de **todas** as classes da instância —
+    chegou a 6,1 GiB com oito coleções acumuladas, enquanto o Qdrant, que usa
+    mmap, reportava 65 MiB. Comparar os absolutos mediria o histórico do
+    contêiner, não o custo daquele conjunto de dados.
+    """
+    medida = MedidaRecursos.para_sistema(
+        "weaviate",
+        disco={},
+        memoria_rss_baseline_bytes=1_000_000,
+        memoria_rss_bytes=1_750_000,
+    )
+
+    assert medida.memoria_rss_delta_bytes == 750_000
+
+
+def test_medida_sem_linha_de_base_nao_inventa_delta() -> None:
+    medida = MedidaRecursos.para_sistema("qdrant", disco={}, memoria_rss_bytes=500)
+
+    assert medida.memoria_rss_delta_bytes is None
+
+
+def test_medida_admite_delta_negativo() -> None:
+    """Liberação de memória durante a carga é fato observável, não erro a zerar."""
+    medida = MedidaRecursos.para_sistema(
+        "pgvector",
+        disco={},
+        memoria_rss_baseline_bytes=900,
+        memoria_rss_bytes=400,
+    )
+
+    assert medida.memoria_rss_delta_bytes == -500
+
+
 def test_medida_aceita_ausencia_de_coleta() -> None:
     """Medida parcial é registrável; o que não pode é número inventado."""
     dados = MedidaRecursos.para_sistema("pgvector", disco={}).para_json()

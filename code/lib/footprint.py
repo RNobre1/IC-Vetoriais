@@ -328,6 +328,8 @@ class MedidaRecursos:
     criterio_indice_utilizavel: str
     disco: dict[str, int] = field(default_factory=dict)
     memoria_rss_bytes: int | None = None
+    memoria_rss_baseline_bytes: int | None = None
+    memoria_rss_delta_bytes: int | None = None
     tempo_carga_s: float | None = None
     tempo_indice_utilizavel_s: float | None = None
 
@@ -338,11 +340,23 @@ class MedidaRecursos:
         *,
         disco: dict[str, int],
         memoria_rss_bytes: int | None = None,
+        memoria_rss_baseline_bytes: int | None = None,
         tempo_carga_s: float | None = None,
         tempo_indice_utilizavel_s: float | None = None,
     ) -> MedidaRecursos:
-        """Monta a medida derivando contêiner, instrumento e critério do sistema."""
+        """Monta a medida derivando contêiner, instrumento e critério do sistema.
+
+        `memoria_rss_delta_bytes` é derivado da linha de base — é o número que
+        se aproxima do custo de memória daquele conjunto de dados. O absoluto
+        continua gravado, mas mede o contêiner inteiro, incluindo tudo que ele
+        já mantinha residente de execuções anteriores.
+        """
         _validar_sistema(sistema)
+        delta = (
+            None
+            if memoria_rss_bytes is None or memoria_rss_baseline_bytes is None
+            else memoria_rss_bytes - memoria_rss_baseline_bytes
+        )
         return cls(
             sistema=sistema,
             container=CONTAINER_POR_SISTEMA[sistema],
@@ -350,6 +364,8 @@ class MedidaRecursos:
             criterio_indice_utilizavel=CRITERIO_INDICE_UTILIZAVEL[sistema],
             disco=dict(disco),
             memoria_rss_bytes=memoria_rss_bytes,
+            memoria_rss_baseline_bytes=memoria_rss_baseline_bytes,
+            memoria_rss_delta_bytes=delta,
             tempo_carga_s=tempo_carga_s,
             tempo_indice_utilizavel_s=tempo_indice_utilizavel_s,
         )

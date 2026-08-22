@@ -228,6 +228,17 @@ def _seed(
     raise ValueError(f"sistema desconhecido: {sistema}")
 
 
+def _rss_baseline(sistema: str) -> int:
+    """Memória do contêiner **antes** do seed, para o delta ser atribuível.
+
+    Sem linha de base, o absoluto mede o histórico do contêiner: o Weaviate
+    mantém residente o grafo de todas as classes já criadas na instância.
+    """
+    from lib.footprint import executar_docker, medir_rss_bytes
+
+    return medir_rss_bytes(executar_docker, sistema=sistema)
+
+
 def _medir_recursos(
     sistema: str,
     *,
@@ -235,6 +246,7 @@ def _medir_recursos(
     nome_recurso: str,
     tempo_carga_s: float | None,
     tempo_indice_utilizavel_s: float,
+    rss_baseline_bytes: int | None = None,
 ):
     """Coleta disco e memória do sistema recém-semeado.
 
@@ -261,6 +273,7 @@ def _medir_recursos(
         sistema,
         disco=disco,
         memoria_rss_bytes=medir_rss_bytes(executar_docker, sistema=sistema),
+        memoria_rss_baseline_bytes=rss_baseline_bytes,
         tempo_carga_s=tempo_carga_s,
         tempo_indice_utilizavel_s=tempo_indice_utilizavel_s,
     )
@@ -307,6 +320,7 @@ def executar(cfg: Config) -> list[Path]:
         buscador, recurso = _construir_buscador(sistema, nome_recurso=nome_recurso, env=env)
         try:
             _limpar_recurso(sistema, recurso=recurso, nome_recurso=nome_recurso)
+            rss_baseline = _rss_baseline(sistema)
             t_carga, t_indice = _seed(
                 sistema, vetores=base, recurso=recurso, nome_recurso=nome_recurso
             )
@@ -316,6 +330,7 @@ def executar(cfg: Config) -> list[Path]:
                 nome_recurso=nome_recurso,
                 tempo_carga_s=t_carga,
                 tempo_indice_utilizavel_s=t_indice,
+                rss_baseline_bytes=rss_baseline,
             )
             from benchmarks.cenario_a import medir_sistema
 
