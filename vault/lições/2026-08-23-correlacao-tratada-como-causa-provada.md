@@ -12,7 +12,9 @@ Em 2026-08-22 o backend do PostgreSQL caiu durante um `CREATE INDEX ... USING hn
 
 Registrei a exaustão de memória como **causa** da queda — em [[../decisões/2026-08-22-medicao-de-footprint-e-tempo-de-indexacao]] e na mensagem de commit `cb50edc`. Não era. Em 2026-08-23 a mesma queda se repetiu com **10 GiB disponíveis, swap sem crescimento e `oom_kill` em zero** no cgroup do contêiner e no host.
 
-A causa real: o Docker monta `/dev/shm` com 64 MB, o PostgreSQL aloca ali a memória compartilhada dos workers paralelos, e a construção paralela do HNSW pede um segmento de 61 MB dimensionado por `maintenance_work_mem`. O build rodava com **2,7% de folga** — daí ser intermitente e daí "sempre ter funcionado".
+A segunda hipótese foi a margem de `/dev/shm`: o Docker o monta com 64 MB, o PostgreSQL aloca ali a memória compartilhada dos workers paralelos, e a construção paralela do HNSW pede um segmento dimensionado por `maintenance_work_mem`. O build rodava com **2,7% de folga**, o que explicaria a intermitência.
+
+**Essa também não era a causa**, e o erro de método foi o mesmo da primeira: mecanismo plausível aceito sem intervenção que o isolasse. Ampliado o `/dev/shm` para 1 GB e depois 3 GB, as quedas continuaram. A causa provada está na seção "O desfecho", ao final — e é o healthcheck do contêiner. Este parágrafo fica registrado como hipótese derrubada, não como diagnóstico: a lição perde o sentido se o próprio texto reincidir no defeito que descreve.
 
 ## Por que o erro passou
 
@@ -26,10 +28,10 @@ Consertei o que não era o problema. O reset de volumes e o watchdog de memória
 
 ## Regra para as próximas
 
-1. **Nomear o mecanismo antes de nomear a causa.** "Ficou sem memória" não é mecanismo; "o worker paralelo não conseguiu alocar o segmento de memória compartilhada porque `/dev/shm` tem 64 MB" é. Sem mecanismo, o que se tem é hipótese, e o texto precisa dizer "hipótese".
+1. **Nomear o mecanismo antes de nomear a causa.** "Ficou sem memória" não é mecanismo; "o postmaster como PID 1 recolhe o `pg_isready` morto por timeout e o confunde com filho que quebrou" é. E mecanismo bem formado ainda pode estar errado — a margem de `/dev/shm` era um mecanismo completo e mesmo assim não era a causa. Sem mecanismo, o que se tem é palpite; com mecanismo e sem intervenção, o que se tem é hipótese, e o texto precisa dizer "hipótese".
 2. **Confrontar a conclusão com os contadores que a negariam**, e citá-los. Aqui: `memory.events` do cgroup, `journalctl -k`, e a mensagem literal do log do servidor. Todos os três estavam à mão.
 3. **Sintoma intermitente não se explica por causa monotônica.** Se o sistema falha às vezes com o mesmo comando, a explicação tem de conter algo que varia perto de um limite. "Memória foi acabando" explica falha crescente, não alternância.
-4. **Confirmar por intervenção de uma variável.** Foi o que fechou este caso: mudar só o `shm_size` e reexecutar o comando que falhava. Observação passiva já tinha falhado duas vezes por não alcançar a fase sob teste.
+4. **Confirmar por intervenção de uma variável, e com amostra.** Foi o que fechou este caso: mudar só o `init` do contêiner e reexecutar o comando que falhava, 15 vezes sem queda contra 5 quedas em 27 sem ele. Observação passiva já tinha falhado duas vezes por não alcançar a fase sob teste — e intervenção com amostra de um (o `shm_size`) falhou por outro motivo, tratado na regra 7.
 5. **Retificar no lugar onde a afirmação errada está**, não só na conversa. O ADR carrega uma nota de retificação explícita; a versão anterior está no histórico do git.
 
 ## O desfecho, e o erro que custou o dia
