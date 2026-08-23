@@ -1,0 +1,109 @@
+{
+  "cenario": "A",
+  "n": 100000,
+  "pontos": [
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 0.844616999529535,
+        "p95": 1.0444178502439172,
+        "p99": 1.1153176177685964,
+        "qps": 1190.3223073983822,
+        "recall_at_k": 0.8564
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 0.9724944993649842,
+        "p95": 1.575841000340005,
+        "p99": 2.1562136484863,
+        "qps": 978.5014904390127,
+        "recall_at_k": 0.9335
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 1.2554039985843701,
+        "p95": 1.801078748576401,
+        "p99": 2.0325144214075404,
+        "qps": 776.5418980495899,
+        "recall_at_k": 0.9734
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 1.3281354986247607,
+        "p95": 1.8683155016333326,
+        "p99": 2.1436968007765245,
+        "qps": 722.8319923490978,
+        "recall_at_k": 0.9896
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 1.8860840009438107,
+        "p95": 2.733221050038992,
+        "p99": 2.973390940460376,
+        "qps": 509.3626797147464,
+        "recall_at_k": 0.9967
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "warmup": 50
+      }
+    }
+  ],
+  "recursos": {
+    "configuracao": {},
+    "container": "ic-weaviate",
+    "criterio_indice_utilizavel": "fila_vetorial_drenada",
+    "disco": {
+      "aparente_bytes": 287611506,
+      "total_bytes": 287662080
+    },
+    "instrumento_disco": "du_sk_diretorio_classe",
+    "memoria_rss_baseline_bytes": 45214597,
+    "memoria_rss_bytes": 692374733,
+    "memoria_rss_delta_bytes": 647160136,
+    "sistema": "weaviate",
+    "tempo_carga_s": 16.92942475200107,
+    "tempo_indice_utilizavel_s": 16.930933570998604
+  },
+  "sistema": "weaviate",
+  "timestamp_utc": "2026-08-23T15-08-57Z"
+}

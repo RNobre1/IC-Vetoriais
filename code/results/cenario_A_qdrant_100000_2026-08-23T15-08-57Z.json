@@ -1,0 +1,109 @@
+{
+  "cenario": "A",
+  "n": 100000,
+  "pontos": [
+    {
+      "ambiente": {
+        "sistema": "qdrant"
+      },
+      "metricas": {
+        "p50": 1.781921000656439,
+        "p95": 2.773386202898108,
+        "p99": 3.8161828711236008,
+        "qps": 539.2590139341246,
+        "recall_at_k": 0.9578000000000001
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "qdrant"
+      },
+      "metricas": {
+        "p50": 2.029328501521377,
+        "p95": 2.814838552876608,
+        "p99": 3.2663267296084086,
+        "qps": 482.6393482692392,
+        "recall_at_k": 0.9892000000000001
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "qdrant"
+      },
+      "metricas": {
+        "p50": 2.2932664996915264,
+        "p95": 2.9105250525390134,
+        "p99": 3.4285854625704815,
+        "qps": 432.8245046057541,
+        "recall_at_k": 0.998
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "qdrant"
+      },
+      "metricas": {
+        "p50": 2.6046695002150955,
+        "p95": 3.1329141002061074,
+        "p99": 3.535838888383296,
+        "qps": 381.90809628610697,
+        "recall_at_k": 0.9997999999999999
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "qdrant"
+      },
+      "metricas": {
+        "p50": 3.1198824999592034,
+        "p95": 3.7710019971200377,
+        "p99": 4.168310321838361,
+        "qps": 316.8387844761375,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "warmup": 50
+      }
+    }
+  ],
+  "recursos": {
+    "configuracao": {},
+    "container": "ic-qdrant",
+    "criterio_indice_utilizavel": "colecao_status_green",
+    "disco": {
+      "aparente_bytes": 726871012,
+      "total_bytes": 322854912
+    },
+    "instrumento_disco": "du_sk_diretorio_colecao",
+    "memoria_rss_baseline_bytes": 77993083,
+    "memoria_rss_bytes": 212126925,
+    "memoria_rss_delta_bytes": 134133842,
+    "sistema": "qdrant",
+    "tempo_carga_s": 18.335159449998173,
+    "tempo_indice_utilizavel_s": 26.348988755999017
+  },
+  "sistema": "qdrant",
+  "timestamp_utc": "2026-08-23T15-08-57Z"
+}

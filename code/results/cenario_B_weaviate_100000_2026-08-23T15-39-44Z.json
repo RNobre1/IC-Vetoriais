@@ -1,0 +1,404 @@
+{
+  "cenario": "B",
+  "n": 100000,
+  "pontos": [
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 63.00973599718418,
+        "p95": 93.91003449927665,
+        "p99": 113.03237302861815,
+        "qps": 22.494035420466634,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 1.3842119988112245,
+        "p95": 2.036357950782985,
+        "p99": 2.821604937344091,
+        "qps": 656.4095859672377,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 1.4353974984260276,
+        "p95": 2.3816640517907213,
+        "p99": 3.517654460520134,
+        "qps": 628.3236012649776,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 2.6431480000610463,
+        "p95": 4.013234399462817,
+        "p99": 4.624845153230126,
+        "qps": 350.196691032788,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 1.947382501384709,
+        "p95": 3.7537162534135855,
+        "p99": 4.465745748675544,
+        "qps": 471.75949334674124,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 8.957331501733279,
+        "p95": 16.004674153737138,
+        "p99": 19.81182782525138,
+        "qps": 90.98758094006948,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 8.748009498958709,
+        "p95": 12.733022000611525,
+        "p99": 14.933714397629954,
+        "qps": 106.76877092431971,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 8.793856995907845,
+        "p95": 15.58188360104395,
+        "p99": 19.16486657617497,
+        "qps": 95.61507117017312,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 9.312142999988282,
+        "p95": 17.000153452681843,
+        "p99": 20.673282858842864,
+        "qps": 88.56469881768962,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 8.743203499761876,
+        "p95": 11.85686994831485,
+        "p99": 13.910063270304818,
+        "qps": 108.75056680147728,
+        "recall_at_k": 1.0
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 17.654949999268865,
+        "p95": 32.18839570254204,
+        "p99": 36.765930571418714,
+        "qps": 49.45118001161321,
+        "recall_at_k": 0.9038000000000002
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 18.64660250430461,
+        "p95": 35.58287874657253,
+        "p99": 40.25770132058824,
+        "qps": 44.095165392891786,
+        "recall_at_k": 0.9588000000000001
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 19.10037400011788,
+        "p95": 37.33396084753622,
+        "p99": 43.50643363213748,
+        "qps": 42.78558332582637,
+        "recall_at_k": 0.9851000000000001
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 18.433028002618812,
+        "p95": 24.101895798594338,
+        "p99": 28.849262935545983,
+        "qps": 51.374130170645095,
+        "recall_at_k": 0.995
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 19.357385997864185,
+        "p95": 25.32547034752497,
+        "p99": 28.27628295555769,
+        "qps": 49.19474775747583,
+        "recall_at_k": 0.9979
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 31.97894399636425,
+        "p95": 59.552877599708154,
+        "p99": 65.54020254945497,
+        "qps": 27.64291916895748,
+        "recall_at_k": 0.846
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 32.06290600064676,
+        "p95": 59.70601729859481,
+        "p99": 66.51133417384699,
+        "qps": 27.544478553265378,
+        "recall_at_k": 0.9265
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 31.625501498638187,
+        "p95": 55.966833250568016,
+        "p99": 62.43272297724615,
+        "qps": 29.14388625818276,
+        "recall_at_k": 0.9691
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 32.6280864974251,
+        "p95": 57.30519919707149,
+        "p99": 63.77689279630431,
+        "qps": 28.176959391854336,
+        "recall_at_k": 0.9891
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 32.90844349976396,
+        "p95": 57.54624199653335,
+        "p99": 65.30642095633084,
+        "qps": 28.0060461634738,
+        "recall_at_k": 0.9957
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    }
+  ],
+  "recursos": {
+    "configuracao": {},
+    "container": "ic-weaviate",
+    "criterio_indice_utilizavel": "fila_vetorial_drenada",
+    "disco": {
+      "aparente_bytes": 294320447,
+      "total_bytes": 294367232
+    },
+    "instrumento_disco": "du_sk_diretorio_classe",
+    "memoria_rss_baseline_bytes": 41722839,
+    "memoria_rss_bytes": 816945562,
+    "memoria_rss_delta_bytes": 775222723,
+    "sistema": "weaviate",
+    "tempo_carga_s": 15.59705677600141,
+    "tempo_indice_utilizavel_s": 15.59876267099753
+  },
+  "sistema": "weaviate",
+  "timestamp_utc": "2026-08-23T15-39-44Z"
+}
