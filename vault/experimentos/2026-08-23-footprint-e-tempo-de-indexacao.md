@@ -91,12 +91,23 @@ E aparece um novo ponto do mesmo tipo, em outro lugar: Weaviate, 500 mil, `ef = 
 
 **O bloco `ambiente` dos pontos não identifica máquina nem provisionamento** — só `sistema` e `equalizado`. Enquanto houver uma máquina só, a data no nome do arquivo desambigua. A partir do experimento de portabilidade, não desambigua mais, e o campo tem de existir **antes** do primeiro arquivo da segunda máquina.
 
+## Desdobramento no relatório
+
+Decidido em 23/08: as quatro tabelas de latência e recall migraram para esta execução, que passa a ser a **única** fonte dos números do relatório. Antes, as Tabelas 4 e 5 comparavam as duas condições do Cenário B com cinco semanas de distância entre elas — a condição padrão vinha de 09/07 e a equalizada de 16/08 —, o que é exatamente o eixo daquelas tabelas. Os 100 números das quatro tabelas foram conferidos por script contra os JSONs.
+
+Três conclusões do texto mudaram com a migração, e vale registrar porque nenhuma delas é cosmética:
+
+1. **O limiar de recall 0,99 no Cenário A** deixa de ser "os três com `ef ≥ 128`" e passa a diferir por sistema: 64 no Qdrant, 128 no pgvector e 256 no Weaviate em 100 mil; 128 no Qdrant e 256 nos outros dois em 500 mil. O Weaviate em 100 mil ficava em 0,9903 na execução de julho e em 0,9896 nesta — atravessou o limiar por 7 décimos de milésimo, o que é ilustração do próprio ponto sobre reportar curvas e não números pontuais.
+2. **Nenhum sistema é o mais rápido nas duas escalas.** O texto antigo dizia que o Weaviate tinha as menores latências e o maior throughput; nesta execução, em 100 mil o pgvector tem a menor mediana (0,63 ms) e o maior throughput (1.369,4 QPS) no ponto inicial. Em 500 mil a posição volta ao Weaviate.
+3. **O parágrafo da cauda foi reescrito** com a não-reprodutibilidade como resultado declarado, e a hipótese de aquecimento passou a constar explicitamente como não testada.
+
+Também foi corrigido um claim falso encontrado na verificação, e ele já era falso nos dados antigos: o texto afirmava que a ordenação Qdrant > Weaviate > pgvector se repetia nos cinco valores de `ef_search` sob seletividade restritiva. Em `p = 10%` e `ef = 256` o pgvector passa o Weaviate, nas duas escalas e nas duas execuções.
+
 ## Próximos passos
 
-- Decidir se as Tabelas 2 a 5 do relatório migram para esta execução, hoje mistas (Cenário A de julho, condição padrão do Cenário B de julho, equalizada de 16/08).
 - Acrescentar máquina e arquitetura ao bloco `ambiente`, antes do experimento de portabilidade.
-- Experimento próprio de sensibilidade do tempo de indexação do pgvector a `maintenance_work_mem`.
-- Declarar no §5.1 que o QPS é medido com cliente único sequencial, não sob concorrência.
+- Experimento próprio de sensibilidade do tempo de indexação do pgvector a `maintenance_work_mem`. Decidido em 23/08 **não** fazer agora: fica a ressalva qualitativa no relatório.
+- Repetir cada configuração e reportar dispersão de latência, em vez de valor único, na segunda fase. Passou a ser requisito declarado no §5.5.
 
 ## Backlinks
 
