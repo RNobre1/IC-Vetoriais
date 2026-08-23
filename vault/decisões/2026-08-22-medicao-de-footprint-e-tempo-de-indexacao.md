@@ -98,7 +98,7 @@ Isso explica as três coisas que o diagnóstico anterior não explicava:
 
 - **Por que "sempre funcionou".** Funcionava com 2,7% de folga. Nunca houve margem; havia sorte.
 - **Por que era intermitente.** Qualquer alocação adicional de poucos MB transborda. Duas falhas em cerca de dez builds no mesmo dia, com o mesmo comando alternando entre sucesso e queda.
-- **Por que falhou também em 100 mil.** O segmento é dimensionado por `maintenance_work_mem`, não pelo número de vetores. Ressalva: `/dev/shm` não foi medido durante os builds de 100 mil que passaram, então esta parte é a explicação coerente com o mecanismo, não observação direta.
+- **Por que falhou também em 100 mil.** O segmento é dimensionado por `maintenance_work_mem`, não pelo número de vetores. Confirmado por medição: o pico de `/dev/shm` durante o `bench-B` de 100 mil foi de **63.752 KB**, idêntico ao da escala de 500 mil. As duas escalas operavam com a mesma folga de 2,7%, e a escala nunca foi a variável relevante.
 
 **Decisão:** `shm_size: 1gb` no serviço do PostgreSQL, em `code/docker-compose.yml`. A confirmação foi por intervenção de uma variável só — o mesmo `bench-A N=500000` que havia falhado duas vezes completou com código 0, e o `pg_stat_activity` mostrou o `CREATE INDEX` ativo enquanto `/dev/shm` marcava 62,3 MB.
 
