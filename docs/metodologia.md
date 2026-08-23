@@ -74,6 +74,18 @@ Possível extensão para o Cluster HPC do IEG/UFOPA na etapa final, condicionada
 
 Desde 19/08/2026 o trabalho é conduzido em duas máquinas com papéis distintos: o Dell acima é a **máquina de referência** e produz todo número que entra em tabela do relatório; um MacBook Air M4 (ARM64, Docker sob VM) é a **máquina de trabalho** e cuida de código, testes, análise e redação. A separação preserva a homogeneidade de hardware afirmada no relatório. O procedimento operacional está em `docs/runbook-medicao-dell.md`; a comparação entre as duas arquiteturas, se realizada, será experimento próprio e declarado.
 
+### Provisionamento do contêiner do PostgreSQL
+
+A partir de 23/08/2026 o serviço do PostgreSQL sobe com `shm_size: 1gb`. A mudança é de **provisionamento**, não de configuração do banco: nenhum parâmetro de índice (`m`, `ef_construction`), de memória de trabalho (`maintenance_work_mem`) ou de paralelismo foi alterado.
+
+O motivo é uma restrição do ambiente de contêiner, não do SGBD. O Docker monta `/dev/shm` com 64 MB por default, e o PostgreSQL aloca ali a memória compartilhada dinâmica dos processos paralelos (`dynamic_shared_memory_type = posix`). A construção paralela do índice HNSW requisita um segmento dimensionado por `maintenance_work_mem` — 64 MB nesta imagem. Medido durante uma carga de 500 mil vetores, o segmento ocupou 63.999.392 bytes e os demais segmentos do servidor outros 1.275.088, contra um teto de 67.108.864: **2,7% de folga**. Nessa margem, a construção do índice interrompia o servidor de forma intermitente, com `untracked child process ... exited with exit code 2` no log e queda da conexão do cliente.
+
+**Efeito sobre a comparabilidade dos resultados.** A ampliação permite que a construção do índice conclua; não há mecanismo pelo qual ela desloque as medidas, já que as execuções anteriores que concluíram também obtiveram o segmento completo — uma alocação insuficiente derrubava o servidor em vez de degradar silenciosamente o índice. A verificação empírica é consistente com isso: sob o ambiente novo, o recall@10 em `ef_search = 64` na escala de 500 mil reproduziu os valores medidos em julho na terceira casa decimal (pgvector 0,9733 contra 0,9753; Qdrant 0,9891 contra 0,9874).
+
+**Limitação de registro.** O bloco `ambiente` dos JSONs de resultado identifica o sistema e a condição de equalização, mas não o provisionamento do contêiner. Portanto a distinção entre execuções anteriores e posteriores a esta data é dada pela data no nome do arquivo e por este documento, não pelo conteúdo do JSON. Registrar ambiente e máquina no próprio arquivo é trabalho previsto, necessário antes que resultados de máquinas diferentes coexistam no diretório.
+
+Detalhamento em `vault/decisões/2026-08-22-medicao-de-footprint-e-tempo-de-indexacao.md` e `vault/lições/2026-08-23-correlacao-tratada-como-causa-provada.md`.
+
 ## Prática de desenvolvimento
 
 - **TDD é inegociável**: nenhum código de produção nasce sem teste que falhe antes. A suíte cobre funções puras de métricas, ground truth, seeders e cenários de benchmark.
