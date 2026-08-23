@@ -190,6 +190,30 @@ def _medir_diretorio(executar: Executor, *, container: str, caminho: str) -> dic
     }
 
 
+def ler_configuracao_pgvector(conn: Any) -> dict[str, str]:
+    """Parâmetros do servidor que governam a construção do índice.
+
+    `maintenance_work_mem` deixou de ser o default de 64 MB da imagem e passou
+    a ser escolha declarada, porque com ele o grafo de 500 mil vetores não cabia
+    em memória — o pgvector recorria ao caminho limitado por memória, que
+    derrubava o servidor em ~2/3 dos builds nessa escala. O valor governa
+    diretamente o tempo de indexação medido, então é lido do servidor no momento
+    da medição e gravado junto do número, em vez de ficar só no compose.
+    """
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT current_setting('maintenance_work_mem'), "
+            "current_setting('max_parallel_maintenance_workers'), "
+            "current_setting('shared_buffers')"
+        )
+        manutencao, workers, buffers = cur.fetchone()
+    return {
+        "maintenance_work_mem": str(manutencao),
+        "max_parallel_maintenance_workers": str(workers),
+        "shared_buffers": str(buffers),
+    }
+
+
 def medir_disco_qdrant(executar: Executor, *, nome_colecao: str) -> dict[str, int]:
     """Bytes do diretório da coleção dentro do contêiner do Qdrant."""
     return _medir_diretorio(
@@ -327,6 +351,7 @@ class MedidaRecursos:
     instrumento_disco: str
     criterio_indice_utilizavel: str
     disco: dict[str, int] = field(default_factory=dict)
+    configuracao: dict[str, str] = field(default_factory=dict)
     memoria_rss_bytes: int | None = None
     memoria_rss_baseline_bytes: int | None = None
     memoria_rss_delta_bytes: int | None = None
@@ -339,6 +364,7 @@ class MedidaRecursos:
         sistema: str,
         *,
         disco: dict[str, int],
+        configuracao: dict[str, str] | None = None,
         memoria_rss_bytes: int | None = None,
         memoria_rss_baseline_bytes: int | None = None,
         tempo_carga_s: float | None = None,
@@ -363,6 +389,7 @@ class MedidaRecursos:
             instrumento_disco=INSTRUMENTO_DISCO[sistema],
             criterio_indice_utilizavel=CRITERIO_INDICE_UTILIZAVEL[sistema],
             disco=dict(disco),
+            configuracao=dict(configuracao or {}),
             memoria_rss_bytes=memoria_rss_bytes,
             memoria_rss_baseline_bytes=memoria_rss_baseline_bytes,
             memoria_rss_delta_bytes=delta,

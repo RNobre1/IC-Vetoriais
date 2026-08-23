@@ -270,14 +270,19 @@ def _medir_recursos(
     from lib.footprint import (
         MedidaRecursos,
         executar_docker,
+        ler_configuracao_pgvector,
         medir_disco_pgvector,
         medir_disco_qdrant,
         medir_disco_weaviate,
         medir_rss_bytes,
     )
 
+    configuracao: dict[str, str] = {}
     if sistema == "pgvector":
         disco = medir_disco_pgvector(recurso, nome_tabela=nome_recurso)
+        # `maintenance_work_mem` governa o tempo de indexação medido; sem ele no
+        # arquivo, o número não é reprodutível.
+        configuracao = ler_configuracao_pgvector(recurso)
     elif sistema == "qdrant":
         disco = medir_disco_qdrant(executar_docker, nome_colecao=nome_recurso)
     else:
@@ -286,6 +291,7 @@ def _medir_recursos(
     return MedidaRecursos.para_sistema(
         sistema,
         disco=disco,
+        configuracao=configuracao,
         memoria_rss_bytes=medir_rss_bytes(executar_docker, sistema=sistema),
         memoria_rss_baseline_bytes=rss_baseline_bytes,
         tempo_carga_s=tempo_carga_s,

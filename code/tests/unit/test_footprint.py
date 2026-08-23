@@ -35,6 +35,7 @@ from lib.footprint import (
     aguardar_fila_weaviate,
     cronometrar_indexacao,
     diretorio_weaviate,
+    ler_configuracao_pgvector,
     medir_disco_pgvector,
     medir_disco_qdrant,
     medir_disco_weaviate,
@@ -494,6 +495,42 @@ def test_medida_admite_delta_negativo() -> None:
     )
 
     assert medida.memoria_rss_delta_bytes == -500
+
+
+def test_medida_carrega_a_configuracao_que_governa_o_build() -> None:
+    """Tempo de indexação sem os parâmetros do build não é reprodutível.
+
+    `maintenance_work_mem` deixou de ser default herdado da imagem e passou a
+    ser escolha declarada (2 GB), porque com 64 MB o grafo de 500 mil vetores
+    não cabia em memória. O valor governa diretamente o tempo medido, então
+    precisa viajar junto dele.
+    """
+    medida = MedidaRecursos.para_sistema(
+        "pgvector",
+        disco={},
+        tempo_indice_utilizavel_s=812.0,
+        configuracao={"maintenance_work_mem": "2GB", "max_parallel_maintenance_workers": "2"},
+    )
+
+    assert medida.para_json()["configuracao"]["maintenance_work_mem"] == "2GB"
+
+
+def test_medida_sem_configuracao_grava_dicionario_vazio() -> None:
+    assert MedidaRecursos.para_sistema("qdrant", disco={}).para_json()["configuracao"] == {}
+
+
+def test_configuracao_pgvector_le_os_parametros_do_servidor() -> None:
+    """Os valores vêm do servidor no momento da medição, não de constante no código."""
+    conn = ConexaoFake(("2GB", "2", "128MB"))
+
+    cfg = ler_configuracao_pgvector(conn)
+
+    assert cfg == {
+        "maintenance_work_mem": "2GB",
+        "max_parallel_maintenance_workers": "2",
+        "shared_buffers": "128MB",
+    }
+    assert "pg_settings" in conn._cursor.sql or "current_setting" in conn._cursor.sql
 
 
 def test_medida_aceita_ausencia_de_coleta() -> None:

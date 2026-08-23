@@ -13,14 +13,26 @@ services:
       POSTGRES_PASSWORD: ${PG_PASSWORD:-icvet}
     ports:
       - "${PG_PORT:-5432}:5432"
+    # `maintenance_work_mem` governa a construção do índice HNSW: com o default
+    # de 64 MB da imagem, o grafo de 500 mil vetores de 384 dimensões (~732 MB
+    # só de vetores) não cabe em memória e o pgvector recorre ao caminho
+    # limitado por memória. Esse caminho derrubava o servidor em ~2/3 dos builds
+    # de 500 mil, enquanto 100 mil passava 13 vezes seguidas.
+    #
+    # Além da instabilidade, o default herdado era assimétrico: o pgvector
+    # construía com 64 MB enquanto Qdrant e Weaviate usam os defaults deles,
+    # dimensionados para a tarefa. 2 GB cobre o grafo da maior escala medida.
+    # Revisar antes de 1 milhão. Vide
+    # vault/decisões/2026-08-22-medicao-de-footprint-e-tempo-de-indexacao.md
+    command: >
+      postgres
+      -c maintenance_work_mem=2GB
+      -c max_parallel_maintenance_workers=2
     # O Docker dá 64 MB de /dev/shm por default, e o PostgreSQL aloca ali a
     # memória compartilhada dinâmica dos workers paralelos
-    # (dynamic_shared_memory_type = posix). A construção paralela do índice HNSW
-    # em 500 mil vetores derrubou o backend duas vezes durante um
-    # `CREATE INDEX ... USING hnsw` — sem OOM de cgroup nem de host, e com 10 GiB
-    # de memória livre. 1 GB dá folga sobre o `maintenance_work_mem` de 64 MB
-    # multiplicado pelos workers. Não altera nenhum parâmetro de índice.
-    shm_size: 1gb
+    # (dynamic_shared_memory_type = posix). O segmento é dimensionado por
+    # `maintenance_work_mem`, então /dev/shm precisa ser maior que ele.
+    shm_size: 3gb
     # Postgres 18 mudou o mount point do volume de /var/lib/postgresql/data para
     # /var/lib/postgresql (PGDATA passa a ser /var/lib/postgresql/18/docker).
     # Ver: https://github.com/docker-library/postgres/pull/1259
