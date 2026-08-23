@@ -67,6 +67,14 @@ O motivo da separação é operacional, não hierárquico. Dado bruto é commuta
 
    Esperado: dezenas de MiB em cada um. Centenas de MiB ou mais significa que o reset não surtiu efeito.
 
+   Conferir também que o contêiner do PostgreSQL subiu com a memória compartilhada ampliada:
+
+   ```bash
+   docker exec ic-pgvector df -h /dev/shm
+   ```
+
+   Esperado: **1,0G**. Se aparecer 64M, o `shm_size` do compose não foi aplicado — não medir. O Docker monta `/dev/shm` com 64 MB por default, e a construção paralela do índice HNSW pede um segmento de 61 MB alocado ali (`dynamic_shared_memory_type = posix`, dimensionado por `maintenance_work_mem`). Com o default, o build rodava com 2,7% de folga e derrubava o servidor de forma intermitente, com `untracked child process ... exited with exit code 2` no log. Detalhes em `vault/decisões/2026-08-22-medicao-de-footprint-e-tempo-de-indexacao.md`.
+
 5. Suíte unitária verde antes de medir.
 
    ```bash

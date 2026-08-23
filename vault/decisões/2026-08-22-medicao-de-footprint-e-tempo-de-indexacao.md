@@ -67,7 +67,9 @@ O aparente continua sendo gravado, em `aparente_bytes`, para que a pré-alocaç�
 
 A primeira versão desta decisão registrava só o valor absoluto, com a ressalva de que ele não era atribuível ao dado medido. A tentativa de execução completa mostrou que a ressalva era fraca demais para o tamanho do problema. Ao final de duas escalas, o Weaviate estava com **6,1 GiB residentes** enquanto o Qdrant reportava 65 MiB — não porque um gaste cem vezes mais que o outro, mas porque o Weaviate mantém em RAM o grafo de **todas** as classes já criadas na instância (eram oito, de `bencha200` a `benchbeq500000`), ao passo que o Qdrant usa mmap e devolve ao sistema. Comparar os absolutos mediria o histórico do contêiner, não o custo do conjunto de dados.
 
-Com 16 GiB no host, o efeito não ficou só na interpretação: sobraram 334 MiB de memória livre, o sistema entrou em 4,7 GiB de swap, e o backend do PostgreSQL foi derrubado no meio de um `CREATE INDEX ... USING hnsw` (`server closed the connection unexpectedly`, seguido de recuperação automática). Não houve OOM no cgroup — o contêiner não tem limite; a exaustão foi do host.
+Com 16 GiB no host, o efeito não ficou só na interpretação: sobraram 334 MiB de memória livre e o sistema entrou em 4,7 GiB de swap. Latência medida nesse estado não é dado.
+
+> **Retificação (2026-08-23).** A primeira versão deste documento atribuía a essa exaustão a queda do backend do PostgreSQL durante um `CREATE INDEX ... USING hnsw`, observada no mesmo período. **A atribuição estava errada.** A queda se repetiu depois com 10 GiB disponíveis, swap sem crescimento e `oom_kill` em zero tanto no cgroup do contêiner quanto no host. Havia correlação temporal, e ela foi tratada como causa provada. A causa real está na seção "Memória compartilhada do contêiner", abaixo. O que permanece válido desta seção é o acúmulo de memória entre execuções, que foi medido e é o que justifica o reset — não a queda do PostgreSQL.
 
 Duas consequências fixadas aqui:
 
@@ -75,6 +77,34 @@ Duas consequências fixadas aqui:
 2. **Latência medida sob pressão de memória não é dado.** A rodada que expôs o problema foi descartada inteira, inclusive as duas execuções que haviam terminado com sucesso, porque rodaram enquanto o consumo crescia.
 
 Mesmo com a linha de base, o delta continua **não** sendo "o custo de RAM do índice": inclui alocações de runtime do servidor durante a carga. É a melhor aproximação disponível com instrumento uniforme, e deve ser lido como ordem de grandeza.
+
+### Memória compartilhada do contêiner (`/dev/shm`)
+
+O backend do PostgreSQL caiu duas vezes durante `CREATE INDEX ... USING hnsw`, em 100 mil e em 500 mil, com a mensagem `server closed the connection unexpectedly` no cliente e `untracked child process ... exited with exit code 2` seguido de `reinitializing` no servidor. Não é erro de SQL: é um *worker* paralelo morrendo e derrubando o cluster.
+
+A causa é de provisionamento do contêiner. O Docker monta `/dev/shm` com **64 MB** por default, e o PostgreSQL aloca ali a memória compartilhada dinâmica dos workers paralelos (`dynamic_shared_memory_type = posix`). A construção paralela do índice HNSW pede um segmento dimensionado por `maintenance_work_mem`, que nesta imagem é 64 MB.
+
+Medido durante um build de 500 mil vetores:
+
+| Item | Bytes |
+|---|---|
+| Segmento do build paralelo do HNSW | 63.999.392 |
+| Outros três segmentos do PostgreSQL | 1.275.088 |
+| **Total ocupado** | **65.274.480 (63.752 KB)** |
+| Teto antigo de `/dev/shm` | 67.108.864 (65.536 KB) |
+| **Folga** | **1.784 KB — 2,7%** |
+
+Isso explica as três coisas que o diagnóstico anterior não explicava:
+
+- **Por que "sempre funcionou".** Funcionava com 2,7% de folga. Nunca houve margem; havia sorte.
+- **Por que era intermitente.** Qualquer alocação adicional de poucos MB transborda. Duas falhas em cerca de dez builds no mesmo dia, com o mesmo comando alternando entre sucesso e queda.
+- **Por que falhou também em 100 mil.** O segmento é dimensionado por `maintenance_work_mem`, não pelo número de vetores. Ressalva: `/dev/shm` não foi medido durante os builds de 100 mil que passaram, então esta parte é a explicação coerente com o mecanismo, não observação direta.
+
+**Decisão:** `shm_size: 1gb` no serviço do PostgreSQL, em `code/docker-compose.yml`. A confirmação foi por intervenção de uma variável só — o mesmo `bench-A N=500000` que havia falhado duas vezes completou com código 0, e o `pg_stat_activity` mostrou o `CREATE INDEX` ativo enquanto `/dev/shm` marcava 62,3 MB.
+
+Isto **não** é mudança metodológica: não toca em `m`, `ef_construction`, `maintenance_work_mem`, dataset, cenários nem métricas. É a diferença entre o experimento poder rodar e não poder. Os valores de recall reproduziram os de julho na terceira casa decimal (0,9733 contra 0,9753 no pgvector; 0,9891 contra 0,9874 no Qdrant), o que indica que o ambiente novo não deslocou a medição.
+
+A partir daqui, o pico de `/dev/shm` é registrado por execução no log da sessão de medição, para que a folga deixe de ser invisível.
 
 ### Tempo de indexação
 
@@ -125,6 +155,7 @@ A separação entre carga e índice utilizável é o ponto que a literatura de A
 - Os 28 JSONs versionados continuam válidos e reproduzíveis byte a byte pelo código atual — há teste que os regrava e compara com o original.
 - O seeder do Weaviate passa a aguardar a fila de indexação drenar, como o do Qdrant já aguardava o `green`. Isso corrige, de passagem, um defeito silencioso: antes, o CLI podia medir latência e recall sobre um índice pela metade.
 - Números de disco produzidos com `du -sb` (incluindo qualquer anotação anterior a esta data) não são comparáveis com os novos e não devem entrar em tabela.
+- O contêiner do PostgreSQL passa a subir com `shm_size: 1gb`. Toda medição daqui em diante é feita nesse ambiente, e o pico de `/dev/shm` é registrado por execução.
 - O tempo de indexação passa a ser reportado **sempre** com o critério ao lado, no texto e na tabela.
 
 ## Critério de revisão

@@ -13,6 +13,14 @@ services:
       POSTGRES_PASSWORD: ${PG_PASSWORD:-icvet}
     ports:
       - "${PG_PORT:-5432}:5432"
+    # O Docker dá 64 MB de /dev/shm por default, e o PostgreSQL aloca ali a
+    # memória compartilhada dinâmica dos workers paralelos
+    # (dynamic_shared_memory_type = posix). A construção paralela do índice HNSW
+    # em 500 mil vetores derrubou o backend duas vezes durante um
+    # `CREATE INDEX ... USING hnsw` — sem OOM de cgroup nem de host, e com 10 GiB
+    # de memória livre. 1 GB dá folga sobre o `maintenance_work_mem` de 64 MB
+    # multiplicado pelos workers. Não altera nenhum parâmetro de índice.
+    shm_size: 1gb
     # Postgres 18 mudou o mount point do volume de /var/lib/postgresql/data para
     # /var/lib/postgresql (PGDATA passa a ser /var/lib/postgresql/18/docker).
     # Ver: https://github.com/docker-library/postgres/pull/1259

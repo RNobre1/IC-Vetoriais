@@ -1,0 +1,42 @@
+---
+tipo: lição
+data: 2026-08-23
+tags: [depuração, método, rigor, infraestrutura]
+---
+
+# Correlação tratada como causa provada, e o custo disso
+
+## O que aconteceu
+
+Em 2026-08-22 o backend do PostgreSQL caiu durante um `CREATE INDEX ... USING hnsw`. No mesmo instante o host estava com 334 MiB de memória livre e 4,7 GiB de swap, por acúmulo de coleções do Weaviate entre execuções.
+
+Registrei a exaustão de memória como **causa** da queda — em [[../decisões/2026-08-22-medicao-de-footprint-e-tempo-de-indexacao]] e na mensagem de commit `cb50edc`. Não era. Em 2026-08-23 a mesma queda se repetiu com **10 GiB disponíveis, swap sem crescimento e `oom_kill` em zero** no cgroup do contêiner e no host.
+
+A causa real: o Docker monta `/dev/shm` com 64 MB, o PostgreSQL aloca ali a memória compartilhada dos workers paralelos, e a construção paralela do HNSW pede um segmento de 61 MB dimensionado por `maintenance_work_mem`. O build rodava com **2,7% de folga** — daí ser intermitente e daí "sempre ter funcionado".
+
+## Por que o erro passou
+
+Havia duas anomalias reais no mesmo intervalo: acúmulo de memória entre execuções (verdadeiro, medido) e a queda do PostgreSQL (verdadeira, observada). Uni as duas numa cadeia causal porque eram simultâneas e porque uma explicação de memória é plausível para um processo morrendo.
+
+O que faltou foi o passo mais barato de todos: **procurar o mecanismo antes de escrever a conclusão**. A mensagem `untracked child process ... exited with exit code 2` estava no log desde a primeira ocorrência e aponta para *worker paralelo*, não para OOM. `oom_kill 0` também já estava disponível e contradizia a tese. Eu tinha lido os dois e não os confrontei com a afirmação que estava escrevendo.
+
+## O custo
+
+Consertei o que não era o problema. O reset de volumes e o watchdog de memória resolveram uma anomalia legítima, mas não a queda — que voltou na execução seguinte. Somando o retrabalho, as duas tentativas de reprodução mal direcionadas e uma execução saudável que interrompi por causa de um critério de watchdog também errado, foram algumas horas.
+
+## Regra para as próximas
+
+1. **Nomear o mecanismo antes de nomear a causa.** "Ficou sem memória" não é mecanismo; "o worker paralelo não conseguiu alocar o segmento de memória compartilhada porque `/dev/shm` tem 64 MB" é. Sem mecanismo, o que se tem é hipótese, e o texto precisa dizer "hipótese".
+2. **Confrontar a conclusão com os contadores que a negariam**, e citá-los. Aqui: `memory.events` do cgroup, `journalctl -k`, e a mensagem literal do log do servidor. Todos os três estavam à mão.
+3. **Sintoma intermitente não se explica por causa monotônica.** Se o sistema falha às vezes com o mesmo comando, a explicação tem de conter algo que varia perto de um limite. "Memória foi acabando" explica falha crescente, não alternância.
+4. **Confirmar por intervenção de uma variável.** Foi o que fechou este caso: mudar só o `shm_size` e reexecutar o comando que falhava. Observação passiva já tinha falhado duas vezes por não alcançar a fase sob teste.
+5. **Retificar no lugar onde a afirmação errada está**, não só na conversa. O ADR carrega uma nota de retificação explícita; a versão anterior está no histórico do git.
+
+## Aplicação imediata
+
+Duas coisas que passaram a ser medidas por causa disto, e que antes eram invisíveis: o pico de `/dev/shm` por execução, e a taxa de swap-out (em vez de swap ocupado, que só cresce e serve mal como critério).
+
+## Backlinks
+
+- [[../decisões/2026-08-22-medicao-de-footprint-e-tempo-de-indexacao]]
+- [[2026-08-19-claim-de-instrumentacao-que-nao-existia]]
