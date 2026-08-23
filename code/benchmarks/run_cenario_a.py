@@ -29,6 +29,12 @@ import numpy as np
 SISTEMAS_VALIDOS = ("pgvector", "qdrant", "weaviate")
 EF_SEARCH_PADRAO = [16, 32, 64, 128, 256]
 
+# Timeout dos clientes HTTP dos SGBDs especializados. Generoso de propósito:
+# as chamadas de criação de coleção acontecem logo depois de um build de índice
+# pesado, com o disco saturado, e o custo de um timeout espúrio é perder a
+# execução inteira. Não afeta o que é medido — a cronometragem é de parede.
+TIMEOUT_CLIENTE_S = 120
+
 
 @dataclass(frozen=True, slots=True)
 class Config:
@@ -142,7 +148,15 @@ def _construir_buscador(sistema: str, *, nome_recurso: str, env: dict[str, str])
     if sistema == "qdrant":
         from qdrant_client import QdrantClient
 
-        client = QdrantClient(host=env["QDRANT_HOST"], port=int(env["QDRANT_HTTP_PORT"]))
+        # O default do cliente é de poucos segundos, curto demais para o
+        # instante em que ele é usado: `create_collection` roda logo após o
+        # build do índice do pgvector, com o disco saturado. Vide o teste de
+        # regressão em `tests/unit/test_run_cenario_a.py`.
+        client = QdrantClient(
+            host=env["QDRANT_HOST"],
+            port=int(env["QDRANT_HTTP_PORT"]),
+            timeout=TIMEOUT_CLIENTE_S,
+        )
         return QdrantBuscador(client=client, nome_colecao=nome_recurso), client
     if sistema == "weaviate":
         import weaviate

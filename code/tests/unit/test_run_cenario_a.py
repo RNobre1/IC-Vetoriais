@@ -19,6 +19,7 @@ import pytest
 
 from benchmarks.run_cenario_a import (
     Config,
+    _construir_buscador,
     parse_args,
     split_embeddings,
     timestamp_utc,
@@ -124,3 +125,37 @@ def test_timestamp_utc_formato_fs_safe() -> None:
     # 2026-05-10T18-30-00Z — sem ':' (FS-safe), termina em Z
     assert re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z", ts), ts
     assert ":" not in ts
+
+
+# ---------------------------------------------------------------------------
+# Conexão com os SGBDs — resiliência a latência transitória
+# ---------------------------------------------------------------------------
+
+
+def test_cliente_qdrant_recebe_timeout_explicito(monkeypatch: pytest.MonkeyPatch) -> None:
+    """O default do cliente é curto demais para o instante em que ele é usado.
+
+    Regressão de 2026-08-23: `create_collection` estourou `timed out` numa
+    execução de 100 mil. A chamada acontece logo depois do build do índice do
+    pgvector, com o disco saturado e num contêiner recém-subido de volume
+    zerado — e o `QdrantClient` é construído sem `timeout`, herdando um default
+    de poucos segundos. Uma execução inteira foi perdida por isso; numa escala
+    de 500 mil o custo seria de dezenas de minutos.
+    """
+    capturado: dict[str, object] = {}
+
+    class ClienteFalso:
+        def __init__(self, **kwargs: object) -> None:
+            capturado.update(kwargs)
+
+    monkeypatch.setattr("qdrant_client.QdrantClient", ClienteFalso)
+
+    _construir_buscador(
+        "qdrant",
+        nome_recurso="c",
+        env={"QDRANT_HOST": "localhost", "QDRANT_HTTP_PORT": "6333"},
+    )
+
+    assert "timeout" in capturado, "o cliente precisa receber timeout explícito"
+    assert isinstance(capturado["timeout"], int | float)
+    assert capturado["timeout"] >= 60, "timeout curto demais para uso sob carga de I/O"
