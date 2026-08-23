@@ -32,6 +32,16 @@ Consertei o que não era o problema. O reset de volumes e o watchdog de memória
 4. **Confirmar por intervenção de uma variável.** Foi o que fechou este caso: mudar só o `shm_size` e reexecutar o comando que falhava. Observação passiva já tinha falhado duas vezes por não alcançar a fase sob teste.
 5. **Retificar no lugar onde a afirmação errada está**, não só na conversa. O ADR carrega uma nota de retificação explícita; a versão anterior está no histórico do git.
 
+## O desfecho, e o erro que custou o dia
+
+A causa raiz não era nenhuma das três hipóteses que persegui. Era o **healthcheck do contêiner**: o postmaster roda como PID 1, adota os órfãos do namespace, e o `pg_isready` morto por timeout sob carga volta como "filho desconhecido que quebrou". O código de saída 2 da mensagem é literalmente o código que o `pg_isready` usa para "sem resposta" — estava escrito no log desde a primeira ocorrência.
+
+O erro de método que produziu as ~10 horas não foi nenhum diagnóstico individual. Foi **nunca ter construído uma reprodução rápida**. Cada tentativa minha era um ciclo de 20 a 40 minutos, o que tornava impossível bissecar e convidava ao chute. Quando finalmente escrevi a reprodução mínima — psycopg puro, carga de 500 mil, nada mais rodando — ela levou **6 segundos** e falhou na terceira tentativa. A partir daí, três hipóteses foram derrubadas e a causa isolada em menos de uma hora.
+
+**Regra 6, e a mais importante de todas: antes de formular a segunda hipótese, construa a reprodução mais rápida possível.** O tempo gasto nisso se paga na primeira bissecção. Sem ela, cada hipótese custa uma execução inteira e a tentação de "só testar mais uma coisa" vence.
+
+**Regra 7: sintoma intermitente exige contagem, não anedota.** Duas vezes tratei sucesso isolado como confirmação — `shm_size` com n=1, `io_method` com 12/12 que virou falha na tentativa seguinte. Com taxa de falha de ~18%, doze sucessos seguidos têm 10% de chance de acontecer por acaso. Confirmação de conserto para defeito intermitente precisa de amostra que torne a sorte implausível: 25 cargas limpas contra 18% dão 0,7%.
+
 ## Aplicação imediata
 
 Duas coisas que passaram a ser medidas por causa disto, e que antes eram invisíveis: o pico de `/dev/shm` por execução, e a taxa de swap-out (em vez de swap ocupado, que só cresce e serve mal como critério).

@@ -13,26 +13,27 @@ services:
       POSTGRES_PASSWORD: ${PG_PASSWORD:-icvet}
     ports:
       - "${PG_PORT:-5432}:5432"
-    # `maintenance_work_mem` governa a construção do índice HNSW: com o default
-    # de 64 MB da imagem, o grafo de 500 mil vetores de 384 dimensões (~732 MB
-    # só de vetores) não cabe em memória e o pgvector recorre ao caminho
-    # limitado por memória. Esse caminho derrubava o servidor em ~2/3 dos builds
-    # de 500 mil, enquanto 100 mil passava 13 vezes seguidas.
+    # O postmaster roda como PID 1 do contêiner e, nessa posição, adota e
+    # recolhe todo processo órfão do namespace. Sob carga pesada o healthcheck
+    # `pg_isready` ultrapassa seu timeout de 3 s — o fsync de checkpoint chegou
+    # a 13 s nas medições —, o Docker o mata, o órfão é reparentado ao PID 1, e
+    # o postmaster trata o PID desconhecido como filho que quebrou, derrubando o
+    # cluster: `untracked child process ... exited with exit code 2`. O código 2
+    # é justamente o que o `pg_isready` retorna para "sem resposta".
     #
-    # Além da instabilidade, o default herdado era assimétrico: o pgvector
-    # construía com 64 MB enquanto Qdrant e Weaviate usam os defaults deles,
-    # dimensionados para a tarefa. 2 GB cobre o grafo da maior escala medida.
-    # Revisar antes de 1 milhão. Vide
-    # vault/decisões/2026-08-22-medicao-de-footprint-e-tempo-de-indexacao.md
-    command: >
-      postgres
-      -c maintenance_work_mem=2GB
-      -c max_parallel_maintenance_workers=2
-    # O Docker dá 64 MB de /dev/shm por default, e o PostgreSQL aloca ali a
-    # memória compartilhada dinâmica dos workers paralelos
-    # (dynamic_shared_memory_type = posix). O segmento é dimensionado por
-    # `maintenance_work_mem`, então /dev/shm precisa ser maior que ele.
-    shm_size: 3gb
+    # Medido em cargas de 500 mil linhas: 5 quedas em 27 sem `init`; 0 em 15
+    # com `init` e o healthcheck ligado. Um init de verdade como PID 1 recolhe
+    # os órfãos e tira o postmaster dessa função.
+    #
+    # Não altera imagem nem parâmetro do servidor: as versões seguem as fixadas
+    # em vault/decisões/2026-05-06-bump-versoes-sgbds.md e declaradas no §6.1.
+    init: true
+    # A construção paralela do índice HNSW aloca em /dev/shm um segmento
+    # dimensionado por `maintenance_work_mem`. Medido: 63.752 KB usados contra
+    # os 64 MB que o Docker dá por default — 2,7% de folga. Ampliar é
+    # capacidade, não comportamento: ou a alocação cabe, e o resultado é
+    # idêntico, ou o servidor cai.
+    shm_size: 1gb
     # Postgres 18 mudou o mount point do volume de /var/lib/postgresql/data para
     # /var/lib/postgresql (PGDATA passa a ser /var/lib/postgresql/18/docker).
     # Ver: https://github.com/docker-library/postgres/pull/1259
@@ -49,6 +50,7 @@ services:
   qdrant:
     image: qdrant/qdrant:v1.17.1
     container_name: ic-qdrant
+    init: true
     ports:
       - "${QDRANT_HTTP_PORT:-6333}:6333"
       - "${QDRANT_GRPC_PORT:-6334}:6334"
@@ -67,6 +69,7 @@ services:
   weaviate:
     image: semitechnologies/weaviate:1.37.2
     container_name: ic-weaviate
+    init: true
     environment:
       QUERY_DEFAULTS_LIMIT: "25"
       AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
