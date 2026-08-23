@@ -78,6 +78,45 @@ Duas consequências fixadas aqui:
 
 Mesmo com a linha de base, o delta continua **não** sendo "o custo de RAM do índice": inclui alocações de runtime do servidor durante a carga. É a melhor aproximação disponível com instrumento uniforme, e deve ser lido como ordem de grandeza.
 
+Há um limite mais forte, e ele é assimétrico entre os três: **cada sistema mantém o grafo em um lugar diferente**, e o RSS do processo só alcança um deles. O Weaviate carrega o índice no próprio heap, e portanto aparece no RSS. O Qdrant usa `mmap` e delega ao sistema operacional, que pode devolver as páginas sob pressão. O PostgreSQL lê o índice pelo `shared_buffers` (128 MB nesta imagem) e pelo *page cache* do hospedeiro, que não é RSS de processo algum. O delta, portanto, **não** ordena os três por consumo de memória — mede quanto de memória residente o processo servidor passou a ter, o que é uma pergunta diferente. Comparar as três colunas como se fossem a mesma grandeza é o erro que este documento existe para impedir.
+
+### Tempo de indexação
+
+O relógio para quando o índice está **utilizável**, não quando a última escrita é aceita. Sem isso a comparação seria falsa por construção: o pgvector constrói o índice em operação única e bloqueante depois da carga, enquanto Qdrant e Weaviate aceitam as escritas e constroem o grafo em background.
+
+| Sistema | Critério registrado | Como é verificado |
+|---|---|---|
+| pgvector | `create_index_retornou` | `CREATE INDEX ... USING hnsw` é bloqueante; o retorno do seed já é a condição |
+| Qdrant | `colecao_status_green` | consulta a coleção até sair de `yellow` |
+| Weaviate | `fila_vetorial_drenada` | shards **daquela classe** com `vectorQueueLength = 0` e `vectorIndexingStatus = READY` |
+
+Onde a construção é separável da carga, os dois tempos são gravados: `tempo_carga_s` (até a última escrita aceita) e `tempo_indice_utilizavel_s` (até o índice pronto). A diferença entre eles é o custo da indexação assíncrona, que uma medição ingênua deixaria invisível. No pgvector `tempo_carga_s` é `null` — declarar a ausência é mais honesto que repetir o total e sugerir uma decomposição que não foi medida.
+
+**Apenas `tempo_indice_utilizavel_s` é comparável entre os três**, e nos três ele conta a partir do início da carga.
+
+### O que `green` significa no Qdrant — e o que não significa
+
+Ao verificar a primeira medição desta rodada, o Qdrant reportou `status: green` e `optimizer_status: ok` com **96.512 de 100.000 vetores indexados**. A checagem inicial foi se a indexação ainda estava em curso; não estava. Coleções semeadas em 2026-07-09, com seis semanas de idade e nenhuma escrita desde então, mostram a mesma fração fora do índice:
+
+| Coleção | Pontos | Indexados | Fora do HNSW |
+|---|---|---|---|
+| `bench_a_500000` (jul) | 500.000 | 497.664 | 2.336 (0,47%) |
+| `bench_b_500000` (jul) | 500.000 | 499.200 | 800 (0,16%) |
+| `bench_b_100000` (jul) | 100.000 | 98.048 | 1.952 (1,95%) |
+| `bench_b_eq_100000` (ago) | 100.000 | 96.256 | 3.744 (3,74%) |
+| `bench_a_100000` (esta rodada) | 100.000 | 96.512 | 3.488 (3,49%) |
+
+O mecanismo está na configuração da coleção, não em suposição: `optimizer_config.indexing_threshold = 10000` (KB). Segmentos cujo volume de vetores fica abaixo desse limiar não recebem índice HNSW — com 384 dimensões em float32 (1.536 B por vetor), 10.000 KB equivalem a ~6.667 vetores, o que explica os resíduos observados. É estado estacionário por projeto, não construção pendente.
+
+Duas consequências, e vale separar o que está provado do que não está:
+
+- **Para o tempo de indexação, `green` continua sendo o critério correto**: é quando o Qdrant considera a otimização encerrada, e esperar além disso seria esperar por algo que nunca acontece.
+- **Para recall e latência, é uma limitação a declarar**: entre 0,16% e 3,74% dos vetores são respondidos por varredura dentro do próprio segmento, não pelo grafo. É a mesma família de artefato do `full_scan_threshold` ([[2026-08-16-equalizacao-cenario-b]]), porém de magnitude muito menor e sem produzir `recall = 1,0000` — não invalida as curvas publicadas. **Não foi medido** qual o efeito quantitativo dessa fração sobre o recall reportado; afirmar que é desprezível seria dedução, não resultado.
+
+O `indexing_threshold` **não foi alterado**: mexer nele mudaria a configuração usada em todas as execuções anteriores e quebraria a comparabilidade com os JSONs já versionados. Fica como candidato a experimento próprio, com decisão dedicada.
+
+> **Nota de restauração (2026-08-23, máquina de trabalho).** Estas duas seções — "Tempo de indexação" e "O que `green` significa no Qdrant" — foram removidas por engano no commit `54e4729`, junto com a seção sobre `/dev/shm`, que era a que devia sair. Restauradas do próprio commit que as criou (`bec7ca2`) e de `e1b1d5c`. O conteúdo não foi reescrito.
+
 ### Por que o PostgreSQL caía — e por que não era nada do que eu supus
 
 O backend do PostgreSQL caiu repetidas vezes durante as medições, sempre com `server closed the connection unexpectedly` no cliente e, no servidor, `untracked child process ... exited with exit code 2` seguido de `reinitializing`. Nunca houve erro de SQL, de memória ou de disco.
