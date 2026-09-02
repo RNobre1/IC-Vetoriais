@@ -1,0 +1,168 @@
+% =============================================================================
+% Submissão à XIII Jornada Acadêmica da Ufopa (2026)
+%
+% Este arquivo é a FONTE ÚNICA do texto submetido. O .docx entregue é derivado
+% dele por `make docx`, que preenche uma cópia do modelo oficial. Não editar o
+% .docx à mão: a edição seria perdida na próxima geração e as duas versões
+% divergiriam sem aviso.
+%
+% A diagramação abaixo replica o modelo oficial, medida no XML do arquivo
+% (docx/jornada_academica_2026/modelo/): A4; margens superior e inferior de
+% 0,80 cm, esquerda 2,00 cm, direita 1,50 cm; Times New Roman; títulos de seção
+% em 12 pt negrito; corpo em 10 pt justificado com entrelinha exata de 12 pt e
+% recuo de primeira linha de 0,36 cm; autores em 12 pt e afiliações em 10 pt
+% itálico, ambos centralizados; rodapé com o nome do evento e as cidades.
+%
+% Limites de caracteres com espaços declarados pelo modelo, verificados por
+% `make verificar`: introdução 1.000, metodologia 1.000, resultados 2.000,
+% conclusões 1.000. Resumo entre 150 e 500 palavras, em parágrafo único.
+% Documento inteiro em no máximo 3 páginas.
+% =============================================================================
+
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{mathptmx}          % Times New Roman
+\usepackage[top=0.8cm,bottom=0.8cm,left=2.0cm,right=1.5cm,includefoot]{geometry}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{indentfirst}
+
+\setlength{\parindent}{0.36cm}
+\setlength{\parskip}{0pt}
+\linespread{1.0}
+
+% Rodapé do modelo oficial, transcrito do XML do arquivo.
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead[C]{\includegraphics[width=\textwidth]{banner-jornada.png}}
+\setlength{\headheight}{57pt}
+\setlength{\headsep}{0.35cm}
+\fancyfoot[C]{\fontsize{9}{11}\selectfont\textbf{XIII Jornada Acadêmica da Ufopa}\\
+Alenquer, Itaituba, Juruti, Monte Alegre, Óbidos, Oriximiná, Ruropólis, Santarém --- Pará\\
+2026 \quad \thepage}
+
+% Título de seção conforme o modelo: 12 pt, negrito, caixa alta, sem numeração.
+\newcommand{\secao}[1]{%
+  \par\vspace{6pt}%
+  \noindent{\fontsize{12}{14}\selectfont\bfseries #1}\par\vspace{2pt}%
+}
+
+% Corpo: 10 pt com entrelinha exata de 12 pt.
+\newcommand{\corpo}{\fontsize{10}{12}\selectfont}
+
+\begin{document}
+\corpo
+
+% -----------------------------------------------------------------------------
+% Cabeçalho de identificação
+% -----------------------------------------------------------------------------
+\begin{center}
+{\fontsize{12}{14}\selectfont\bfseries
+% ATENÇÃO: substituir pela linha exata do subevento, com o numeral da edição.
+[INSERIR NOME DO SUBEVENTO E O NUMERAL DA EDIÇÃO DE 2026]
+}
+
+\vspace{10pt}
+
+{\fontsize{12}{14}\selectfont\bfseries
+COMPARAÇÃO DE DESEMPENHO DE SOLUÇÕES DE BANCOS DE DADOS VETORIAIS PARA BUSCA SEMÂNTICA: UMA ANÁLISE ENTRE PGVECTOR E BANCOS DE DADOS ESPECIALIZADOS
+}
+
+\vspace{10pt}
+
+{\fontsize{12}{14}\selectfont
+Rafael Nobre de Souza\textsuperscript{1}, Celson Pantoja Lima\textsuperscript{2}
+}
+
+\vspace{4pt}
+
+{\fontsize{10}{12}\selectfont\itshape
+1. Estudante do curso de Graduação em Ciência da Computação, Instituto de Engenharia e Geociências, Universidade Federal do Oeste do Pará (IEG/UFOPA)\\
+2. Professor do Instituto de Engenharia e Geociências, Universidade Federal do Oeste do Pará (IEG/UFOPA) --- Orientador
+}
+\end{center}
+
+\vspace{6pt}
+
+% -----------------------------------------------------------------------------
+\secao{RESUMO}
+\corpo
+% >>> SECAO: RESUMO
+Aplicações de busca semântica e de geração aumentada por recuperação dependem de um repositório capaz de indexar vetores densos e responder consultas por similaridade com baixa latência, o que coloca a escolha do sistema de armazenamento no centro do projeto dessas soluções. Este trabalho compara experimentalmente o desempenho de uma extensão vetorial sobre um banco relacional (PostgreSQL com pgvector) e de dois bancos vetoriais especializados (Qdrant e Weaviate), sob configuração de índice idêntica nos três. Foram indexados subconjuntos determinísticos de 100 mil e 500 mil passagens do conjunto MS MARCO, representadas por vetores de 384 dimensões, com índice HNSW de mesmos parâmetros de construção. Dois cenários foram executados: busca por similaridade pura e busca combinada com filtro de metadados em quatro níveis de seletividade, ambos com varredura do parâmetro de busca do índice para traçar curvas de recall contra vazão. Os três sistemas alcançam recall@10 superior a 0,99, porém com custo distinto: o parâmetro de busca necessário para isso difere entre eles e cresce com o tamanho da base, e o tempo para deixar o índice utilizável no pgvector é de três a doze vezes o dos especializados. No cenário com filtro, o recall igual a 1,0000 inicialmente observado nos sistemas especializados revelou-se efeito da substituição automática da busca aproximada por varredura exata em subconjuntos pequenos, e não qualidade de filtragem; neutralizado esse efeito, a diferença arquitetural permanece, porém de magnitude muito menor. Conclui-se que comparar essas soluções exige declarar e neutralizar as heurísticas de execução ativas por padrão em cada sistema, sob pena de atribuir a mérito de arquitetura aquilo que é atalho do executor.
+% <<< SECAO
+
+\vspace{4pt}
+
+\noindent{\corpo\textbf{Palavras-chave:} % >>> SECAO: PALAVRAS
+bancos de dados vetoriais; busca semântica; busca aproximada de vizinhos; \textit{benchmarking}.
+% <<< SECAO
+}
+
+% -----------------------------------------------------------------------------
+\secao{INTRODUÇÃO}
+\corpo
+% >>> SECAO: INTRODUCAO
+A adoção de modelos de linguagem de grande porte em aplicações de recuperação de informação tornou o armazenamento de vetores densos um componente de infraestrutura, e não mais um recurso especializado. Sistemas de geração aumentada por recuperação (Lewis et al., 2020) dependem de consultas por similaridade com baixa latência sobre coleções grandes, e a literatura distingue as soluções disponíveis entre sistemas nativos, projetados para vetores densos, e sistemas estendidos, que acrescentam esse tipo a bancos preexistentes (Pan; Wang; Li, 2023). A escolha entre as duas famílias é recorrente em projeto de sistemas e carece de evidência comparativa obtida sob condições controladas, sobretudo quando a consulta combina similaridade com filtro de metadados. O objetivo deste trabalho é medir e comparar, em ambiente controlado, latência, vazão, recall e uso de recursos de PostgreSQL com pgvector, Qdrant e Weaviate em cenários de busca semântica.
+% <<< SECAO
+
+% -----------------------------------------------------------------------------
+\secao{METODOLOGIA}
+\corpo
+% >>> SECAO: METODOLOGIA
+Os três sistemas foram executados em contêineres sobre a mesma estação de trabalho, com versões fixadas e configuração de índice idêntica. Os textos vêm de subconjuntos determinísticos do MS MARCO (Bajaj et al., 2016), de 100 mil e 500 mil passagens, codificados pelo modelo all-MiniLM-L6-v2 (Reimers; Gurevych, 2019) em 384 dimensões e normalizados. Cada sistema recebeu índice HNSW (Malkov; Yashunin, 2018) com M = 16, ef\_construction = 200 e distância de cosseno. O parâmetro de busca ef\_search foi variado em \{16, 32, 64, 128, 256\} para traçar curvas de recall contra vazão, conforme a metodologia dos ANN-Benchmarks (Aumüller; Bernhardsson; Faithfull, 2020), com 50 buscas de aquecimento descartadas e 1.000 buscas medidas por ponto de operação, emitidas por um único cliente de forma sequencial. O recall@10 é calculado contra busca exata por força bruta. O cenário com filtro varia a seletividade do predicado de 1\% a 100\% e foi executado em duas condições, padrão e equalizada.
+% <<< SECAO
+
+% -----------------------------------------------------------------------------
+\secao{RESULTADOS E DISCUSSÃO}
+\corpo
+% >>> SECAO: RESULTADOS
+No cenário de busca pura os três sistemas superam recall@10 de 0,99, mas o ponto de operação necessário difere e cresce com a base: em 100 mil vetores o patamar é atingido com ef\_search de 64 no Qdrant, 128 no pgvector e 256 no Weaviate; em 500 mil, com 128 no Qdrant e 256 nos outros dois. Nenhum sistema é o mais rápido nas duas escalas, e a amplitude de vazão ao longo da curva é de 7,3 vezes no pgvector contra 1,7 no Qdrant em 100 mil vetores, o que torna ef\_search uma decisão de capacidade nesse sistema. O uso de recursos separa os três mais nitidamente que a busca: o pgvector leva de 3 a 12 vezes o tempo dos especializados para deixar o índice utilizável, com a razão crescendo com a escala, e ocupa 2,2 vezes o disco do Qdrant em 500 mil vetores; em contrapartida, é o Weaviate que mantém o grafo residente no processo, com acréscimo de memória uma ordem de grandeza acima dos demais.
+% <<< SECAO
+
+% >>> SECAO: RESULTADOS2
+O cenário com filtro produziu o achado metodologicamente mais relevante. Qdrant e Weaviate apresentaram recall@10 de exatamente 1,0000 sob seletividade restritiva, idêntico nos cinco valores de ef\_search; recall que não responde ao parâmetro do índice não decorre de percurso do grafo. A causa é uma otimização documentada nos dois: com subconjunto elegível pequeno, a busca aproximada é substituída por varredura exata. Como o limiar do Weaviate é absoluto, a consequência é verificável: a seletividade de 10\% fica abaixo do corte em 100 mil vetores e acima dele em 500 mil, e é o que os dados mostram nas oito séries. Reexecutado o cenário com os limiares no mínimo, o Weaviate cai de 1,0000 para 0,5662 em seletividade de 1\%, o Qdrant preserva 0,9996 e o pgvector permanece em 0,0592, limitado pela estratégia de \textit{post-filtering} e não pela avaliação do predicado, já que acrescentar índice ao atributo de filtro não alterou seu resultado. O comportamento é coerente com Patel et al. (2024), para quem o custo da busca filtrada depende do número de itens elegíveis, e não do predicado.
+% <<< SECAO
+
+% -----------------------------------------------------------------------------
+\secao{CONCLUSÕES}
+\corpo
+% >>> SECAO: CONCLUSOES
+A comparação entre uma extensão vetorial e bancos especializados não se resolve por um número único: nas condições avaliadas os três sistemas atingem recall equivalente, e a diferença aparece no custo de operar nesse patamar e no custo de construir o índice, onde os especializados levam vantagem consistente. O resultado de maior alcance, porém, é metodológico: recall igual a 1,0000 que não responde ao parâmetro de busca do índice deve ser tratado como suspeita de configuração, e não como mérito arquitetural. Comparar bancos vetoriais exige, portanto, declarar e neutralizar as heurísticas de execução ativas por padrão em cada um. Permanecem para a fase seguinte a escala de 1 milhão de vetores, o cenário de carga concorrente e a repetição das execuções para reportar dispersão de latência, hoje medida uma única vez por configuração.
+% <<< SECAO
+
+% -----------------------------------------------------------------------------
+% Referências no padrão autor-data demonstrado pelo próprio modelo oficial,
+% conforme o Guia para a elaboração e apresentação da produção acadêmica da
+% Ufopa (3. ed., 2025). Todas as sete são citadas no texto acima.
+% -----------------------------------------------------------------------------
+\secao{REFERÊNCIAS}
+\corpo
+\begingroup
+\setlength{\parindent}{0pt}
+\raggedright
+
+% >>> SECAO: REFERENCIAS
+Aumüller, M.; Bernhardsson, E.; Faithfull, A. ANN-Benchmarks: a benchmarking tool for approximate nearest neighbor algorithms. \textit{Information Systems}, v. 87, 101374, 2020.
+\par\vspace{3pt}
+Bajaj, P. et al. MS MARCO: a human generated machine reading comprehension dataset. \textit{arXiv}, 1611.09268, 2016.
+\par\vspace{3pt}
+Lewis, P. et al. Retrieval-augmented generation for knowledge-intensive NLP tasks. In: \textit{Advances in Neural Information Processing Systems 33}, 2020. p. 9459-9474.
+\par\vspace{3pt}
+Malkov, Y. A.; Yashunin, D. A. Efficient and robust approximate nearest neighbor search using hierarchical navigable small world graphs. \textit{IEEE Transactions on Pattern Analysis and Machine Intelligence}, 2018.
+\par\vspace{3pt}
+Pan, J. J.; Wang, J.; Li, G. Survey of vector database management systems. \textit{arXiv}, 2310.14021, 2023.
+\par\vspace{3pt}
+Patel, L. et al. ACORN: performant and predicate-agnostic search over vector embeddings and structured data. \textit{Proceedings of the ACM on Management of Data}, v. 2, n. 3, art. 120, 2024.
+\par\vspace{3pt}
+Reimers, N.; Gurevych, I. Sentence-BERT: sentence embeddings using Siamese BERT-networks. In: \textit{Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing}, 2019.
+% <<< SECAO
+
+\endgroup
+
+\end{document}

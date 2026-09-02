@@ -1,0 +1,18 @@
+__pycache__/
+
+# Artefatos de compilação LaTeX
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.run.xml
+
+# Saídas derivadas do main.tex — não versionar, gerar com `make`
+main.pdf
+Resumo_Jornada_Academica_2026_RafaelNobre.docx
+banner-jornada.png
