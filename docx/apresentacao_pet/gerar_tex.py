@@ -120,8 +120,8 @@ def tabela(dados: dict) -> str:
 def main() -> int:
     partes = ["% Gerado por gerar_tex.py a partir de conteudo.py. Não editar à mão.\n\n"]
 
-    partes.append("\\vspace*{150pt}\n\\begin{center}\n")
-    partes.append("{\\fontsize{60}{72}\\selectfont\\bfseries "
+    partes.append("\\vspace*{104pt}\n\\begin{center}\n")
+    partes.append("{\\fontsize{42}{56}\\selectfont\\bfseries "
                   + "\\\\[8pt]\n".join(tex(l) for l in conteudo.CAPA["titulo"].split("\n"))
                   + "}\\\\[26pt]\n")
     partes.append("{\\fontsize{29}{38}\\selectfont\\color{cinza} "

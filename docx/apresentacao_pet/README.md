@@ -32,15 +32,24 @@ Editar o texto num dos arquivos gerados não faz sentido: a próxima execução 
 ## Linguagem
 
 O público é o PET do IEG, em maioria de engenharia — dois colegas de computação
-além do bolsista. Então:
+além do bolsista. Duas exigências ao mesmo tempo: sem jargão de banco de dados
+e sem tom coloquial, porque o orientador está na sala e o trabalho é o mesmo do
+artigo submetido.
 
-- Nada de vocabulário de banco de dados sem tradução. `recall` é "acerto",
-  `ef_search` é "o ajuste", o índice HNSW é "uma malha de ligações entre os
-  pontos", e a curva recall × vazão é uma curva de operação.
-- As comparações vêm de ensaio de bancada, controle de variável e
-  instrumentação, que é repertório que essa turma já tem. O achado central
-  aparece como **o instrumento não respondia ao ajuste**, que é uma falha de
-  medição reconhecível em qualquer laboratório.
+- **Títulos são frases nominais descritivas**, como em apresentação técnica:
+  "Objetivo do trabalho", "Metodologia: controle das variáveis", "Diagnóstico
+  do resultado anômalo", "Contraprova". Não títulos de narrativa em primeira
+  pessoa.
+- **O título da capa é o título oficial do trabalho**, literalmente o mesmo da
+  submissão à Jornada Acadêmica. Não encurtar nem reescrever.
+- Vocabulário técnico traduzido, não omitido: `recall` é "acerto", `ef_search`
+  é "o parâmetro de ajuste", o índice HNSW é "uma malha de ligações entre os
+  pontos", e a curva recall × vazão é uma curva de operação com um ponto de
+  operação a escolher. A taxonomia do artigo entra como está — "sistema
+  estendido" e "sistemas especializados".
+- As comparações vêm de controle de variável e verificação de instrumentação,
+  repertório que essa turma já tem. O achado central é apresentado como
+  diagnóstico de resultado anômalo, não como reviravolta narrativa.
 - Vetor, coordenada e distância entram sem rodeio: é conteúdo que a turma tem.
 - Zero citação, uma ideia por slide.
 - O roteiro é em **deixas**, não em parágrafos. Frase curta na ordem em que faz

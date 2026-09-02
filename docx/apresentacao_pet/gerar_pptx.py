@@ -153,23 +153,23 @@ NOTA_SZ = 1500
 
 def monta_capa() -> str:
     f = []
-    f.append(caixa(2, "titulo", MARGEM, int(1.15 * EMU), CONTEUDO, int(1.5 * EMU),
-                   "".join(paragrafo(f"**{l}**", sz=4000, alinha="ctr")
+    f.append(caixa(2, "titulo", MARGEM, int(0.95 * EMU), CONTEUDO, int(1.35 * EMU),
+                   "".join(paragrafo(f"**{l}**", sz=2800, alinha="ctr")
                            for l in CAPA["titulo"].split("\n"))))
-    f.append(caixa(3, "sub", MARGEM, int(2.75 * EMU), CONTEUDO, int(0.95 * EMU),
-                   "".join(paragrafo(l, sz=2000, cor=CINZA, alinha="ctr")
+    f.append(caixa(3, "sub", MARGEM, int(2.35 * EMU), CONTEUDO, int(0.6 * EMU),
+                   "".join(paragrafo(l, sz=1900, cor=CINZA, alinha="ctr")
                            for l in CAPA["sub"].split("\n"))))
     alt = int(1.05 * EMU)
     larg_u = int(alt * 403 / 420)
     larg_p = int(alt * 420 / 397)
     total = larg_u + larg_p + int(0.22 * EMU)
     x0 = (LARGURA - total) // 2
-    f.append(imagem(4, "rId2", x0, int(3.85 * EMU), larg_u, alt))
-    f.append(imagem(5, "rId3", x0 + larg_u + int(0.22 * EMU), int(3.85 * EMU), larg_p, alt))
+    f.append(imagem(4, "rId2", x0, int(3.15 * EMU), larg_u, alt))
+    f.append(imagem(5, "rId3", x0 + larg_u + int(0.22 * EMU), int(3.15 * EMU), larg_p, alt))
     paras = [paragrafo(CAPA["rodape"][0], sz=1600, alinha="ctr")]
     paras += [paragrafo(l, sz=1400, cor=CINZA, alinha="ctr", espaco_antes=200)
               for l in CAPA["rodape"][1:]]
-    f.append(caixa(6, "rodape", MARGEM, int(5.15 * EMU), CONTEUDO, int(1.6 * EMU),
+    f.append(caixa(6, "rodape", MARGEM, int(4.45 * EMU), CONTEUDO, int(2.1 * EMU),
                    "".join(paras)))
     return envelope_slide("".join(f))
 
