@@ -1,0 +1,13 @@
+__pycache__/
+
+# Artefatos de compilação LaTeX
+*.aux
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# Saídas derivadas — gerar com `make`
+slides.pdf
+Roteiro_Apresentacao_PET.docx
