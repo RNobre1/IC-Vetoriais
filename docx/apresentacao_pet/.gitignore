@@ -9,5 +9,7 @@ __pycache__/
 *.synctex.gz
 
 # Saídas derivadas — gerar com `make`
+corpo-gerado.tex
 slides.pdf
 Roteiro_Apresentacao_PET.docx
+Apresentacao_PET.pptx

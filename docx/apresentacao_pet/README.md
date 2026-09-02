@@ -1,15 +1,16 @@
 # Apresentação do relatório parcial — PET/IEG
 
-Duas saídas: os slides (`slides.pdf`, 15 slides em 16:9) e o roteiro falado
-(`Roteiro_Apresentacao_PET.docx`). Janela de 10 a 15 minutos; o roteiro fecha
-em 11:50, o que deixa margem para pergunta no meio.
+Três saídas, uma fonte. `conteudo.py` guarda o texto; o PDF, o `.pptx` e o
+roteiro falado derivam dele. Janela de 10 a 15 minutos; o roteiro fecha em
+11:50, o que deixa folga para pergunta no meio.
 
 ## Comandos
 
 ```bash
-make slides    # compila o PDF e imprime páginas e avisos de caixa
-make roteiro   # gera o .docx e confere a soma dos tempos
-make tudo
+make tudo      # corpo do .tex, PDF, roteiro .docx e .pptx
+make slides    # só o PDF
+make pptx      # só o .pptx, e roda a guarda de consistência
+make roteiro   # só o roteiro
 make clean
 ```
 
@@ -17,53 +18,83 @@ make clean
 
 | Arquivo | Papel | Versionado |
 |---|---|---|
-| `slides.tex` | fonte dos slides | sim |
-| `gerar_roteiro.py` | fonte do texto falado e gerador do `.docx` | sim |
-| `logos/` | logos do PET e da UFOPA, extraídas da apresentação anterior do grupo | sim |
-| `slides.pdf` | entregável, sai de `make slides` | não |
-| `Roteiro_Apresentacao_PET.docx` | entregável, sai de `make roteiro` | não |
+| `conteudo.py` | **fonte única** do texto, do roteiro e dos tempos | sim |
+| `slides.tex` | só a diagramação; dá `\input` no corpo gerado | sim |
+| `gerar_tex.py` | escreve `corpo-gerado.tex` a partir de `conteudo.py` | sim |
+| `gerar_pptx.py` | monta o `.pptx` a partir de `conteudo.py` | sim |
+| `gerar_roteiro.py` | monta o roteiro `.docx` a partir de `conteudo.py` | sim |
+| `logos/` | logos do PET e da UFOPA, extraídas da apresentação anterior | sim |
+| `corpo-gerado.tex`, `slides.pdf`, `Apresentacao_PET.pptx`, `Roteiro_Apresentacao_PET.docx` | saídas | não |
 
-## Decisões de forma
+Editar o texto num dos arquivos gerados não faz sentido: a próxima execução do
+`make` sobrescreve. Texto muda em `conteudo.py`.
 
-**Segue a apresentação anterior do grupo** na diagramação: 16:9 em 1440×810 pt,
-fundo branco, título em negrito no alto à esquerda, azul `#2C71AD` como cor de
-destaque, navy `#152039`, número do slide no canto inferior direito. A paleta
-foi amostrada dos pixels do arquivo anterior, não escolhida por semelhança.
+## Linguagem
 
-**O que mudou em relação ao modelo:** a logo do PET aparece em todos os slides,
-e não só na capa; os números importantes viraram manchete em vez de linha de
-texto corrido; o corpo é alinhado à esquerda e não justificado, porque em fonte
-grande a justificação parte palavra ao meio e atravanca quem lê de longe; e há
-um slide de fecho com a lição metodológica, que o modelo não tinha.
+O público é o PET do IEG, em maioria de engenharia — dois colegas de computação
+além do bolsista. Então:
 
-**Não é uma apresentação acadêmica.** Nenhuma citação, nenhum termo técnico sem
-tradução antes, uma ideia por slide. O jargão do relatório (`recall`, `HNSW`,
-`ef_search`, seletividade) aparece como "acerto", "rede de atalhos" e "botão de
-ajuste". A narrativa é a do erro que quase foi publicado, não a da lista de
-métricas.
+- Nada de vocabulário de banco de dados sem tradução. `recall` é "acerto",
+  `ef_search` é "o ajuste", o índice HNSW é "uma malha de ligações entre os
+  pontos", e a curva recall × vazão é uma curva de operação.
+- As comparações vêm de ensaio de bancada, controle de variável e
+  instrumentação, que é repertório que essa turma já tem. O achado central
+  aparece como **o instrumento não respondia ao ajuste**, que é uma falha de
+  medição reconhecível em qualquer laboratório.
+- Vetor, coordenada e distância entram sem rodeio: é conteúdo que a turma tem.
+- Zero citação, uma ideia por slide.
+- O roteiro é em **deixas**, não em parágrafos. Frase curta na ordem em que faz
+  sentido, para o apresentador falar com as palavras dele. Parágrafo lido em pé
+  soa lido.
 
-**Sem `beamer` e sem `tikz`.** Nenhum dos dois está instalado no TinyTeX desta
-máquina, e instalar pacote é decisão do piloto, não do build. O deck sai com
-`article`, `geometry`, `xcolor` e `graphicx`, que já existiam. As barras do
-gráfico de tempo de indexação são `\rule`.
+## Forma
 
-**O `.docx` é OOXML montado à mão.** Não há biblioteca de Office nesta máquina.
-O `gerar_roteiro.py` escreve as quatro partes que o Word exige e valida o
-resultado: o pacote é lido de volta, todo XML é parseado e a soma dos tempos é
-conferida contra a janela de 10 a 15 minutos, falhando em vez de gerar arquivo
-fora do combinado.
+Segue a diagramação da apresentação anterior do grupo: 16:9, fundo branco,
+título em negrito no alto à esquerda, azul `#2C71AD` como destaque, navy
+`#152039`, número do slide no canto inferior direito. A paleta foi amostrada
+dos pixels do arquivo anterior.
+
+Sobre o modelo, muda: a logo do PET aparece em todos os slides e não só na
+capa; os números importantes viram manchete; o corpo é alinhado à esquerda,
+porque em fonte grande a justificação parte palavra ao meio; e há um slide de
+fecho com a lição, que o modelo não tinha.
+
+`slides.tex` não usa `beamer` nem `tikz` — nenhum dos dois está instalado no
+TinyTeX desta máquina, e instalar pacote é decisão do piloto. O deck sai de
+`article`, `geometry`, `xcolor` e `graphicx`; as barras são `\rule`.
+
+## O que é verificado, e o que não é
+
+Verificado automaticamente:
+
+- **PDF**: 15 páginas e zero avisos de caixa (`Overfull`/`Underfull`).
+- **Roteiro**: soma dos tempos dentro da janela de 10 a 15 minutos — o gerador
+  falha em vez de gravar um roteiro fora do combinado.
+- **`.pptx`**: pacote lido de volta, todo XML parseado, toda relação apontando
+  para parte existente, todo `r:embed` declarado no `.rels` do próprio slide, e
+  nenhum slide passando do limite inferior da área útil.
+- **Consistência**: `gerar_pptx.py --verificar` extrai os números do PDF
+  compilado e os do conteúdo e falha se os conjuntos diferirem. Pega corpo
+  gerado velho no disco.
+
+**Não** verificado: a diagramação do `.pptx`. Não há PowerPoint nem LibreOffice
+nesta máquina. O Quick Look do macOS renderiza a capa, e foi assim que a fonte
+errada apareceu — Calibri não existe aqui e caía em serifa, por isso o deck usa
+Arial, que existe nos dois sistemas. Dos outros 14 slides, o que garante o
+resultado é a checagem de área útil e o `normAutofit` ligado, que faz o
+PowerPoint encolher o texto se alguma caixa apertar. Abrir e passar o olho
+continua sendo trabalho do piloto.
 
 ## Rastreabilidade dos números
 
-Todo valor citado nos slides e no roteiro vem das tabelas do relatório parcial
+Todo valor citado vem das tabelas do relatório parcial
 (`docx/relatorio_parcial/secoes/06-resultados.tex`), conferidas por script
-contra os JSONs de `code/results/` da sessão de medição de 2026-08-23. Nada foi
-recalculado nem arredondado aqui sem conferência — inclusive os arredondamentos
-para linguagem falada ("seis por cento" para 0,0595, "2,6 GiB" para 2.612,6
-MiB).
+contra os JSONs de `code/results/` da sessão de 2026-08-23. Os arredondamentos
+para linguagem falada também foram conferidos: "seis por cento" para 0,0595 e
+"2,6 GiB" para 2.612,6 MiB.
 
 ## Se o tempo apertar
 
-Os slides 4 e 8 aceitam corte sem quebrar a história. O miolo são os slides 11,
-12 e 13 — o achado do `recall` igual a 1,0000 — e apressá-los tira o único
-ponto que a plateia leva para casa. O roteiro registra isso no cabeçalho.
+Corte nos slides 4 e 8. Os slides 11, 12 e 13 são o miolo — é onde está o
+único achado que a plateia leva para casa — e apressá-los esvazia a
+apresentação. O roteiro registra isso no cabeçalho.
