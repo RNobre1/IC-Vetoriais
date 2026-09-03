@@ -44,8 +44,7 @@ SLIDES: list[dict] = [
                  "**2.** Representação vetorial e busca aproximada",
                  "**3.** Objetivo e metodologia"],
                 ["**4.** Resultados",
-                 "**5.** O resultado anômalo e a contraprova",
-                 "**6.** Considerações e próximas etapas"],
+                 "**5.** Próximas etapas"],
             ]),
         ],
     },
@@ -71,6 +70,16 @@ SLIDES: list[dict] = [
                       "que funcionam como uma coordenada em um espaço de 384 eixos."),
             ("texto", "Trechos de conteúdo semelhante ocupam posições próximas nesse espaço. A "
                       "busca passa a ser um **cálculo de distância**."),
+            ("diagrama", {
+                "altura": 190,
+                "pontos": [(14, 74, "azul", 14), (22, 60, "azul", 14), (10, 52, "azul", 14),
+                           (20, 82, "azul", 14), (30, 68, "azul", 14),
+                           (74, 30, "navy", 14), (82, 44, "navy", 14), (88, 26, "navy", 14),
+                           (70, 46, "navy", 14)],
+                "arestas": [],
+                "rotulos": [(20, 30, "cinza", "trechos sobre o mesmo assunto"),
+                            (79, 70, "cinza", "trechos sobre outro assunto")],
+            }),
             ("nota", "Na base utilizada há 500 mil trechos. Comparar a consulta com todos, um a "
                      "um, envolve 192 milhões de números por busca."),
         ],
@@ -82,10 +91,15 @@ SLIDES: list[dict] = [
                       "incompatível com resposta em milissegundos."),
             ("texto", "Os sistemas constroem então um *índice aproximado*: uma malha de ligações "
                       "entre os pontos, percorrida no lugar da varredura completa."),
-            ("cartoes", [
-                ("Consequência", "O resultado deixa de ser exato. A busca pode retornar vizinhos incorretos."),
-                ("Parâmetro de ajuste", "Percorrer mais da malha eleva o acerto e o tempo de resposta. Percorrer menos produz o inverso."),
-            ]),
+            ("diagrama", {
+                "altura": 250,
+                "pontos": [(6, 82, 'navy', 12), (23, 90, 'navy', 12), (39, 76, 'navy', 12), (8, 58, 'navy', 12), (41, 54, 'navy', 12), (7, 30, 'navy', 12), (22, 16, 'navy', 12), (38, 26, 'navy', 12), (25, 68, 'navy', 12), (62, 82, 'navy', 12), (79, 90, 'navy', 12), (95, 76, 'navy', 12), (64, 58, 'navy', 12), (97, 54, 'navy', 12), (63, 30, 'navy', 12), (78, 16, 'navy', 12), (94, 26, 'navy', 12), (81, 68, 'navy', 12), (22, 46, 'navy', 26), (22, 46, 'amarelo', 20), (70, 48, 'navy', 26), (70, 48, 'amarelo', 20)],
+                "arestas": [(22, 46, 6, 82, 'cinza', 1), (22, 46, 23, 90, 'cinza', 1), (22, 46, 39, 76, 'cinza', 1), (22, 46, 8, 58, 'cinza', 1), (22, 46, 41, 54, 'cinza', 1), (22, 46, 7, 30, 'cinza', 1), (22, 46, 22, 16, 'cinza', 1), (22, 46, 38, 26, 'cinza', 1), (22, 46, 25, 68, 'cinza', 1), (62, 82, 79, 90, 'cinza', 1), (79, 90, 95, 76, 'cinza', 1), (95, 76, 97, 54, 'cinza', 1), (64, 58, 62, 82, 'cinza', 1), (64, 58, 81, 68, 'cinza', 1), (81, 68, 79, 90, 'cinza', 1), (63, 30, 64, 58, 'cinza', 1), (63, 30, 78, 16, 'cinza', 1), (78, 16, 94, 26, 'cinza', 1), (94, 26, 97, 54, 'cinza', 1), (81, 68, 97, 54, 'cinza', 1), (79, 90, 81, 68, 'azul', 4), (81, 68, 64, 58, 'azul', 4), (64, 58, 70, 48, 'azul', 4), (50, -4, 50, 96, 'cinzaclaro', 1)],
+                "rotulos": [(22, 2, "preto", "comparar com todos"),
+                            (78, 2, "preto", "percorrer a malha")],
+            }),
+            ("texto", "O resultado deixa de ser exato, e um *parâmetro de ajuste* controla o "
+                      "compromisso: percorrer mais da malha eleva o acerto e o tempo de resposta."),
         ],
     },
     {
@@ -162,81 +176,38 @@ SLIDES: list[dict] = [
         "titulo": "Resultados: busca com filtro",
         "blocos": [
             ("texto", "Consulta com filtro é o caso frequente em aplicação real: **restringir a "
-                      "busca a um subconjunto dos documentos**. Medida com 1% da base elegível:"),
+                      "busca a um subconjunto dos documentos**. Medida com 1% da base elegível, "
+                      "com os três sistemas percorrendo o índice:"),
             ("tabela", {
                 "cabecalho": ["", "Acerto com filtro de 1%"],
-                "linhas": [["pgvector", "0,0595"],
-                           ["Qdrant", "1,0000"],
-                           ["Weaviate", "1,0000"]],
-                "azuis": [(1, 1), (2, 1)],
+                "linhas": [["pgvector", "0,0592"],
+                           ["Qdrant", "0,9996"],
+                           ["Weaviate", "0,5662"]],
+                "azuis": [(1, 1)],
             }),
-            ("texto", "A leitura imediata seria a superioridade dos sistemas especializados sob "
-                      "filtro restritivo. *Essa leitura não se sustentou.*"),
+            ("texto", "É o cenário que mais separa os três. O Qdrant preserva o acerto, o "
+                      "Weaviate entrega pouco mais da metade, e o pgvector fica limitado pela "
+                      "ordem em que aplica o filtro: acrescentar um índice sobre o campo de "
+                      "filtro não altera o resultado."),
         ],
     },
     {
-        "titulo": "Diagnóstico do resultado anômalo",
+        "titulo": "Próximas etapas",
         "blocos": [
-            ("texto", "Alterar o parâmetro de ajuste deve alterar o acerto. Os cinco valores "
-                      "medidos:"),
-            ("tabela", {
-                "cabecalho": ["Ajuste", "16", "32", "64", "128", "256"],
-                "linhas": [["Weaviate", "1,0000", "1,0000", "1,0000", "1,0000", "1,0000"]],
-                "azuis": [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5)],
-            }),
-            ("texto", "Cinco ajustes distintos e o mesmo valor nos cinco. A documentação dos "
-                      "dois sistemas descreve o mecanismo: com poucos elementos elegíveis, o "
-                      "executor *abandona o índice* e resolve a consulta por varredura completa."),
-            ("texto", "O valor de 1,0000 media a varredura exata, e não a qualidade da busca "
-                      "aproximada sob filtro."),
-        ],
-    },
-    {
-        "titulo": "Contraprova",
-        "blocos": [
-            ("texto", "Com o mecanismo desativado e os três sistemas obrigados a percorrer o "
-                      "índice:"),
-            ("tabela", {
-                "cabecalho": ["", "Antes", "Índice obrigado a trabalhar"],
-                "linhas": [["pgvector", "0,0595", "0,0592"],
-                           ["Qdrant", "1,0000", "0,9996"],
-                           ["Weaviate", "1,0000", "0,5662"]],
-                "azuis": [(2, 2)],
-            }),
-            ("texto", "O Qdrant mantém o desempenho, o que confirma a vantagem. O Weaviate cai "
-                      "para pouco mais da metade. O pgvector não se altera: um índice sobre o "
-                      "campo de filtro não modificou o resultado, o que localiza a limitação na "
-                      "ordem das operações."),
-        ],
-    },
-    {
-        "titulo": "Consideração metodológica",
-        "blocos": [
-            ("caixa_navy", ["Resultado exato pede verificação antes de conclusão.",
-                            "Se a medida não responde ao parâmetro que deveria alterá-la, a "
-                            "grandeza sob medição não é a esperada."]),
-            ("texto", "A verificação custou a reescrita de parte do relatório. Sem ela, "
-                      "custaria uma correção posterior à avaliação."),
-        ],
-    },
-    {
-        "titulo": "Situação atual e próximas etapas",
-        "blocos": [
-            ("colunas_titulo", [
-                ("Concluído", ["• ambiente reproduzível dos 3 sistemas",
-                               "• 248 testes automatizados",
-                               "• 2 cenários em 2 escalas, dados no repositório",
-                               "• relatório parcial fechado"]),
-                ("Previsto", ["• escala de 1 milhão de trechos",
-                              "• carga concorrente de escrita e leitura",
-                              "• repetição das medições, com dispersão",
-                              "• comparação entre duas arquiteturas de máquina"]),
+            ("colunas", [
+                ["• escala de 1 milhão de trechos",
+                 "• carga concorrente de escrita e leitura"],
+                ["• repetição das medições, com dispersão",
+                 "• comparação entre duas arquiteturas de máquina"],
             ]),
-            ("frase", "Obrigado. Perguntas?"),
-            ("nota_centro", "Código e dados: github.com/RNobre1/IC-Vetoriais"),
         ],
+    },
+    {
+        "titulo": "",
+        "blocos": [("central", "Obrigado")],
     },
 ]
+
 
 # -----------------------------------------------------------------------------
 # Roteiro falado. Deixas curtas, não texto corrido: parágrafo lido em pé soa
@@ -245,16 +216,15 @@ SLIDES: list[dict] = [
 
 ROTEIRO: list[dict] = [
     {
-        "slide": 1, "titulo": "Capa", "seg": 40,
-        "ideia": "Apresentar-se e enunciar o achado principal.",
+        "slide": 1, "titulo": "Capa", "seg": 35,
+        "ideia": "Apresentar-se e enunciar a pergunta do trabalho.",
         "falas": [
             "Boa tarde. Eu sou o Rafael, do curso de Ciência da Computação.",
             "Sou bolsista de Iniciação Científica, orientado pelo professor Celson.",
-            "Vou apresentar o relatório parcial deste ano, que compara três bancos de dados vetoriais.",
-            "Adianto o achado principal: uma das conclusões que eu tinha pronta estava errada.",
-            "O que revelou o erro foi um resultado exato demais para ser verdadeiro.",
+            "Vou apresentar o relatório parcial deste ano.",
+            "O trabalho compara três bancos de dados para busca por significado, e mede o que a escolha entre eles custa.",
         ],
-        "notas": ["Não corra na capa. Esse enunciado é o que sustenta a atenção até o slide 11."],
+        "notas": [],
     },
     {
         "slide": 2, "titulo": "Roteiro", "seg": 20,
@@ -262,7 +232,7 @@ ROTEIRO: list[dict] = [
         "falas": [
             "A estrutura é essa: primeiro o problema e como esses sistemas o resolvem.",
             "Depois o objetivo, a metodologia e os resultados.",
-            "E ao final o resultado anômalo, a contraprova e o que fica de consideração.",
+            "E ao final as próximas etapas.",
         ],
         "notas": [],
     },
@@ -276,36 +246,38 @@ ROTEIRO: list[dict] = [
             "A busca semântica compara significado, e reconhece o conceito escrito de outra forma.",
             "É a camada que permite a um assistente responder sobre o acervo de uma instituição.",
         ],
-        "notas": ["Se houver abertura, pergunte se alguém já não encontrou algo que sabia existir. "
-                  "Ancora o problema sem custo de tempo."],
+        "notas": ["Se houver abertura, pergunte se alguém já não encontrou algo que sabia existir."],
     },
     {
-        "slide": 4, "titulo": "Representação vetorial do texto", "seg": 55,
-        "ideia": "Texto como coordenada. Vocabulário que a turma de engenharia já domina.",
+        "slide": 4, "titulo": "Representação vetorial do texto", "seg": 70,
+        "ideia": "Texto como coordenada. O diagrama mostra proximidade e distância.",
         "falas": [
             "Para isso funcionar, cada trecho de texto passa por um modelo de linguagem.",
             "O modelo devolve 384 números.",
             "Esses números funcionam como uma coordenada em um espaço de 384 eixos.",
-            "Trechos de conteúdo semelhante ficam em posições próximas. Conteúdos distintos ficam distantes.",
+            "No diagrama estão dois grupos: à esquerda, trechos sobre o mesmo assunto; à direita, sobre outro.",
+            "Conteúdo semelhante ocupa posições próximas. Conteúdo distinto fica distante.",
             "A busca deixa de comparar palavras e passa a ser um cálculo de distância.",
-            "Na base que eu usei são 500 mil trechos. Fazer isso ponto a ponto envolve 192 milhões de números por consulta.",
+            "Na base que eu usei são 500 mil trechos. Ponto a ponto, isso envolve 192 milhões de números por consulta.",
         ],
-        "notas": ["Vetor e distância é conteúdo que essa turma tem. Não peça desculpa pela "
-                  "matemática nem simplifique além do necessário."],
+        "notas": ["O diagrama está em duas dimensões por necessidade de desenho. Se alguém "
+                  "perguntar, confirme: são 384 eixos, e a ideia de distância é a mesma."],
     },
     {
-        "slide": 5, "titulo": "Busca exata e busca aproximada", "seg": 55,
-        "ideia": "Introduzir o índice aproximado e o parâmetro de ajuste.",
+        "slide": 5, "titulo": "Busca exata e busca aproximada", "seg": 80,
+        "ideia": "O diagrama é o centro do slide. Explique os dois lados antes do texto.",
         "falas": [
             "Comparar a consulta com os 500 mil pontos dá o resultado exato.",
-            "E tem custo incompatível com uma tela que precisa responder em milissegundos.",
-            "Os sistemas constroem então um índice: uma malha de ligações entre os pontos.",
-            "A busca percorre a malha em vez de varrer a base inteira.",
-            "O ganho de tempo é grande, e o resultado deixa de ser exato.",
-            "Existe um parâmetro de ajuste: percorrer mais da malha eleva o acerto e o tempo.",
-            "Guardem esse parâmetro. Ele é o centro do diagnóstico que vem alguns slides adiante.",
+            "É o desenho da esquerda: o ponto amarelo é a consulta, e sai uma ligação para cada ponto da base.",
+            "O custo disso é incompatível com uma tela que precisa responder em milissegundos.",
+            "À direita está a alternativa: os sistemas constroem uma malha de ligações entre os pontos.",
+            "A busca entra por um ponto e caminha pela malha, em azul, até a região mais próxima.",
+            "Ela visita uma fração da base em vez de varrer tudo.",
+            "O resultado deixa de ser exato: o caminho pode parar perto do certo sem chegar nele.",
+            "E existe um parâmetro de ajuste: percorrer mais da malha eleva o acerto e o tempo.",
         ],
-        "notas": ["Plantar o parâmetro aqui é o que permite o slide 11 dispensar explicação nova."],
+        "notas": ["Aponte os dois desenhos enquanto fala. Este slide é o que sustenta a leitura "
+                  "de todos os resultados adiante."],
     },
     {
         "slide": 6, "titulo": "Objetivo do trabalho", "seg": 40,
@@ -315,13 +287,13 @@ ROTEIRO: list[dict] = [
             "Utilizar o banco de dados que a instituição já tem, ou adotar um sistema especializado?",
             "De um lado o PostgreSQL com a extensão pgvector, que a literatura chama de sistema estendido.",
             "Do outro o Qdrant e o Weaviate, projetados desde a origem para busca por similaridade.",
-            "O objetivo do trabalho é medir o que essa escolha custa, em condições controladas.",
+            "O objetivo é medir o que essa escolha custa, em condições controladas.",
         ],
         "notas": [],
     },
     {
         "slide": 7, "titulo": "Metodologia: controle das variáveis", "seg": 45,
-        "ideia": "Controle de variável e rastreabilidade. É o slide que sustenta os resultados.",
+        "ideia": "Controle de variável e rastreabilidade. Sustenta os resultados.",
         "falas": [
             "Para a comparação ter validade, só uma variável pode ficar livre.",
             "Fixei mesma máquina, mesma sessão de medição e mesmos textos.",
@@ -330,8 +302,8 @@ ROTEIRO: list[dict] = [
             "A única diferença entre as três medições é o banco de dados.",
             "E cada valor está registrado em arquivo no repositório, junto da configuração que o produziu.",
         ],
-        "notas": ["Vale uma pausa depois de mencionar o repositório. Procedimento e "
-                  "rastreabilidade é linguagem que essa turma leva a sério."],
+        "notas": ["Pausa curta depois de mencionar o repositório. Procedimento e rastreabilidade "
+                  "é linguagem que essa turma leva a sério."],
     },
     {
         "slide": 8, "titulo": "Grandezas medidas", "seg": 55,
@@ -348,7 +320,7 @@ ROTEIRO: list[dict] = [
         "notas": ["Se alguém observar que isso é curva de operação, confirme: é a mesma ideia."],
     },
     {
-        "slide": 9, "titulo": "Resultados: busca sem filtro", "seg": 40,
+        "slide": 9, "titulo": "Resultados: busca sem filtro", "seg": 45,
         "ideia": "Os três acertam; a diferença está no custo.",
         "falas": [
             "Primeiro resultado, com cem mil trechos.",
@@ -361,7 +333,7 @@ ROTEIRO: list[dict] = [
                   "ajuste, logo está em outro ponto da curva."],
     },
     {
-        "slide": 10, "titulo": "Resultados: construção do índice e recursos", "seg": 50,
+        "slide": 10, "titulo": "Resultados: construção do índice e recursos", "seg": 55,
         "ideia": "A diferença é grande, e cada sistema perde em uma grandeza diferente.",
         "falas": [
             "Segundo resultado, e é onde a diferença é maior.",
@@ -377,74 +349,42 @@ ROTEIRO: list[dict] = [
                   "Está registrado no relatório."],
     },
     {
-        "slide": 11, "titulo": "Resultados: busca com filtro", "seg": 60,
-        "ideia": "Apresentar o resultado anômalo e a conclusão que ele sugeria.",
+        "slide": 11, "titulo": "Resultados: busca com filtro", "seg": 75,
+        "ideia": "O cenário que mais separa os três. A menção ao artefato é rápida e sem slide.",
         "falas": [
             "Terceiro resultado, e é o cenário mais próximo de uso real.",
             "Consulta com filtro: restringir a busca a um subconjunto dos documentos.",
             "Medi com um por cento da base elegível.",
-            "O Qdrant e o Weaviate deram acerto de exatamente um.",
-            "O pgvector deu seis por cento.",
-            "A leitura imediata seria a superioridade dos especializados sob filtro restritivo.",
-            "Essa leitura não se sustentou.",
+            "O Qdrant preserva o acerto, quase um.",
+            "O Weaviate entrega pouco mais da metade.",
+            "E o pgvector fica em seis centésimos, limitado pela ordem em que aplica o filtro.",
+            "Eu cheguei a criar um índice sobre o campo de filtro supondo que fosse a causa, e o resultado não mudou.",
+            "Um detalhe de método que vale registrar em uma frase:",
+            "na configuração padrão, dois desses sistemas abandonam o índice quando sobra pouca coisa e resolvem por varredura completa, o que produz acerto igual a um.",
+            "Esses números são da condição em que os três foram obrigados a usar o índice.",
         ],
-        "notas": ["Diga a última linha e faça uma pausa. O silêncio aqui vale mais que "
-                  "qualquer recurso de animação."],
+        "notas": ["A menção ao artefato é uma frase, sem se estender. Se houver interesse, o "
+                  "detalhe está no relatório e rende conversa depois."],
     },
     {
-        "slide": 12, "titulo": "Diagnóstico do resultado anômalo", "seg": 50,
-        "ideia": "A pista, enquadrada como verificação de instrumentação.",
+        "slide": 12, "titulo": "Próximas etapas", "seg": 35,
+        "ideia": "O que vem na segunda metade do ano.",
         "falas": [
-            "O que chamou atenção foi o parâmetro de ajuste.",
-            "Alterar o ajuste deve alterar o acerto. Se não altera, a medição não está medindo o que se pensa.",
-            "Fui aos cinco valores medidos: um, um, um, um e um.",
-            "Cinco ajustes distintos e o mesmo valor nos cinco.",
-            "A documentação dos dois sistemas descreve o mecanismo.",
-            "Com poucos elementos elegíveis, o executor abandona o índice e resolve por varredura completa.",
-            "Ou seja: aquele valor exato media a varredura, e não a qualidade da busca aproximada.",
-        ],
-        "notas": ["Aponte para a linha de valores iguais na tela. É o momento mais visual da "
-                  "apresentação."],
-    },
-    {
-        "slide": 13, "titulo": "Contraprova", "seg": 50,
-        "ideia": "Confirmar a hipótese e separar as três limitações.",
-        "falas": [
-            "Para confirmar, desativei esse mecanismo e repeti todas as medições.",
-            "Os três obrigados a percorrer o índice.",
-            "O Qdrant manteve o desempenho, o que confirma que a vantagem dele existe.",
-            "O Weaviate caiu de um para cinquenta e seis por cento.",
-            "E o pgvector não se alterou.",
-            "Eu havia criado um índice sobre o campo de filtro supondo que fosse essa a causa, e o resultado não mudou.",
-            "A limitação dele está na ordem das operações, não na ausência de índice.",
+            "Para a segunda metade do ano ficam quatro frentes.",
+            "A escala de um milhão de trechos.",
+            "Carga concorrente de escrita e leitura.",
+            "Repetir as medições para reportar dispersão.",
+            "E comparar duas arquiteturas de máquina diferentes.",
         ],
         "notas": [],
     },
     {
-        "slide": 14, "titulo": "Consideração metodológica", "seg": 50,
-        "ideia": "A lição, que é de método e não de banco de dados.",
+        "slide": 13, "titulo": "Obrigado", "seg": 10,
+        "ideia": "Encerrar e abrir para perguntas.",
         "falas": [
-            "A consideração que eu tiro daqui não é sobre banco de dados. É sobre medição.",
-            "Resultado exato pede verificação antes de conclusão.",
-            "Se a medida não responde ao parâmetro que deveria alterá-la, a grandeza sob medição não é a esperada.",
-            "No meu caso, a verificação custou reescrever parte do relatório.",
-            "Sem ela, custaria uma correção posterior à avaliação.",
+            "Obrigado. Fico à disposição para perguntas.",
         ],
-        "notas": ["Essa é a parte que a plateia leva. Fale devagar e olhe para a plateia, não "
-                  "para o slide."],
-    },
-    {
-        "slide": 15, "titulo": "Situação atual e próximas etapas", "seg": 45,
-        "ideia": "Estado do trabalho e abertura para perguntas.",
-        "falas": [
-            "Para encerrar. Está concluído o ambiente reproduzível dos três sistemas.",
-            "Duzentos e quarenta e oito testes automatizados.",
-            "Dois cenários em duas escalas, com os dados no repositório.",
-            "E o relatório parcial fechado.",
-            "Está previsto a escala de um milhão, carga concorrente de escrita e leitura, repetição das medições com dispersão, e a comparação entre duas arquiteturas de máquina.",
-            "Obrigado. O código e os dados estão nesse endereço, e eu fico à disposição.",
-        ],
-        "notas": [],
+        "notas": ["O código e os dados estão em github.com/RNobre1/IC-Vetoriais, caso alguém peça."],
     },
 ]
 

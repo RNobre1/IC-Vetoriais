@@ -73,6 +73,12 @@ def bloco(tipo, valor) -> str:
         linhas = [f"\\barra{{{tex(r)}}}{{{max(int(largura_max * p), 60)}}}{{azul}}{{{tex(t)}}}"
                   for r, p, t in valor]
         return "\n".join(linhas) + "\n\\vspace{16pt}\n\n"
+    if tipo == "central":
+        return ("\\vspace{150pt}\n\\begin{center}\n"
+                "{\\fontsize{86}{100}\\selectfont\\bfseries " + tex(valor) + "}\n"
+                "\\end{center}\n\n")
+    if tipo == "diagrama":
+        return diagrama(valor)
     if tipo == "tabela":
         return tabela(valor)
     if tipo == "caixa":
@@ -90,6 +96,40 @@ def bloco(tipo, valor) -> str:
                 "\\end{minipage}\n\\vspace{32pt}\n\\end{minipage}}\n\\end{center}"
                 "\\vspace{40pt}\n\n")
     raise SystemExit(f"tipo de bloco sem emissor para LaTeX: {tipo}")
+
+
+def diagrama(dados: dict) -> str:
+    """Desenha pontos, ligações e rótulos com o ambiente `picture` do LaTeX.
+
+    Coordenadas do conteúdo são normalizadas em 0..100 nos dois eixos, com y
+    para cima. `picture` basta aqui: nem `tikz` nem `pgf` estão instalados, e
+    `\\qbezier` traça segmento reto entre dois pontos arbitrários quando o
+    ponto de controle é o ponto médio.
+    """
+    larg, alt = 1296, dados["altura"]
+    px = lambda x: x * larg / 100
+    py = lambda y: y * alt / 100
+    # Sem `center`: centralizar desloca a caixa do `picture` e as coordenadas
+    # deixam de bater com a margem do slide. Ancorando à esquerda, x=0 é a
+    # margem e o mapeamento é exato — foi medido no PDF, não suposto.
+    saida = ["\\noindent\\setlength{\\unitlength}{1pt}%\n"
+             f"\\begin{{picture}}({larg},{alt})\n"]
+    for x1, y1, x2, y2, cor, esp in dados["arestas"]:
+        a, b, c, d = px(x1), py(y1), px(x2), py(y2)
+        # O `\\qbezier` precisa ir dentro de um `\\put`: solto no `picture` ele
+        # entra na lista horizontal e desloca o ponto de referência de tudo o
+        # que vem depois. Medido no PDF: sem o `\\put`, os círculos saíam
+        # 169 pt à direita das linhas que deveriam tocá-los.
+        saida.append(f"  \\put(0,0){{{{\\color{{{cor}}}\\linethickness{{{esp}pt}}"
+                     f"\\qbezier({a:.1f},{b:.1f})({(a + c) / 2:.1f},{(b + d) / 2:.1f})"
+                     f"({c:.1f},{d:.1f})}}}}\n")
+    for x, y, cor, tam in dados["pontos"]:
+        saida.append(f"  \\put({px(x):.1f},{py(y):.1f}){{\\color{{{cor}}}\\circle*{{{tam}}}}}\n")
+    for x, y, cor, texto in dados["rotulos"]:
+        saida.append(f"  \\put({px(x):.1f},{py(y):.1f}){{\\makebox(0,0){{\\color{{{cor}}}"
+                     f"\\fontsize{{23}}{{28}}\\selectfont {tex(texto)}}}}}\n")
+    saida.append("\\end{picture}\\\\[22pt]\n\n")
+    return "".join(saida)
 
 
 def tabela(dados: dict) -> str:

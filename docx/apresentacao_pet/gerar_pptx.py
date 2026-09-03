@@ -43,6 +43,10 @@ CINZA = "464A51"
 CINZACLARO = "E9F1F2"
 PRETO = "000000"
 BRANCO = "FFFFFF"
+AMARELO = "FFC857"
+
+CORES = {"azul": AZUL, "navy": NAVY, "cinza": CINZA, "cinzaclaro": CINZACLARO,
+         "preto": PRETO, "branco": BRANCO, "amarelo": AMARELO}
 
 # -----------------------------------------------------------------------------
 # Conteúdo: importado de conteudo.py, a fonte única.
@@ -116,6 +120,40 @@ def retangulo(idx: int, x: int, y: int, cx: int, cy: int, cor: str) -> str:
         f'<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>'
         f'<a:solidFill><a:srgbClr val="{cor}"/></a:solidFill>'
         f"<a:ln><a:noFill/></a:ln></p:spPr>"
+        f'<p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>'
+    )
+
+
+def elipse(idx: int, x: int, y: int, d: int, cor: str) -> str:
+    """Disco de diâmetro `d` centrado em (x, y)."""
+    return (
+        f'<p:sp><p:nvSpPr><p:cNvPr id="{idx}" name="ponto{idx}"/>'
+        f'<p:cNvSpPr/><p:nvPr/></p:nvSpPr>'
+        f'<p:spPr><a:xfrm><a:off x="{x - d // 2}" y="{y - d // 2}"/>'
+        f'<a:ext cx="{d}" cy="{d}"/></a:xfrm>'
+        f'<a:prstGeom prst="ellipse"><a:avLst/></a:prstGeom>'
+        f'<a:solidFill><a:srgbClr val="{cor}"/></a:solidFill>'
+        f"<a:ln><a:noFill/></a:ln></p:spPr>"
+        f'<p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>'
+    )
+
+
+def linha(idx: int, x1: int, y1: int, x2: int, y2: int, cor: str, esp: int) -> str:
+    """Segmento entre dois pontos. O PresentationML só guarda a caixa e os
+    espelhamentos, então o sentido do traço vem de flipH/flipV."""
+    flip = ""
+    if x2 < x1:
+        flip += ' flipH="1"'
+    if y2 < y1:
+        flip += ' flipV="1"'
+    return (
+        f'<p:sp><p:nvSpPr><p:cNvPr id="{idx}" name="linha{idx}"/>'
+        f'<p:cNvSpPr/><p:nvPr/></p:nvSpPr>'
+        f'<p:spPr><a:xfrm{flip}><a:off x="{min(x1, x2)}" y="{min(y1, y2)}"/>'
+        f'<a:ext cx="{max(abs(x2 - x1), 1)}" cy="{max(abs(y2 - y1), 1)}"/></a:xfrm>'
+        f'<a:prstGeom prst="line"><a:avLst/></a:prstGeom>'
+        f'<a:ln w="{esp}"><a:solidFill><a:srgbClr val="{cor}"/></a:solidFill></a:ln>'
+        f"</p:spPr>"
         f'<p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>'
     )
 
@@ -274,10 +312,34 @@ def monta_slide(dados: dict, numero: int) -> str:
                 idx += 1
             y += len(valor) * int(0.55 * EMU) + int(0.16 * EMU)
             continue
+        elif tipo == "central":
+            f.append(caixa(idx, "central", MARGEM, int(2.3 * EMU), CONTEUDO, int(1.6 * EMU),
+                           paragrafo(f"**{valor}**", sz=6600, alinha="ctr"), pad=0,
+                           ancora="ctr"))
+            y += int(1.8 * EMU)
+        elif tipo == "diagrama":
+            alt_dg = int(CONTEUDO * valor["altura"] / 1296)
+            mapx = lambda vx: MARGEM + int(CONTEUDO * vx / 100)
+            mapy = lambda vy: y + alt_dg - int(alt_dg * vy / 100)
+            esc = CONTEUDO / 1296
+            for x1, y1, x2, y2, cor, esp in valor["arestas"]:
+                f.append(linha(idx, mapx(x1), mapy(y1), mapx(x2), mapy(y2),
+                               CORES[cor], max(int(esp * esc), 6350)))
+                idx += 1
+            for vx, vy, cor, tam in valor["pontos"]:
+                f.append(elipse(idx, mapx(vx), mapy(vy), int(tam * esc), CORES[cor]))
+                idx += 1
+            for vx, vy, cor, texto in valor["rotulos"]:
+                f.append(caixa(idx, "rotulo", mapx(vx) - int(1.6 * EMU),
+                               mapy(vy) - int(0.16 * EMU), int(3.2 * EMU), int(0.32 * EMU),
+                               paragrafo(texto, sz=1400, cor=CORES[cor], alinha="ctr"), pad=0))
+                idx += 1
+            y += alt_dg + int(0.22 * EMU)
+            continue
         elif tipo == "tabela":
             f.append(tabela(idx, valor, y))
             idx += 1
-            y += int(0.46 * EMU) * (1 + len(valor["linhas"])) + int(0.3 * EMU)
+            y += altura_tabela(valor) + int(0.3 * EMU)
             continue
         elif tipo == "caixa":
             alt = int(0.36 * EMU) * (2 + len(valor) // 150)
@@ -320,6 +382,23 @@ def monta_slide(dados: dict, numero: int) -> str:
 ALTURAS: dict[int, int] = {}
 
 
+def altura_tabela(dados: dict) -> int:
+    """Altura ocupada, contando a quebra do cabeçalho.
+
+    O cabeçalho longo quebra em mais de uma linha e a tabela cresce. Com
+    altura fixa, o bloco seguinte subia por cima dela — foi o defeito visto
+    no slide da contraprova.
+    """
+    cab = dados["cabecalho"]
+    ncol = len(cab)
+    alt_lin = int(0.46 * EMU)
+    larg_total = min(CONTEUDO, int(1.9 * EMU) + (ncol - 1) * int(1.7 * EMU))
+    larg_col_pol = (larg_total - int(1.9 * EMU)) / max(ncol - 1, 1) / EMU
+    maior = max((len(c) for c in cab[1:]), default=1)
+    linhas_cab = max(1, min(3, -(-maior // max(int(larg_col_pol * 15), 6))))
+    return alt_lin * linhas_cab + alt_lin * len(dados["linhas"])
+
+
 def tabela(idx: int, dados: dict, y: int) -> str:
     cab, linhas = dados["cabecalho"], dados["linhas"]
     azuis = set(dados.get("azuis", []))
@@ -329,6 +408,7 @@ def tabela(idx: int, dados: dict, y: int) -> str:
     larg_total = min(CONTEUDO, prim + resto * int(1.7 * EMU))
     larg_col = (larg_total - prim) // resto
     alt_lin = int(0.46 * EMU)
+    alt_cab = altura_tabela(dados) - alt_lin * len(linhas)
     grid = "".join(f'<a:gridCol w="{prim if k == 0 else larg_col}"/>' for k in range(ncol))
 
     def celula(txt: str, *, negrito: bool, azul: bool, alinha: str) -> str:
@@ -340,7 +420,7 @@ def tabela(idx: int, dados: dict, y: int) -> str:
             f'</a:txBody><a:tcPr marL="45720" marR="45720" anchor="ctr"/></a:tc>'
         )
 
-    linhas_xml = ['<a:tr h="%d">' % alt_lin]
+    linhas_xml = ['<a:tr h="%d">' % alt_cab]
     for k, c in enumerate(cab):
         linhas_xml.append(celula(c, negrito=True, azul=False,
                                  alinha="l" if k == 0 else "r"))

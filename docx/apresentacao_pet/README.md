@@ -1,8 +1,8 @@
 # Apresentação do relatório parcial — PET/IEG
 
 Três saídas, uma fonte. `conteudo.py` guarda o texto; o PDF, o `.pptx` e o
-roteiro falado derivam dele. Janela de 10 a 15 minutos; o roteiro fecha em
-11:50, o que deixa folga para pergunta no meio.
+roteiro falado derivam dele. Treze slides, janela de 10 a 15 minutos, roteiro
+fechando em 10:20.
 
 ## Comandos
 
@@ -76,7 +76,7 @@ TinyTeX desta máquina, e instalar pacote é decisão do piloto. O deck sai de
 
 Verificado automaticamente:
 
-- **PDF**: 15 páginas e zero avisos de caixa (`Overfull`/`Underfull`).
+- **PDF**: 13 páginas e zero avisos de caixa (`Overfull`/`Underfull`).
 - **Roteiro**: soma dos tempos dentro da janela de 10 a 15 minutos — o gerador
   falha em vez de gravar um roteiro fora do combinado.
 - **`.pptx`**: pacote lido de volta, todo XML parseado, toda relação apontando
@@ -102,8 +102,25 @@ contra os JSONs de `code/results/` da sessão de 2026-08-23. Os arredondamentos
 para linguagem falada também foram conferidos: "seis por cento" para 0,0595 e
 "2,6 GiB" para 2.612,6 MiB.
 
-## Se o tempo apertar
+## Diagramas
 
-Corte nos slides 4 e 8. Os slides 11, 12 e 13 são o miolo — é onde está o
-único achado que a plateia leva para casa — e apressá-los esvazia a
-apresentação. O roteiro registra isso no cabeçalho.
+Os slides 4 e 5 têm diagrama vetorial gerado junto com o resto: pontos,
+ligações e rótulos declarados em coordenadas normalizadas de 0 a 100 em
+`conteudo.py`, e desenhados com o ambiente `picture` do LaTeX e com formas
+nativas no `.pptx`. O do slide 5 contrapõe as duas estratégias lado a lado —
+à esquerda a consulta ligada a todos os pontos, à direita a malha com um
+caminho de três saltos destacado.
+
+Uma armadilha do `picture` que custou tempo e está resolvida no gerador: o
+`\qbezier` solto entra na lista horizontal e desloca o ponto de referência de
+todos os `\put` seguintes. Medido no PDF, os círculos saíam 169 pt à direita
+das linhas que deveriam tocá-los. Cada `\qbezier` vai dentro de um
+`\put(0,0)`, e a conferência foi feita por leitura de pixel, não a olho.
+
+## O que ficou de fora, por decisão
+
+O diagnóstico do resultado anômalo no cenário com filtro — o acerto igual a
+1,0000 que media varredura completa em vez de busca aproximada — tinha três
+slides e foi retirado a pedido. Fica como uma frase no roteiro do slide 11, e
+os números apresentados são os da condição equalizada, em que os três sistemas
+percorrem o índice. Assim nenhum valor exibido é o artefato.
