@@ -6,9 +6,13 @@ cenário: "B (busca com filtro) — condição equalizada"
 dataset: "MS MARCO passages"
 dataset_tamanho_n: 600000
 tags: [etapa-3, cenário-b, equalizado, hnsw, filtros, recall]
+status: anterior
+vigente_em: "[[2026-08-23-footprint-e-tempo-de-indexacao]]"
 ---
 
 # Experimento: Cenário B equalizado — 100k e 500k nos 3 SGBDs
+
+> **Execução anterior.** A sessão de 2026-08-23 re-mediu o Cenário B nas duas condições, e é dela que o relatório parcial tira os valores reportados. Esta nota segue valendo como a primeira execução equalizada e como registro do raciocínio que a motivou; ao citar seus números, datar.
 
 ## Objetivo
 

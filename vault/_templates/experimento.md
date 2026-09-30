@@ -6,6 +6,8 @@ cenário: ""
 dataset: ""
 dataset_tamanho_n: 
 tags: []
+status: vigente   # vigente = base dos valores reportados; anterior = execução anterior à vigente, válida para comparação
+vigente_em: ""    # quando status = anterior: [[nota da sessão vigente]] que re-mediu estas grandezas
 ---
 
 # Experimento: {{descrição curta}}

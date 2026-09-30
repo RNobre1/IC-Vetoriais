@@ -6,6 +6,7 @@ cenário: validação-de-pipeline
 dataset: MS MARCO passages (subset top-100 por passage_id)
 dataset_tamanho_n: 100
 tags: [pre-dia-3, validação, embeddings, sentence-transformers, minilm, etapa-2]
+status: anterior
 ---
 
 # Experimento: validação ponta-a-ponta da geração real de embeddings (100 passages MS MARCO)

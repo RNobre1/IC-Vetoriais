@@ -6,9 +6,13 @@ cenário: "B (busca com filtro) — contraprova de mecanismo"
 dataset: "MS MARCO passages"
 dataset_tamanho_n: 100000
 tags: [contraprova, cenário-b, full-scan, flat-search-cutoff, hnsw, rigor]
+status: anterior
+vigente_em: "[[2026-08-23-footprint-e-tempo-de-indexacao]]"
 ---
 
 # Experimento: o `recall = 1,0` do Cenário B é fallback para busca exata?
+
+> **Execução anterior.** A conclusão desta nota (o recall de 1,0000 vem do fallback para varredura exata) continua valendo e está no relatório parcial, no Cenário B. Os valores do cenário foram re-medidos em 2026-08-23; para o valor atual de cada ponto, usar aquela sessão.
 
 ## Objetivo
 

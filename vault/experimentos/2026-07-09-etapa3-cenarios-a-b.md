@@ -6,9 +6,13 @@ cenário: "A (busca pura) e B (busca com filtro)"
 dataset: "MS MARCO passages"
 dataset_tamanho_n: 600000
 tags: [etapa-3, cenário-a, cenário-b, 100k, 500k, hnsw, recall, qps]
+status: anterior
+vigente_em: "[[2026-08-23-footprint-e-tempo-de-indexacao]]"
 ---
 
 # Experimento: Etapa 3 — Cenários A e B em 100k e 500k nos 3 SGBDs
+
+> **Execução anterior.** A sessão de 2026-08-23 re-mediu os Cenários A e B, e é dela que o relatório parcial tira os valores reportados. Os números desta nota continuam sendo dado: a comparação entre as duas execuções (o recall reproduz, a latência não) está em [[2026-08-23-footprint-e-tempo-de-indexacao]]. Ao citá-los, datar.
 
 > **Nota de proveniência.** Esta nota foi escrita em 2026-08-16, a partir dos JSONs em `code/results/` e dos scripts de execução. A execução ocorreu em 2026-07-09 e não foi registrada no dia. Tudo o que aparece como número aqui vem dos arquivos de resultado; o que veio do console daquele dia e não foi persistido está marcado como **não rastreável** e não deve ser citado no relatório.
 
