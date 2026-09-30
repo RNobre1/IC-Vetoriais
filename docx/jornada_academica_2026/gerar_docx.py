@@ -83,6 +83,12 @@ def verificar(sec: dict[str, str]) -> list[str]:
     termos = sec["PALAVRAS"].rstrip(".").count(";") + 1
     if not 3 <= termos <= 5:
         problemas.append(f"PALAVRAS-CHAVE: {termos} termos, faixa 3-5")
+    # O subevento saiu de um texto de exemplo do modelo. Enquanto a substituição
+    # não acontecer no `.tex`, o entregável sai com a instrução no lugar do nome
+    # do seminário -- erro que passa desapercebido porque fica na primeira linha,
+    # onde ninguém relê. A guarda é por conteúdo, não por lista de arquivos.
+    if "INSERIR" in sec["SUBEVENTO"].upper():
+        problemas.append(f"SUBEVENTO: ainda com o exemplo do modelo ({sec['SUBEVENTO']!r})")
     return problemas
 
 
@@ -129,6 +135,45 @@ def reescrever(p, novo: str) -> None:
             t.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
             run.insert(pos + 2 * i - 1, br)
             run.insert(pos + 2 * i, t)
+
+
+def reescrever_rotulado(p, rotulo: str, conteudo: str) -> None:
+    """Reescreve um parágrafo de rótulo + conteúdo preservando os dois estilos.
+
+    O modelo monta esses parágrafos -- palavras-chave, autorização legal, apoio
+    financeiro -- com o rótulo em negrito vermelho num run próprio e o conteúdo
+    em preto normal nos runs seguintes. Jogar tudo no primeiro `<w:t>`, como faz
+    `reescrever`, pinta a linha inteira de vermelho e negrito, porque o primeiro
+    run é justamente o do rótulo: era o que acontecia com as palavras-chave.
+
+    O `rotulo` é passado com o espaço final que deve aparecer, porque no modelo
+    esse espaço vive em runs separados que aqui são esvaziados.
+    """
+    runs = list(p.iter(W + "r"))
+    if not runs:
+        raise SystemExit("parágrafo de rótulo sem runs")
+    ts_rotulo = list(runs[0].iter(W + "t"))
+    if not ts_rotulo:
+        raise SystemExit("run do rótulo sem <w:t>")
+    # O run de conteúdo é o primeiro depois do rótulo sem negrito e sem cor
+    # explícita -- os runs de cor no meio são só espaços do modelo.
+    run_conteudo = next(
+        (r for r in runs[1:]
+         if (rpr := r.find(W + "rPr")) is None
+         or (rpr.find(W + "b") is None and rpr.find(W + "color") is None)),
+        None,
+    )
+    if run_conteudo is None:
+        raise SystemExit(f"parágrafo {rotulo!r} sem run de conteúdo em estilo normal")
+    ts_conteudo = list(run_conteudo.iter(W + "t"))
+    if not ts_conteudo:
+        raise SystemExit(f"run de conteúdo de {rotulo!r} sem <w:t>")
+    for t in p.iter(W + "t"):
+        t.text = ""
+    ts_rotulo[0].text = rotulo
+    ts_conteudo[0].text = conteudo
+    for t in (ts_rotulo[0], ts_conteudo[0]):
+        t.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
 
 
 def montar_autores(p, autores: list[tuple[str, str]]) -> None:
@@ -194,8 +239,9 @@ def main() -> int:
     ET.register_namespace("w", W[1:-1])
     sec = extrair_secoes((AQUI / "main.tex").read_text(encoding="utf-8"))
     faltando = {
-        "RESUMO", "PALAVRAS", "INTRODUCAO", "METODOLOGIA",
+        "SUBEVENTO", "RESUMO", "PALAVRAS", "INTRODUCAO", "METODOLOGIA",
         "RESULTADOS", "RESULTADOS2", "CONCLUSOES", "REFERENCIAS",
+        "PROGRAMA", "APOIO",
     } - set(sec)
     if faltando:
         raise SystemExit(f"seções ausentes no main.tex: {sorted(faltando)}")
@@ -212,12 +258,13 @@ def main() -> int:
         return 0
 
     titulo = re.search(r"\n(COMPARAÇÃO DE DESEMPENHO[^\n]*)\n", (AQUI / "main.tex").read_text(encoding="utf-8"))
-    subevento = "[INSERIR NOME DO SUBEVENTO E O NUMERAL DA EDIÇÃO DE 2026]"
 
     # Cada entrada é (trecho que identifica o parágrafo no modelo, texto novo).
     # Ordem preservada: a primeira ocorrência ainda não substituída é a alvo.
+    # `novo` como tupla `(rótulo, conteúdo)` vai para `reescrever_rotulado`, que
+    # preserva o negrito vermelho do rótulo e o preto normal do conteúdo.
     substituicoes = [
-        ("Inserir nome do subevento", subevento),
+        ("Inserir nome do subevento", sec["SUBEVENTO"]),
         ("INSERIR O TÍTULO", titulo.group(1).strip()),
         ("Maria X. Silva", None),  # tratada por montar_autores, com expoentes
         ("1. Estudante do curso de Graduação",
@@ -229,15 +276,15 @@ def main() -> int:
         ("3. Professor do curso de Graduação", ""),
         ("Obs.: Os nomes acima são fictícios", ""),
         ("O resumo, segundo a NBR 6028", sec["RESUMO"]),
-        ("Palavras-chave:  Trabalhos acadêmicos", "Palavras-chave: " + sec["PALAVRAS"]),
+        ("Palavras-chave:  Trabalhos acadêmicos", ("Palavras-chave: ", sec["PALAVRAS"])),
         ("A introdução deve apresentar o tema", sec["INTRODUCAO"]),
         ("Evidencie a relevância", ""),
         ("Descreva como o trabalho foi realizado", sec["METODOLOGIA"]),
         ("Discuta os resultados do trabalho", sec["RESULTADOS"]),
         ("Apresente as principais conclusões", sec["CONCLUSOES"]),
         ("Toda referência citada no texto deve constar", sec["REFERENCIAS"]),
-        ("Autorização legal:", ""),
-        ("Apoio financeiro:", ""),
+        ("Autorização legal:", ("Programa: ", sec["PROGRAMA"])),
+        ("Apoio financeiro:", ("Apoio financeiro: ", sec["APOIO"])),
     ]
 
     with zipfile.ZipFile(MODELO) as z:
@@ -262,6 +309,8 @@ def main() -> int:
         usados.add(i)
         if novo is None:
             montar_autores(p, [("Rafael Nobre de Souza", "1"), ("Celson Pantoja Lima", "2")])
+        elif isinstance(novo, tuple):
+            reescrever_rotulado(p, *novo)
         else:
             # Parágrafo esvaziado aqui é removido na varredura final, abaixo.
             reescrever(p, novo)
