@@ -1,10 +1,14 @@
 MODELO := modelo/Modelo_de_submissao_de_trabalhos_Jornada_Academica_2026.docx
 
-.PHONY: tudo pdf docx verificar clean
+.PHONY: tudo pdf docx verificar testar clean
 
 # O .tex é a fonte única do texto. O .docx entregue e o PDF de conferência são
 # ambos derivados dele, e nenhum dos dois é versionado.
-tudo: verificar pdf docx
+tudo: testar verificar pdf docx
+
+# Testes das regras de limite do modelo aplicadas pelo gerador.
+testar:
+	python3 -m unittest -v test_gerar_docx
 
 pdf: banner-jornada.png
 	latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex

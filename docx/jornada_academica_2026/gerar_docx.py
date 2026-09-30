@@ -27,13 +27,25 @@ SAIDA = AQUI / "Resumo_Jornada_Academica_2026_RafaelNobre.docx"
 W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
 
 # Limites de caracteres com espaços declarados pelo modelo. Resumo é em palavras.
+# Introdução e metodologia têm limite seco. Resultados e conclusões o modelo
+# deixa ultrapassar "desde que o tamanho total do documento não ultrapasse três
+# páginas" -- condição que só se confere no PDF, então ali o limite vira aviso.
 LIMITES_CHARS = {
     "INTRODUCAO": 1000,
     "METODOLOGIA": 1000,
+}
+LIMITES_FLEXIVEIS = {
+    "RESULTADOS": 2000,  # soma de RESULTADOS + RESULTADOS2
     "CONCLUSOES": 1000,
 }
-LIMITE_RESULTADOS = 2000  # soma de RESULTADOS + RESULTADOS2
 LIMITE_RESUMO_PALAVRAS = (150, 500)
+
+
+def tamanho(sec: dict[str, str], nome: str) -> int:
+    """Caracteres com espaços da seção; resultados somam os dois parágrafos."""
+    if nome == "RESULTADOS":
+        return len(sec["RESULTADOS"]) + len(sec["RESULTADOS2"]) + 1
+    return len(sec[nome])
 
 
 def extrair_secoes(tex: str) -> dict[str, str]:
@@ -70,12 +82,9 @@ def verificar(sec: dict[str, str]) -> list[str]:
     """Confere os limites do modelo. Devolve a lista de violações."""
     problemas = []
     for nome, limite in LIMITES_CHARS.items():
-        n = len(sec[nome])
+        n = tamanho(sec, nome)
         if n > limite:
             problemas.append(f"{nome}: {n} caracteres, limite {limite}")
-    n = len(sec["RESULTADOS"]) + len(sec["RESULTADOS2"]) + 1
-    if n > LIMITE_RESULTADOS:
-        problemas.append(f"RESULTADOS: {n} caracteres, limite {LIMITE_RESULTADOS}")
     palavras = len(sec["RESUMO"].split())
     lo, hi = LIMITE_RESUMO_PALAVRAS
     if not lo <= palavras <= hi:
@@ -92,12 +101,23 @@ def verificar(sec: dict[str, str]) -> list[str]:
     return problemas
 
 
+def avisos(sec: dict[str, str]) -> list[str]:
+    """Limites flexíveis ultrapassados. Não bloqueiam: valem se couber em 3 páginas."""
+    return [
+        f"{nome}: {tamanho(sec, nome)} caracteres, acima de {limite} -- "
+        "o modelo permite se o documento couber em 3 páginas; confira o PDF"
+        for nome, limite in LIMITES_FLEXIVEIS.items()
+        if tamanho(sec, nome) > limite
+    ]
+
+
 def relatorio(sec: dict[str, str]) -> None:
     print(f"{'RESUMO':<24} {len(sec['RESUMO']):>5} chars {len(sec['RESUMO'].split()):>4} palavras  (150-500 palavras)")
     for nome, limite in LIMITES_CHARS.items():
-        print(f"{nome:<24} {len(sec[nome]):>5} chars                 (limite {limite})")
-    n = len(sec["RESULTADOS"]) + len(sec["RESULTADOS2"]) + 1
-    print(f"{'RESULTADOS E DISCUSSÃO':<24} {n:>5} chars                 (limite {LIMITE_RESULTADOS})")
+        print(f"{nome:<24} {tamanho(sec, nome):>5} chars                 (limite {limite})")
+    for nome, limite in LIMITES_FLEXIVEIS.items():
+        rotulo = "RESULTADOS E DISCUSSÃO" if nome == "RESULTADOS" else nome
+        print(f"{rotulo:<24} {tamanho(sec, nome):>5} chars                 (limite {limite}, flexível)")
     termos = sec["PALAVRAS"].rstrip(".").count(";") + 1
     print(f"{'PALAVRAS-CHAVE':<24} {termos:>5} termos                (faixa 3-5)")
 
@@ -253,6 +273,8 @@ def main() -> int:
         for p in problemas:
             print("  " + p, file=sys.stderr)
         return 1
+    for a in avisos(sec):
+        print(f"AVISO: {a}", file=sys.stderr)
 
     if "--verificar" in sys.argv:
         return 0
