@@ -11,8 +11,10 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 RESULTS_DIR = REPO_ROOT / "code" / "results"
-# Sessão oficial atual (substituível quando houver sessão completa)
-SESSAO_DIR = RESULTS_DIR / "sessoes" / "oficial"
+# Sessão de medição vigente do relatório final (vide
+# vault/decisões/2026-11-15-protocolo-da-sessao-final.md).
+SESSAO_ID = "2026-11-15-final"
+SESSAO_DIR = RESULTS_DIR / "sessoes" / SESSAO_ID
 ANTERIOR_PATHS = str(RESULTS_DIR / "cenario_*_2026-08-23T*.json")
 SAIDA_TABELAS = REPO_ROOT / "docx" / "relatorio_parcial" / "gerado"
 SAIDA_FIGURAS = REPO_ROOT / "docx" / "relatorio_parcial" / "figuras"
