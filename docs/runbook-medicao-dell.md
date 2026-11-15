@@ -84,6 +84,37 @@ O motivo da separação é operacional, não hierárquico. Dado bruto é commuta
 
 ## Execução
 
+### Sessão completa (a partir de 15/11/2026)
+
+A sessão de medição do relatório final roda por um roteiro único, que mede cada sistema sozinho em cada escala e é retomável. Decisão: `vault/decisões/2026-11-15-protocolo-da-sessao-final.md`.
+
+```bash
+cd code
+make sessao SESSAO_ID=2026-11-15-final
+```
+
+O que o alvo faz, em ordem:
+
+1. Bloqueia suspensão e ação da tampa com `systemd-inhibit` enquanto roda (sem ele, avisa e segue).
+2. Grava o ambiente (commit, kernel, governor, zram, swap, imagens) em `results/sessoes/<id>/ambiente.txt`.
+3. Liga o amostrador de recursos (`lib/monitor.py`, 1 Hz) em segundo plano: `results/sessoes/<id>/monitor_*.csv`.
+4. Ponte: `reset-medicao` e Cenário A em 100k pelo protocolo anterior (`make bench-A N=100000`).
+5. Para cada escala, na ordem 100k, 1M, 500k: `reset-medicao` e, para cada sistema na ordem que `benchmarks.run_sessao.ordem_dos_sistemas` define, `python -m benchmarks.run_sessao --n N --sistema S` (com `--cenario-c` em 1M). O executor recria contêiner e volume do serviço no início e a cada descarte.
+6. Registra cada par em `results/sessoes/<id>/progresso.tsv` (escala, sistema, resultado, tentativa, duração, páginas de swap-out). Par com falha é tentado de novo uma vez. Reexecutar o mesmo comando retoma do primeiro par sem `ok`.
+
+Marcos de fase (início e fim de cada seed, cenário e janela do C) ficam em `results/sessoes/<id>/marcos.jsonl` e no log de cada par.
+
+Antes de começar: fechar programas de desktop que não sejam necessários (atualizador de software, navegador), manter a máquina na tomada e não usá-la até o fim. Em 15/11/2026 a sessão completa foi estimada em cerca de 5 h.
+
+Para ensaiar o roteiro com carga pequena, sem gravar nada em `results/`:
+
+```bash
+make sessao SESSAO_ID=ensaio ESCALAS=100000 C_EM=100000 PONTE=0 RESULTS=/tmp/ensaio \
+    EXTRA="--ef-search 16,64 --repeticoes-a 2 --aquecimento-c 2 --duracao-c 10 --pool-c 14000"
+```
+
+### Execuções avulsas (protocolo de 23/08/2026)
+
 Escalas e varrimento padrão de `ef_search` (`16,32,64,128,256`):
 
 ```bash
@@ -115,7 +146,7 @@ git commit -m "chore(results): mede footprint e tempo de indexação em 100k e 5
 git push
 ```
 
-Se o `git status` mostrar qualquer arquivo que não seja JSON de resultado, não commitar — relatar antes.
+Na sessão completa, versionar também o diretório `results/sessoes/<id>/` (ambiente, progresso, marcos, logs e o CSV do amostrador, comprimido com `gzip`). Se o `git status` mostrar qualquer outro arquivo que não seja resultado, não commitar — relatar antes.
 
 Convenções de commit do projeto: mensagem em PT-BR, no imperativo, seguindo Conventional Commits, autoria única do bolsista.
 

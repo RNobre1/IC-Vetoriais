@@ -43,6 +43,8 @@ Cada uma tem uma nota datada em `vault/decisões/`, no formato ADR (contexto, op
 | Cenários | A (busca pura), B (busca com filtros de metadados), C (carga mista RAG) |
 | Ground truth | Busca exata via FAISS; no Cenário B, restrita ao subconjunto que satisfaz o filtro |
 | Forma de reportar | Curvas recall × QPS, no espírito do ANN-Benchmarks — nunca números pontuais |
+| Cenário C | Janelas de 0, 10, 100 e 1.000 inserções/s e duas sem escrita, produtor em processo separado, recall contra a busca exata sobre a base mais os vetores já confirmados |
+| Protocolo da sessão final | Uma sessão para 100k, 500k e 1M; cada sistema medido sozinho; um seed do pgvector por escala; 5 repetições no Cenário A |
 | Orçamento bibliográfico | 14 referências no parcial, ~20 no final |
 
 ### Equalização do Cenário B
@@ -106,6 +108,9 @@ make test-unit      # suíte unitária (sem Docker)
 make test-integration
 make bench-A N=100000 Q=1000 K=10 EF=16,32,64,128,256 WARMUP=50
 make bench-B N=100000 Q=1000 K=10 EF=16,32,64,128,256 WARMUP=50 SEL=0.01,0.1,0.5,1.0 EQ=1
+make sessao SESSAO_ID=<id>   # sessão completa do relatório final (DESTRUTIVO: recria volumes)
 ```
+
+A sessão completa e o Cenário C estão descritos em `vault/decisões/2026-11-15-protocolo-da-sessao-final.md` e `vault/decisões/2026-11-15-desenho-do-cenario-c.md`; o procedimento operacional, em `docs/runbook-medicao-dell.md`.
 
 Os resultados saem em `code/results/` como JSON, versionados no repositório — são o dado que sustenta os números do relatório.
