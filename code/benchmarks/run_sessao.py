@@ -12,13 +12,15 @@ número de seeds que preserva o que cada cenário mede. Decisão em
 - **Qdrant e Weaviate**: um seed por layout (A, B padrão, B equalizado),
   porque são baratos e porque o índice de payload pode alterar o grafo do
   Qdrant, o que contaminaria o A. O C roda na coleção do A.
-- Cada sistema é medido sozinho: o contêiner e o volume do serviço são
-  recriados no início e a cada descarte, de modo que a linha de base de
-  memória não carrega heap de coleções anteriores.
+- Cada sistema é medido sem dados dos outros: o contêiner e o volume do
+  serviço são recriados no início e a cada descarte, de modo que a linha de
+  base de memória não carrega heap de coleções anteriores. Os contêineres dos
+  outros dois sistemas continuam de pé, vazios e ociosos.
 
 Os JSONs têm o mesmo formato dos CLIs `run_cenario_a`/`run_cenario_b`, mais o
-Cenário C. Marcos de fase vão para um JSONL, que o amostrador de recursos
-(`lib.monitor`) usa para atribuir memória, CPU e swap a cada fase.
+Cenário C. Marcos de fase vão para um JSONL; cruzados com o CSV do
+amostrador de recursos (`lib.monitor`), atribuem memória, CPU e swap a cada
+fase na análise.
 
 Uso:
     python -m benchmarks.run_sessao --n 1000000 --sistema qdrant --cenario-c \\
@@ -39,7 +41,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from benchmarks.cenario_c import SEQUENCIA_JANELAS_PADRAO, vetores_necessarios
+import numpy as np
+
+from benchmarks.cenario_c import SEQUENCIA_JANELAS_PADRAO, tamanho_lote, vetores_necessarios
 from benchmarks.run_cenario_a import SISTEMAS_VALIDOS
 
 EF_SEARCH_PADRAO = [16, 32, 64, 128, 256]
@@ -75,8 +79,10 @@ def plano_de_passos(sistema: str, *, cenario_c: bool) -> list[str]:
             passos += ["drop_btree", "C"]
         return [*passos, "limpar"]
     if sistema in ("qdrant", "weaviate"):
+        # O C fica por último, como no pgvector: se a escrita concorrente
+        # falhar, os demais cenários do sistema já estão gravados.
         bloco_a = ["seed_a", "A", *(["C"] if cenario_c else []), "limpar"]
-        return [*bloco_a, "seed_b", "B", "limpar", "seed_b_eq", "B_eq", "limpar"]
+        return ["seed_b", "B", "limpar", "seed_b_eq", "B_eq", "limpar", *bloco_a]
     raise ValueError(f"sistema desconhecido: {sistema}")
 
 
@@ -180,6 +186,11 @@ def parse_args(argv: Sequence[str]) -> ConfigSessao:
         )
         if a.pool_c < precisa:
             p.error(f"--pool-c {a.pool_c} menor que os {precisa} vetores que as janelas pedem.")
+        try:
+            for taxa in a.janelas_c:
+                tamanho_lote(taxa, tick_s=a.tick_c)
+        except ValueError as e:
+            p.error(f"--janelas-c: {e}")
 
     return ConfigSessao(
         n_base=a.n,
@@ -351,6 +362,24 @@ def _nome_recurso(sistema: str, layout: str, n: int) -> str:
     return f"{nome_classe_weaviate(prefixo)}{n}"
 
 
+def _metricas_toleran(b: Any, *, gt: Any, k: int, id0: int) -> dict[str, Any]:
+    """Métricas da janela; se o recall falhar, grava o resto e o erro."""
+    from benchmarks.cenario_c import metricas_da_janela, resumir_consultas, resumir_producao
+
+    try:
+        return metricas_da_janela(b, gt=gt, k=k, id_insercao_inicial=id0)
+    except Exception as e:  # noqa: BLE001 — não perder latência e taxa por causa do recall
+        return {
+            **resumir_consultas(b.latencias_ms),
+            **resumir_producao(
+                b.registros, inicio_medicao=b.inicio_medicao, fim_medicao=b.fim_medicao
+            ),
+            "inseridos_acumulados_antes": b.m_antes,
+            "inseridos_acumulados_depois": b.m_depois,
+            "erro_recall": repr(e)[:300],
+        }
+
+
 def _ts_livre(results_dir: Path, cenario: str, sistema: str, n: int) -> str:
     """Timestamp cujo arquivo de curva ainda não existe (nunca sobrescreve)."""
     from benchmarks.run_cenario_a import timestamp_utc
@@ -372,8 +401,6 @@ def executar(cfg: ConfigSessao) -> list[Path]:  # noqa: C901 — sequência line
         ConfigC,
         GtIncremental,
         executar_janelas,
-        metricas_da_janela,
-        tamanho_lote,
     )
     from benchmarks.insersores import FabricaInseridor, contar
     from benchmarks.run_cenario_a import (
@@ -434,7 +461,18 @@ def executar(cfg: ConfigSessao) -> list[Path]:  # noqa: C901 — sequência line
         est.fechar()
         est.nome = _nome_recurso(s, layout, n)
         est.layout = layout
-        est.buscador, est.recurso = _construir_buscador(s, nome_recurso=est.nome, env=env)
+        # "healthy" não garante a porta TCP: em volume novo, o entrypoint do
+        # PostgreSQL responde ao `pg_isready` pelo socket Unix antes de o
+        # servidor definitivo abrir a porta. Tenta de novo por até ~60 s.
+        for tentativa in range(12):
+            try:
+                est.buscador, est.recurso = _construir_buscador(s, nome_recurso=est.nome, env=env)
+                return
+            except Exception as e:  # noqa: BLE001 — qualquer falha de conexão
+                if tentativa == 11:
+                    raise
+                marco("conectar", "nova_tentativa", {"erro": repr(e)[:200]})
+                time.sleep(5.0)
 
     def medir_swap(passo: str, fn):
         antes = ler_pswpout()
@@ -614,6 +652,20 @@ def executar(cfg: ConfigSessao) -> list[Path]:  # noqa: C901 — sequência line
             ao_terminar_janela=depois,
         )
         m_final = brutas[-1].m_depois
+        # Dado bruto primeiro: se o cálculo de recall falhar, as janelas
+        # (60 s cada, irrepetíveis sem refazer o seed) não se perdem.
+        destino = (
+            cfg.marcos.parent if cfg.marcos else cfg.results_dir
+        ) / f"c_brutas_{s}_{n}_{ts}.npz"
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        np.savez_compressed(
+            destino,
+            **{
+                f"j{b.ordem}_{campo}": getattr(b, campo)
+                for b in brutas
+                for campo in ("consultas", "ids_obtidos", "m_inicio", "m_fim", "latencias_ms")
+            },
+        )
         contagem = contar(s, est.recurso, est.nome)
         marco("C", "fim", {"inseridos": m_final, "contagem": contagem})
         marco("C_recall", "inicio")
@@ -642,7 +694,7 @@ def executar(cfg: ConfigSessao) -> list[Path]:  # noqa: C901 — sequência line
                         "tick_s": cfg.tick_c_s,
                         "tamanho_lote": tamanho_lote(b.taxa, tick_s=cfg.tick_c_s),
                     },
-                    metricas=metricas_da_janela(b, gt=gt, k=cfg.k, id_insercao_inicial=id0),
+                    metricas=_metricas_toleran(b, gt=gt, k=cfg.k, id0=id0),
                     ambiente={
                         **ambiente_base,
                         **est.extra_seed,
@@ -692,6 +744,9 @@ def executar(cfg: ConfigSessao) -> list[Path]:  # noqa: C901 — sequência line
             with est.recurso.cursor() as cur:
                 cur.execute(f"DROP INDEX {est.nome}_seletor_idx")
             est.recurso.commit()
+            # O C roda sem o B-tree; o ambiente não pode dizer o contrário.
+            est.extra_seed.pop("btree_seletor_s", None)
+            est.extra_seed["btree_seletor_removido"] = True
             marco("drop_btree", "fim")
         elif passo == "C":
             medir_swap("C_total", passo_c)

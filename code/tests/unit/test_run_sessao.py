@@ -56,20 +56,26 @@ def test_pgvector_sem_cenario_c() -> None:
 
 @pytest.mark.parametrize("sistema", ["qdrant", "weaviate"])
 def test_especializados_tem_um_seed_por_layout(sistema: str) -> None:
-    # O C roda na coleção do A, antes de ela ser descartada; o índice de
-    # payload do B não entra na coleção do A.
+    # O C roda na coleção do A e fica por último: se a escrita concorrente
+    # falhar, os JSONs do A, do B e do B equalizado já estão gravados.
     assert plano_de_passos(sistema, cenario_c=True) == [
-        "seed_a",
-        "A",
-        "C",
-        "limpar",
         "seed_b",
         "B",
         "limpar",
         "seed_b_eq",
         "B_eq",
         "limpar",
+        "seed_a",
+        "A",
+        "C",
+        "limpar",
     ]
+
+
+def test_c_e_sempre_o_ultimo_passo_de_medicao() -> None:
+    for sistema in ("pgvector", "qdrant", "weaviate"):
+        passos = plano_de_passos(sistema, cenario_c=True)
+        assert passos[-2:] == ["C", "limpar"]
 
 
 def test_sistema_desconhecido() -> None:
@@ -175,6 +181,12 @@ def test_parse_args_cenario_c_e_janelas_curtas() -> None:
 def test_parse_args_recusa_pool_insuficiente() -> None:
     with pytest.raises(SystemExit):
         parse_args(["--n", "5000", "--sistema", "qdrant", "--cenario-c", "--pool-c", "100"])
+
+
+def test_parse_args_recusa_taxa_que_nao_fecha_lote_antes_de_rodar() -> None:
+    # Descobrir isso dentro do processo produtor custaria janelas inteiras.
+    with pytest.raises(SystemExit):
+        parse_args(["--n", "5000", "--sistema", "qdrant", "--cenario-c", "--janelas-c", "0,15"])
 
 
 def test_parse_args_recusa_sistema_desconhecido() -> None:

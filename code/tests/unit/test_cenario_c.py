@@ -20,6 +20,7 @@ from benchmarks.cenario_c import (
     ConfigC,
     GtIncremental,
     RegistroLote,
+    executar_janelas,
     intervalo_entre_insercoes,
     produzir,
     recall_janela,
@@ -348,3 +349,41 @@ def test_resumir_producao_sem_lotes() -> None:
     assert r["inseridos_na_medicao"] == 0
     assert r["taxa_sustentada"] == 0.0
     assert r["lote_p50_ms"] is None
+
+
+# ---------------------------------------------------------------------------
+# Ganchos de telemetria não derrubam a medição
+# ---------------------------------------------------------------------------
+
+
+def test_gancho_que_falha_e_registrado_sem_abortar_a_janela() -> None:
+    def buscar(q: np.ndarray, k: int) -> list[int]:
+        return list(range(k))
+
+    def gancho_quebrado(ordem: int, taxa: int) -> dict:
+        raise RuntimeError("docker stats indisponível")
+
+    cfg = ConfigC(
+        n_base=10,
+        n_queries=2,
+        k=3,
+        janelas=[0, 0],
+        aquecimento_s=0.01,
+        duracao_s=0.05,
+        n_insercoes_pool=0,
+        assentar_antes_da_ultima=False,
+    )
+    brutas = executar_janelas(
+        buscar,
+        fabrica_inseridor=lambda: (lambda ids, v: None, lambda: None),
+        queries=np.zeros((2, 4), dtype=np.float32),
+        insercoes=np.zeros((0, 4), dtype=np.float32),
+        id_insercao_inicial=12,
+        cfg=cfg,
+        ao_iniciar_janela=gancho_quebrado,
+        ao_terminar_janela=gancho_quebrado,
+    )
+    assert len(brutas) == 2
+    assert brutas[0].latencias_ms.size > 0
+    assert "docker stats indisponível" in brutas[0].extra["erro_gancho_inicio"]
+    assert "docker stats indisponível" in brutas[0].extra["erro_gancho_fim"]

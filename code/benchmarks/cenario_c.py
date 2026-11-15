@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import math
 import multiprocessing as mp
+import queue
 import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
@@ -404,6 +405,27 @@ class JanelaBruta:
     extra: dict[str, Any] = field(default_factory=dict)
 
 
+def _gancho(
+    fn: Callable[[int, int], dict[str, Any] | None] | None,
+    ordem: int,
+    taxa: int,
+    extra: dict[str, Any],
+    chave_erro: str,
+) -> None:
+    """Roda um gancho de telemetria sem deixar a falha dele derrubar a janela.
+
+    Os ganchos medem coisas acessórias (memória do contêiner, estado do
+    checkpointer). Perder uma janela de 60 s — e, no pgvector, o seed de 1M
+    que a precede — por causa delas seria trocar o dado pelo instrumento.
+    """
+    if fn is None:
+        return
+    try:
+        extra.update(fn(ordem, taxa) or {})
+    except Exception as e:  # noqa: BLE001
+        extra[chave_erro] = repr(e)[:300]
+
+
 def _utc_agora() -> str:
     from datetime import UTC, datetime
 
@@ -421,7 +443,7 @@ def executar_janelas(
     ao_iniciar_janela: Callable[[int, int], dict[str, Any] | None] | None = None,
     ao_terminar_janela: Callable[[int, int], dict[str, Any] | None] | None = None,
 ) -> list[JanelaBruta]:
-    """Roda as janelas de `cfg.janelas` em sequência, sem pausa entre elas.
+    """Roda as janelas de `cfg.janelas` em sequência, sem pausa além dos ganchos.
 
     `buscar(query, k)` é a busca do adaptador já configurado com `ef_search`.
     `fabrica_inseridor` precisa ser *picklable* (roda no processo filho) e
@@ -448,8 +470,7 @@ def executar_janelas(
 
     for ordem, taxa in enumerate(cfg.janelas):
         extra: dict[str, Any] = {}
-        if ao_iniciar_janela:
-            extra.update(ao_iniciar_janela(ordem, taxa) or {})
+        _gancho(ao_iniciar_janela, ordem, taxa, extra, "erro_gancho_inicio")
         contador = ctx.Value("q", 0)
         proc = None
         saida = ctx.Queue()
@@ -510,7 +531,13 @@ def executar_janelas(
         registros: list[RegistroLote] = []
         if proc is not None:
             parar.set()
-            dados = saida.get(timeout=300)
+            try:
+                dados = saida.get(timeout=300)
+            except queue.Empty as e:
+                raise RuntimeError(
+                    f"produtor da janela {ordem} terminou sem resultado "
+                    f"(exitcode={proc.exitcode})."
+                ) from e
             proc.join(timeout=120)
             if isinstance(dados, tuple) and dados and dados[0] == "erro":
                 raise RuntimeError(f"produtor da janela {ordem} falhou: {dados[1]}")
@@ -518,17 +545,19 @@ def executar_janelas(
 
         m_depois = m_acumulado + contador.value
         if m_depois > m_acumulado:
-            extra.update(
-                sondar_visibilidade(
-                    buscar,
-                    vetores=insercoes[m_acumulado:m_depois],
-                    id_inicial=id_insercao_inicial + m_acumulado,
-                    ultimos=cfg.sonda_visibilidade_ultimos,
-                    k=cfg.k,
+            try:
+                extra.update(
+                    sondar_visibilidade(
+                        buscar,
+                        vetores=insercoes[m_acumulado:m_depois],
+                        id_inicial=id_insercao_inicial + m_acumulado,
+                        ultimos=cfg.sonda_visibilidade_ultimos,
+                        k=cfg.k,
+                    )
                 )
-            )
-        if ao_terminar_janela:
-            extra.update(ao_terminar_janela(ordem, taxa) or {})
+            except Exception as e:  # noqa: BLE001 — sonda acessória
+                extra["erro_visibilidade"] = repr(e)[:300]
+        _gancho(ao_terminar_janela, ordem, taxa, extra, "erro_gancho_fim")
         brutas.append(
             JanelaBruta(
                 taxa=taxa,
