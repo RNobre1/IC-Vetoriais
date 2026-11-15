@@ -1,4 +1,4 @@
-.PHONY: help up down logs smoke clean test test-unit test-integration lint fmt deps ui-up ui-down ui-logs seed bench-A bench-B bench-C-dryrun reset-medicao sessao
+.PHONY: help tabelas up down logs smoke clean test test-unit test-integration lint fmt deps ui-up ui-down ui-logs seed bench-A bench-B bench-C-dryrun reset-medicao sessao
 
 # Compose principal (3 SGBDs) e merge com UI (Verba). Vide:
 #   vault/decisões/2026-05-05-isolamento-ui-vs-benchmark.md
@@ -7,10 +7,10 @@ COMPOSE_UI   := docker compose -f docker-compose.yml -f docker-compose.ui.yml
 
 VENV := .venv
 # Se o venv existe, usa seus binários; caso contrário, cai pro PATH (necessário pra CI sem venv).
-PYTHON := $(if $(wildcard $(VENV)/bin/python),$(VENV)/bin/python,python)
-PIP    := $(if $(wildcard $(VENV)/bin/pip),$(VENV)/bin/pip,pip)
-PYTEST := $(if $(wildcard $(VENV)/bin/pytest),$(VENV)/bin/pytest,pytest)
-RUFF   := $(if $(wildcard $(VENV)/bin/ruff),$(VENV)/bin/ruff,ruff)
+PYTHON ?= $(if $(wildcard $(VENV)/bin/python),$(VENV)/bin/python,python3)
+PIP    ?= $(if $(wildcard $(VENV)/bin/pip),$(VENV)/bin/pip,pip3)
+PYTEST ?= $(if $(wildcard $(VENV)/bin/pytest),$(VENV)/bin/pytest,pytest)
+RUFF   ?= $(if $(wildcard $(VENV)/bin/ruff),$(VENV)/bin/ruff,ruff)
 
 help:  ## Lista os alvos do Makefile
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -119,3 +119,6 @@ clean:  ## Remove containers, volumes Docker e caches Python
 	docker compose down -v
 	rm -rf .pytest_cache .ruff_cache htmlcov .coverage
 	find . -type d -name __pycache__ -exec rm -rf {} +
+
+tabelas:  ## Gera tabelas e figuras oficiais a partir de analise.config_oficial
+	$(PYTHON) -c "from analise.config_oficial import RESULTS_DIR, SESSAO_DIR, ANTERIOR_PATHS, SAIDA_TABELAS, SAIDA_FIGURAS; from analise.gerar import gerar_artefatos; gerar_artefatos(results_dir=RESULTS_DIR, sessao_dir=SESSAO_DIR, anterior_paths=ANTERIOR_PATHS, saida_tabelas=SAIDA_TABELAS, saida_figuras=SAIDA_FIGURAS)"

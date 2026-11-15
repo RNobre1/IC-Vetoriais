@@ -1,17 +1,27 @@
 """Agregação e cálculo de custos de recursos por fase da sessão experimental.
 
 Cruza o log periódico do monitor (CSV a 1 Hz com memória, swap, CPU e pressão PSI)
-com os marcos de fase (`marcos.jsonl`) para medir o consumo de cada passo:
-- Picos de memória total (`mem_current`) e anônima (`anon`) do contêiner
-- Utilização média de CPU em núcleos do contêiner
-- Páginas de swap-out do host atribuídas ao intervalo da fase
-- Pressão máxima de memória (PSI `full avg10`) e memória disponível mínima
+com os marcos de fase (`marcos.jsonl`) para medir o consumo de cada passo.
+
+Apenas passos de medição ou seed relevantes entram na tabela de custo:
+`FASES_RELEVANTES = ("seed_a", "seed_b", "seed_b_eq", "A", "B", "B_eq", "C")`.
+Passos operacionais auxiliares (`bloco`, `reiniciar`, `limpar`, `C_total`, `C_recall`,
+`dados`, `btree`, `drop_btree`, `conectar`) são excluídos da tabela.
+
+Se houver tentativas repetidas para o mesmo par (n, sistema, passo), utiliza-se
+a ocorrência mais recente da fase.
+
+Tolera células vazias no CSV geradas quando o serviço é recriado ou não expõe
+certos contadores. Para contadores de CPU de contêineres que reiniciam, calcula a taxa
+somando os trechos monotônicos válidos. Fases com menos de 2 amostras de CPU válidas
+resultam em CPU `None` (exibida como "---").
 
 A função `linhas_custo` formata essas grandezas no padrão tabular do relatório.
 """
 
 from __future__ import annotations
 
+import contextlib
 import csv
 import json
 from collections import defaultdict
@@ -23,12 +33,9 @@ from typing import Any
 
 from analise.formato import formato_escala, num
 from analise.sessao import normalizar_timestamp
+from lib.footprint import CONTAINER_POR_SISTEMA
 
-CONTAINER_POR_SISTEMA = {
-    "pgvector": "ic-pgvector",
-    "qdrant": "ic-qdrant",
-    "weaviate": "ic-weaviate",
-}
+FASES_RELEVANTES = ("seed_a", "seed_b", "seed_b_eq", "A", "B", "B_eq", "C")
 
 
 @dataclass(frozen=True)
@@ -47,11 +54,81 @@ class MetricaCustoFase:
     mem_disponivel_min_mib: float | None
 
 
+def _tempo_segundos(r: dict[str, Any]) -> float:
+    """Obtém tempo em segundos da amostra (preferencialmente t_mono_s)."""
+    t_mono = r.get("t_mono_s")
+    if t_mono is not None and str(t_mono).strip():
+        with contextlib.suppress(ValueError):
+            return float(t_mono)
+    return r["_dt"].timestamp()
+
+
+def _calcular_cpu_nucleos(linhas_validas: Sequence[dict[str, Any]], col_cpu: str) -> float | None:
+    """Calcula CPU média em núcleos somando trechos monotônicos válidos.
+
+    Se o contador reiniciar (valor menor que o anterior, contêiner recriado),
+    divide em trechos contínuos monotônicos crescentes.
+    Fases com menos de 2 amostras válidas retornam None.
+    """
+    pontos: list[tuple[float, float]] = []
+    for r in linhas_validas:
+        v = r.get(col_cpu)
+        if v is not None and str(v).strip():
+            try:
+                usec = float(v)
+                t = _tempo_segundos(r)
+                pontos.append((t, usec))
+            except ValueError:
+                continue
+
+    if len(pontos) < 2:
+        return None
+
+    # Agrupa em trechos monotônicos crescentes de usec
+    dcpu_total = 0.0
+    dt_total = 0.0
+    t_inicio_trecho, usec_inicio_trecho = pontos[0]
+    t_fim_trecho, usec_fim_trecho = pontos[0]
+
+    for t, usec in pontos[1:]:
+        if usec >= usec_fim_trecho:
+            t_fim_trecho = t
+            usec_fim_trecho = usec
+        else:
+            # Quebra de monotonicidade (repartição / reinício de contêiner)
+            dt_trecho = t_fim_trecho - t_inicio_trecho
+            if dt_trecho > 0:
+                dcpu_total += max(0.0, usec_fim_trecho - usec_inicio_trecho)
+                dt_total += dt_trecho
+            t_inicio_trecho = t_fim_trecho = t
+            usec_inicio_trecho = usec_fim_trecho = usec
+
+    # Fecha último trecho
+    dt_trecho = t_fim_trecho - t_inicio_trecho
+    if dt_trecho > 0:
+        dcpu_total += max(0.0, usec_fim_trecho - usec_inicio_trecho)
+        dt_total += dt_trecho
+
+    if dt_total <= 0:
+        return None
+
+    return dcpu_total / (dt_total * 1e6)
+
+
 def calcular_custo(
-    monitor_csv: str | Path,
+    monitor_csv: str | Path | Sequence[str | Path],
     marcos: str | Path | Sequence[dict[str, Any]],
+    *,
+    somente_relevantes: bool = True,
 ) -> list[MetricaCustoFase]:
-    """Cruza CSV do monitor com marcos para derivar métricas de custo por fase."""
+    """Cruza CSV(s) do monitor com marcos para derivar métricas de custo por fase.
+
+    Args:
+        monitor_csv: Caminho ou lista de caminhos para os CSVs do monitor.
+            Se múltiplos forem passados, são concatenados e ordenados por ts_utc.
+        marcos: Caminho para marcos.jsonl ou lista de dicionários.
+        somente_relevantes: Se True, filtra apenas passos em FASES_RELEVANTES.
+    """
     marcos_lista: list[dict[str, Any]] = []
     if isinstance(marcos, str | Path):
         p_marcos = Path(marcos)
@@ -66,7 +143,7 @@ def calcular_custo(
 
     # Identifica intervalos [t_inicio, t_fim] para cada (n, sistema, passo)
     inicios: dict[tuple[int, str, str], datetime] = {}
-    intervalos: list[tuple[int, str, str, datetime, datetime]] = []
+    intervalos_por_chave: dict[tuple[int, str, str], tuple[datetime, datetime]] = {}
 
     for m in marcos_lista:
         n = m.get("n")
@@ -78,6 +155,9 @@ def calcular_custo(
         if not n or not sis or not passo or not evento or not ts_raw:
             continue
 
+        if somente_relevantes and passo not in FASES_RELEVANTES:
+            continue
+
         ts = normalizar_timestamp(ts_raw)
         chave = (int(n), sis.lower(), passo)
 
@@ -85,26 +165,53 @@ def calcular_custo(
             inicios[chave] = ts
         elif evento == "fim" and chave in inicios:
             t0 = inicios.pop(chave)
-            intervalos.append((int(n), sis.lower(), passo, t0, ts))
+            # Se já existir, a ocorrência posterior sobrescreve (tentativa mais recente)
+            intervalos_por_chave[chave] = (t0, ts)
 
-    # Lê amostras do monitor CSV
-    p_csv = Path(monitor_csv)
+    # Lê amostras do(s) monitor CSV(s)
+    caminhos_csv: list[Path] = []
+    if isinstance(monitor_csv, str | Path):
+        caminhos_csv.append(Path(monitor_csv))
+    else:
+        caminhos_csv.extend(Path(c) for c in monitor_csv)
+
     amostras: list[dict[str, Any]] = []
-    with p_csv.open(encoding="utf-8") as f:
-        leitor = csv.DictReader(f)
-        for linha in leitor:
-            ts_str = linha.get("ts_utc")
-            if not ts_str:
-                continue
-            linha["_dt"] = normalizar_timestamp(ts_str)
-            amostras.append(linha)
+    for p_csv in caminhos_csv:
+        if not p_csv.is_file():
+            continue
+        with p_csv.open(encoding="utf-8") as f:
+            leitor = csv.DictReader(f)
+            for linha in leitor:
+                ts_str = linha.get("ts_utc")
+                if not ts_str:
+                    continue
+                linha["_dt"] = normalizar_timestamp(ts_str)
+                amostras.append(linha)
+
+    # Ordena amostras por timestamp se vierem de múltiplos arquivos
+    amostras.sort(key=lambda r: r["_dt"])
 
     resultados: list[MetricaCustoFase] = []
 
-    for n, sis, passo, t0, t1 in intervalos:
-        # Amostras pertencentes ao intervalo
+    # Mantém ordenação estável por n, sistema, passo
+    for (n, sis, passo), (t0, t1) in sorted(intervalos_por_chave.items()):
         linhas_fase = [r for r in amostras if t0 <= r["_dt"] <= t1]
         if not linhas_fase:
+            # Fase sem nenhuma amostra registrada
+            resultados.append(
+                MetricaCustoFase(
+                    n=n,
+                    sistema=sis,
+                    passo=passo,
+                    pico_mem_mib=None,
+                    pico_anon_mib=None,
+                    cpu_nucleos=None,
+                    swap_out_paginas=None,
+                    swap_out_mib=None,
+                    pico_psi_mem_full=None,
+                    mem_disponivel_min_mib=None,
+                )
+            )
             continue
 
         c = CONTAINER_POR_SISTEMA.get(sis, sis)
@@ -113,48 +220,59 @@ def calcular_custo(
         col_cpu = f"{c}_cpu_usec"
 
         pico_mem = None
-        if col_mem in linhas_fase[0]:
-            pico_mem = max(float(r[col_mem]) for r in linhas_fase if r.get(col_mem)) / 1048576.0
+        mem_vals: list[float] = []
+        for r in linhas_fase:
+            v = r.get(col_mem)
+            if v is not None and str(v).strip():
+                with contextlib.suppress(ValueError):
+                    mem_vals.append(float(v))
+        if mem_vals:
+            pico_mem = max(mem_vals) / 1048576.0
 
         pico_anon = None
-        if col_anon in linhas_fase[0]:
-            pico_anon = max(float(r[col_anon]) for r in linhas_fase if r.get(col_anon)) / 1048576.0
+        anon_vals: list[float] = []
+        for r in linhas_fase:
+            v = r.get(col_anon)
+            if v is not None and str(v).strip():
+                with contextlib.suppress(ValueError):
+                    anon_vals.append(float(v))
+        if anon_vals:
+            pico_anon = max(anon_vals) / 1048576.0
 
-        cpu_nucleos = None
-        if col_cpu in linhas_fase[0]:
-            r0 = linhas_fase[0]
-            r1 = linhas_fase[-1]
-            if "t_mono_s" in r0 and r0["t_mono_s"] and r1["t_mono_s"]:
-                dt = float(r1["t_mono_s"]) - float(r0["t_mono_s"])
-            else:
-                dt = (r1["_dt"] - r0["_dt"]).total_seconds()
-            dcpu = float(r1[col_cpu]) - float(r0[col_cpu])
-            cpu_nucleos = (dcpu / (dt * 1e6)) if dt > 0 else 0.0
+        cpu_nucleos = _calcular_cpu_nucleos(linhas_fase, col_cpu)
 
         swap_paginas = None
         swap_mib = None
-        if "pswpout" in linhas_fase[0]:
-            r0 = linhas_fase[0]
-            r1 = linhas_fase[-1]
-            dswap = int(r1["pswpout"]) - int(r0["pswpout"])
+        swap_vals: list[int] = []
+        for r in linhas_fase:
+            v = r.get("pswpout")
+            if v is not None and str(v).strip():
+                with contextlib.suppress(ValueError):
+                    swap_vals.append(int(v))
+        if len(swap_vals) >= 2:
+            dswap = swap_vals[-1] - swap_vals[0]
             swap_paginas = dswap
             swap_mib = (dswap * 4096.0) / 1048576.0
 
         pico_psi = None
-        if "psi_mem_full_avg10" in linhas_fase[0]:
-            vals_psi = [
-                float(r["psi_mem_full_avg10"]) for r in linhas_fase if r.get("psi_mem_full_avg10")
-            ]
-            if vals_psi:
-                pico_psi = max(vals_psi)
+        psi_vals: list[float] = []
+        for r in linhas_fase:
+            v = r.get("psi_mem_full_avg10")
+            if v is not None and str(v).strip():
+                with contextlib.suppress(ValueError):
+                    psi_vals.append(float(v))
+        if psi_vals:
+            pico_psi = max(psi_vals)
 
         mem_disp_min = None
-        if "mem_available_kb" in linhas_fase[0]:
-            vals_disp = [
-                float(r["mem_available_kb"]) for r in linhas_fase if r.get("mem_available_kb")
-            ]
-            if vals_disp:
-                mem_disp_min = min(vals_disp) / 1024.0
+        disp_vals: list[float] = []
+        for r in linhas_fase:
+            v = r.get("mem_available_kb")
+            if v is not None and str(v).strip():
+                with contextlib.suppress(ValueError):
+                    disp_vals.append(float(v))
+        if disp_vals:
+            mem_disp_min = min(disp_vals) / 1024.0
 
         resultados.append(
             MetricaCustoFase(

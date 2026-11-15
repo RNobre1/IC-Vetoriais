@@ -1,0 +1,4 @@
+{"evento": "inicio", "n": 100000, "passo": "reiniciar", "sistema": "pgvector", "ts_utc": "2026-11-15T14:55:54.000Z"}
+{"evento": "fim", "n": 100000, "passo": "reiniciar", "sistema": "pgvector", "ts_utc": "2026-11-15T14:56:02.000Z"}
+{"evento": "inicio", "n": 100000, "passo": "vazio", "sistema": "pgvector", "ts_utc": "2026-11-15T14:55:57.000Z"}
+{"evento": "fim", "n": 100000, "passo": "vazio", "sistema": "pgvector", "ts_utc": "2026-11-15T14:55:58.500Z"}

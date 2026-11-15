@@ -16,6 +16,20 @@ def test_num_valores_do_relatorio_parcial():
     assert num(1271.885, 1) == "1.271,9"
 
 
+def test_num_half_up_desempate():
+    # Arredondamento explícito half-up
+    assert num(2.5, 0) == "3"
+    assert num(0.00005, 4) == "0,0001"
+    assert num(1.5, 0) == "2"
+
+
+def test_num_sem_zero_negativo():
+    # Zero negativo deve ser normalizado para zero positivo
+    assert num(-0.00001, 2) == "0,00"
+    assert num(-0.0, 1) == "0,0"
+    assert num(-0.000001, 4) == "0,0000"
+
+
 def test_num_casas_zero_e_milhar():
     assert num(0, 0) == "0"
     assert num(1000, 0) == "1.000"

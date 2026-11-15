@@ -4,19 +4,20 @@ Em relatórios técnicos e acadêmicos em língua portuguesa, adota-se o ponto (
 como separador de milhar e a vírgula (,) como separador decimal.
 
 Arredondamento:
-Utiliza-se o arredondamento comum de formatação de ponto flutuante do Python
-(`format`), alinhado aos números apresentados nas tabelas preliminares do
-relatório parcial (ex.: 1271.885 com 1 casa vira "1.271,9"). O arredondamento
-bancário/half-even (típico de Decimal) não é aplicado aqui para preservar a
-compatibilidade exata com as tabelas pré-existentes.
+Utiliza-se arredondamento aritmético simétrico / half-up (`ROUND_HALF_UP` do módulo
+`decimal`), onde frações 0,5 arredondam para cima (afastando-se de zero).
+Zeros negativos (ex.: -0,00001 arredondado para 2 casas) são explicitamente
+normalizados para "0,00" para evitar a exibição de "-0,0" ou "-0,0000".
 
 Valores ausentes (None) são representados convencionalmente por travessão ("---").
 """
 
 from __future__ import annotations
 
+from decimal import ROUND_HALF_UP, Decimal
 
-def num(x: float | int | None, casas: int | None = None) -> str:
+
+def num(x: float | int | Decimal | None, casas: int | None = None) -> str:
     """Formata número com separador de milhar '.' e decimal ','.
 
     Args:
@@ -33,14 +34,24 @@ def num(x: float | int | None, casas: int | None = None) -> str:
 
     if casas is None:
         if isinstance(x, int):
-            return f"{x:,}".replace(",", ".")
+            d = Decimal(x)
+            return f"{d:,}".replace(",", ".")
         casas = 2
 
-    if casas == 0:
-        val = round(x)
-        return f"{val:,}".replace(",", ".")
+    # Converte para Decimal preservando representação exata
+    d = Decimal(str(x)) if not isinstance(x, Decimal) else x
+    q = Decimal("10") ** -casas if casas > 0 else Decimal("1")
+    arredondado = d.quantize(q, rounding=ROUND_HALF_UP)
 
-    texto = f"{x:,.{casas}f}"
+    # Evita zero negativo
+    if arredondado == 0:
+        arredondado = Decimal("0")
+
+    if casas == 0:
+        val_int = int(arredondado)
+        return f"{val_int:,}".replace(",", ".")
+
+    texto = f"{arredondado:,.{casas}f}"
     # Inverte vírgula e ponto via substituição intermediária
     return texto.replace(",", "\x00").replace(".", ",").replace("\x00", ".")
 
