@@ -8,17 +8,17 @@ A metodologia segue uma abordagem experimental de \textit{benchmark}, estruturad
 
 \subsection{Cenários de uso}
 
-Serão considerados três cenários que se aproximam de aplicações reais:
+Foram considerados três cenários que se aproximam de aplicações reais:
 
 \textbf{Cenário A --- Busca semântica básica:} coleção de documentos textuais curtos (no estudo, o \textit{subset} de \textit{passages} do MS MARCO descrito na Seção 4.2; em aplicações reais, parágrafos de artigos, seções de relatórios ou FAQs institucionais). Cada documento é convertido em \textit{embedding}, e consultas semânticas recuperam os K documentos mais similares, sem filtros estruturados.
 
 \textbf{Cenário B --- Busca com filtros de metadados:} mesma coleção do Cenário A, mas a consulta combina similaridade vetorial com um predicado sobre metadados (por exemplo, categoria, área temática ou intervalo de datas), padrão típico de RAG corporativo. Desafia a integração entre filtragem estruturada e busca vetorial; a operacionalização controlada do predicado é descrita na Seção 4.2.
 
-\textbf{Cenário C --- Carga mista (RAG simplificado):} simulação de sistema em produção, onde novos documentos são adicionados e atualizados em paralelo com consultas de similaridade.
+\textbf{Cenário C --- Carga mista (RAG em operação):} a coleção do Cenário A recebe documentos novos enquanto responde a consultas, como um sistema RAG cuja base cresce durante o uso. Um processo produtor insere vetores a uma taxa alvo, em janelas sucessivas de 0, 10, 100 e 1.000 inserções por segundo, seguidas de duas janelas sem escrita; um consumidor mede, no mesmo intervalo, latência e qualidade das buscas. O desenho completo está na Seção 4.5.
 
 \subsection{Dados e embeddings}
 
-Os textos a serem indexados e consultados provêm de um \textit{subset} reproduzível do conjunto MS MARCO Passages \cite{bajaj2016msmarco}, escolhido por reunir três propriedades necessárias ao estudo: escala adequada (8.841.823 \textit{passages} disponíveis), licença que autoriza o uso em pesquisa não comercial e julgamentos de relevância (\textit{qrels}) anotados por avaliadores humanos, que tornam possível o cálculo de métricas de qualidade quando relevante. O \textit{subset} é construído por amostragem determinística (ordenação por identificador de \textit{passage} e recorte dos N primeiros) em três escalas: 100 mil, 500 mil e 1 milhão de \textit{passages}. As três escalas permitem traçar a curva de comportamento dos sistemas em ordens de grandeza distintas, observando o ponto a partir do qual cada arquitetura começa a se diferenciar das demais.
+Os textos a serem indexados e consultados provêm de um \textit{subset} reproduzível do conjunto MS MARCO Passages \cite{bajaj2016msmarco}, escolhido por reunir três propriedades necessárias ao estudo: escala adequada (8.841.823 \textit{passages} disponíveis), licença que autoriza o uso em pesquisa não comercial e julgamentos de relevância (\textit{qrels}) anotados por avaliadores humanos, que tornam possível o cálculo de métricas de qualidade quando relevante. O \textit{subset} é construído por amostragem determinística (ordenação por identificador de \textit{passage} e recorte dos N primeiros) em três escalas: 100 mil, 500 mil e 1 milhão de \textit{passages}. As três escalas permitem traçar a curva de comportamento dos sistemas em ordens de grandeza distintas, observando o ponto a partir do qual cada arquitetura começa a se diferenciar das demais. As 1.000 consultas de cada escala são os \textit{passages} imediatamente seguintes à base, nunca indexados; no Cenário C, os vetores inseridos durante a medição são os \textit{passages} seguintes a essas consultas, de modo que base, consultas e inserções não se sobrepõem.
 
 A geração de \textit{embeddings} utiliza o modelo \code{all-MiniLM-L6-v2}, da família \code{sentence-\allowbreak{}transformers} \cite{reimers2019sbert}, que produz vetores densos de 384 dimensões. Os \textit{embeddings} são normalizados em norma L2 antes da indexação, de modo que a similaridade de cosseno equivale a produto interno e o índice pode tirar proveito da operação mais rápida. A escolha desse modelo, em detrimento de alternativas de maior capacidade como o \code{all-mpnet-base-v2} (768 dimensões) ou o BGE-large (1024 dimensões), atende a três critérios: (i) viabilidade de execução em CPU no \textit{hardware}-alvo, permitindo gerar \textit{embeddings} para 1 milhão de \textit{passages} em tempo aceitável e sem dependência de GPU dedicada; (ii) reprodutibilidade por terceiros, em estações de trabalho sem aceleração gráfica; (iii) suficiência da representação para o objetivo do estudo, que avalia o comportamento dos SGBDs vetoriais, não a qualidade absoluta do \textit{retrieval}. Como o modelo é fixado em todos os experimentos, o efeito do \textit{embedding} fica controlado e as diferenças observadas entre os três sistemas refletem implementação e arquitetura, e não a escolha de representação.
 
@@ -26,7 +26,7 @@ Para o Cenário B, cada vetor recebe ainda um atributo numérico sintético, uni
 
 \subsection{Sistemas avaliados e ambiente de hardware}
 
-Os experimentos base são conduzidos em um \textit{notebook} Dell G15 5530, configurado com Fedora Linux. Especificações principais:
+Os experimentos são conduzidos em um \textit{notebook} Dell G15 5530, configurado com Fedora Linux. Especificações principais:
 
 \begin{itemize}
     \item Processador: Intel Core i5-13450HX (13ª geração), 10 núcleos / 16 \textit{threads}, até 4.6 GHz;
@@ -34,6 +34,8 @@ Os experimentos base são conduzidos em um \textit{notebook} Dell G15 5530, conf
     \item Armazenamento: NVMe Kingston de 1 TB;
     \item GPU: NVIDIA GeForce RTX 3050 com 6 GB de memória dedicada.
 \end{itemize}
+
+Todo número reportado foi medido nessa máquina. Uma segunda máquina, de arquitetura ARM64, foi usada apenas para escrever código, executar testes unitários, analisar os arquivos de resultado e redigir o texto; nenhum valor medido nela entra nas tabelas.
 
 Os sistemas configurados nesse \textit{hardware} são:
 
@@ -43,18 +45,28 @@ Os sistemas configurados nesse \textit{hardware} são:
 
 \textbf{Weaviate:} banco vetorial especializado com suporte a esquemas, GraphQL e filtros, projetado para aplicações de IA.
 
-Configurações padrão recomendadas pela documentação serão utilizadas como \textit{baseline}, podendo ser ajustadas posteriormente de forma controlada para investigar o impacto de parâmetros.
+As configurações padrão de cada sistema foram usadas como \textit{baseline}. A única intervenção controlada sobre elas é a condição equalizada do Cenário B, descrita na Seção~\ref{sec:duas_condicoes}.
 
 \subsection{Métricas}
 
 \begin{itemize}
     \item Latência de consulta: tempos p50, p95 e p99 para consultas de similaridade com e sem filtros.
-    \item \textit{Throughput}: consultas atendidas por segundo sob carga controlada.
+    \item \textit{Throughput}: consultas atendidas por segundo por um cliente único e sequencial.
     \item Recall@K: proporção de vizinhos relevantes recuperados entre os K primeiros, estimada por comparação com busca exata.
-    \item Uso de recursos: memória e espaço em disco para cada tamanho de \textit{dataset}; tempo de indexação inicial.
-    \item Desempenho com atualizações: impacto de inserções e atualizações contínuas no cenário de carga mista.
+    \item Uso de recursos: espaço em disco e acréscimo de memória residente por \textit{dataset}; tempo de indexação inicial; e, ao longo de toda a medição, memória e CPU de cada contêiner, memória disponível, \textit{swap} e pressão de memória do hospedeiro.
+    \item Desempenho sob escrita (Cenário C): latência e \textit{recall} das consultas durante as inserções, taxa de inserção efetivamente sustentada e visibilidade dos vetores recém-inseridos.
 \end{itemize}
+
+\subsection{Protocolo do Cenário C}
+
+A base é a coleção do Cenário A em 1 milhão de vetores, já indexada. As janelas são executadas em sequência, sem pausa, sobre a mesma coleção: 0, 10, 100 e 1.000 inserções por segundo, seguidas de uma janela sem escrita imediatamente após as inserções e de outra depois de o sistema concluir o trabalho de indexação pendente. Cada janela tem 5 segundos de entrada, descartados, e 60 segundos medidos. As duas janelas finais separam o efeito da escrita concorrente do efeito do crescimento da coleção, que ao fim soma cerca de 72 mil vetores a mais.
+
+O produtor roda em um processo separado do consumidor, para que o trabalho de serializar e enviar vetores não apareça como latência de consulta. Ele envia lotes a cada 100 ms, de tamanho igual a um décimo da taxa alvo, em uma agenda fixa: se o servidor não acompanha, o lote seguinte sai assim que possível, com o mesmo tamanho, e o atraso é registrado. A taxa reportada é, portanto, a taxa sustentada pelo sistema, e não a taxa pedida. Uma inserção conta como confirmada quando a escrita retorna: \textit{commit} da transação no pgvector, \textit{upsert} com espera de aplicação no Qdrant e inserção síncrona no Weaviate. Essas confirmações não oferecem a mesma garantia de durabilidade --- o \textit{commit} do PostgreSQL inclui a gravação do \textit{log} de transações em disco ---, e a comparação de taxa sustentada carrega essa diferença.
+
+O consumidor é único e sequencial, como nos demais cenários, com $ef\_search = 64$. Como a coleção muda durante a medição, o \textit{recall} de cada consulta é calculado contra a busca exata sobre a base mais os vetores cuja inserção já estava confirmada. Um vetor confirmado enquanto a consulta estava em andamento pode aparecer ou não na resposta; por isso cada consulta é comparada com a verdade exata do início e com a do fim, e a janela reporta dois limites, o \textit{recall} inferior e o superior. Mede-se também o \textit{recall} dos vetores novos --- a fração dos vizinhos verdadeiros que são vetores recém-inseridos e foram devolvidos --- e, após cada janela com escrita, se os últimos 50 vetores confirmados são encontrados quando buscados pelo próprio vetor. Ao fim, a contagem de vetores na coleção é conferida contra a soma da base com as inserções confirmadas. No pgvector, um \textit{checkpoint} é forçado antes de cada janela, para que a gravação periódica de páginas sujas não caia aleatoriamente dentro ou fora dos 60 segundos medidos.
+
+As definições desta seção, inclusive a forma de calcular o \textit{recall} sob escrita, foram registradas no repositório antes da execução da sessão de medição.
 
 \subsection{Análise dos resultados}
 
-Os resultados serão analisados por meio de gráficos comparando latência, \textit{throughput} e \textit{recall} entre sistemas para cada cenário e tamanho de \textit{dataset}; discussão sobre o impacto de usar um banco relacional generalista com extensão vetorial em comparação com sistemas especializados; identificação de situações em que a simplicidade de integração compensa eventuais perdas de desempenho; e recomendações práticas baseadas em dados.
+Os resultados são analisados por meio de gráficos e tabelas comparando latência, \textit{throughput} e \textit{recall} entre sistemas para cada cenário e tamanho de \textit{dataset}. Tabelas e figuras são geradas por \textit{script} diretamente dos arquivos de resultado versionados, sem transcrição manual de números. A discussão trata do impacto de usar um banco relacional generalista com extensão vetorial em comparação com sistemas especializados, das situações em que a simplicidade de integração compensa eventuais perdas de desempenho e das recomendações práticas que os dados sustentam.
