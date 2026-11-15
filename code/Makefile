@@ -1,4 +1,4 @@
-.PHONY: help up down logs smoke clean test test-unit test-integration lint fmt deps ui-up ui-down ui-logs seed bench-A bench-B bench-C-dryrun reset-medicao
+.PHONY: help up down logs smoke clean test test-unit test-integration lint fmt deps ui-up ui-down ui-logs seed bench-A bench-B bench-C-dryrun reset-medicao sessao
 
 # Compose principal (3 SGBDs) e merge com UI (Verba). Vide:
 #   vault/decisões/2026-05-05-isolamento-ui-vs-benchmark.md
@@ -91,11 +91,22 @@ bench-B:  ## Cenário B — busca com filtro (requer 'make up'). Vars: N Q K EF 
 		--ef-search $(EF) --warmup $(WARMUP) --sistemas $(SYS) \
 		--seletividades $(SEL) $(if $(EQ),--equalizado,)
 
-bench-C-dryrun:  ## Cenário C — esqueleto: imprime o plano de carga (Etapa 4), não roda
-	$(PYTHON) -c "from benchmarks.cenario_c import ConfigC, intervalo_entre_insercoes as iv; \
-c=ConfigC(); print('Cenário C (esqueleto — execução real na Etapa 4)'); \
-print('n_base=%d duracao_s=%d sistemas=%s' % (c.n_base, c.duracao_s, c.sistemas)); \
-[print('  taxa=%4d ins/s -> intervalo=%s s' % (t, iv(t))) for t in c.taxas_insercao]"
+sessao:  ## DESTRUTIVO: sessão de medição completa (recria volumes). Vars: SESSAO_ID ESCALAS C_EM PONTE PONTE_ARGS EXTRA RESULTS
+	@if systemd-inhibit --what=sleep:idle --mode=block true >/dev/null 2>&1; then \
+		systemd-inhibit --what=sleep:idle:handle-lid-switch --who=ic-vetoriais \
+			--why="sessão de medição" --mode=block bash scripts/sessao_final.sh; \
+	else \
+		echo "AVISO: systemd-inhibit indisponível; a suspensão não está bloqueada."; \
+		bash scripts/sessao_final.sh; \
+	fi
+
+bench-C-dryrun:  ## Cenário C — imprime o plano de janelas e lotes, sem rodar (execução: make sessao)
+	$(PYTHON) -c "from benchmarks.cenario_c import ConfigC, tamanho_lote, vetores_necessarios; \
+c=ConfigC(); print('Cenário C: n_base=%d ef=%d aquecimento=%ss medição=%ss pool=%d (precisa %d)' % \
+(c.n_base, c.ef_search, c.aquecimento_s, c.duracao_s, c.n_insercoes_pool, \
+vetores_necessarios(c.janelas, aquecimento_s=c.aquecimento_s, duracao_s=c.duracao_s))); \
+[print('  janela %d: taxa=%4d ins/s, lote=%d a cada %ss' % (i, t, tamanho_lote(t, tick_s=c.tick_s), c.tick_s)) \
+for i, t in enumerate(c.janelas)]"
 
 lint:  ## Lint via ruff (check + format)
 	$(RUFF) check .
