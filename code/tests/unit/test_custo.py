@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from analise.custo import calcular_custo, linhas_custo
+from analise.custo import FASES_RELEVANTES, calcular_custo, linhas_custo
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "analise"
 
@@ -34,3 +34,43 @@ def test_calcular_custo_e_linhas():
     assert "1,0" in linhas
     assert "4,5" in linhas
     assert r"\hline" in linhas
+
+
+def test_calcular_custo_celulas_vazias_e_reinicio():
+    csv_path = FIXTURES_DIR / "monitor_vazias.csv"
+    marcos_path = FIXTURES_DIR / "marcos_vazias.jsonl"
+
+    # Sem filtrar relevantes para testar 'reiniciar' e 'vazio'
+    metricas = calcular_custo(csv_path, marcos_path, somente_relevantes=False)
+    # 2 fases: reiniciar e vazio
+    assert len(metricas) == 2
+
+    m_reiniciar = next(m for m in metricas if m.passo == "reiniciar")
+    assert m_reiniciar.pico_mem_mib is not None
+    assert abs(m_reiniciar.pico_mem_mib - 111.96) < 0.1
+
+    # CPU: somando trechos monotônicos válidos
+    assert m_reiniciar.cpu_nucleos is not None
+    assert m_reiniciar.cpu_nucleos > 0
+    assert abs(m_reiniciar.cpu_nucleos - 0.263) < 0.05
+
+    # Fase "vazio": sem nenhuma amostra de contêiner válida
+    m_vazio = next(m for m in metricas if m.passo == "vazio")
+    assert m_vazio.pico_mem_mib is None
+    assert m_vazio.pico_anon_mib is None
+    assert m_vazio.cpu_nucleos is None
+
+    # Linhas LaTeX devem renderizar --- para None
+    linhas = linhas_custo([m_vazio])
+    assert "---" in linhas
+
+
+def test_calcular_custo_filtra_fases_irrelevantes():
+    # Passos como 'bloco', 'reiniciar', 'limpar' não devem entrar se somente_relevantes=True
+    csv_path = FIXTURES_DIR / "monitor_vazias.csv"
+    marcos_path = FIXTURES_DIR / "marcos_vazias.jsonl"
+
+    metricas = calcular_custo(csv_path, marcos_path, somente_relevantes=True)
+    assert len(metricas) == 0  # reiniciar e vazio não estão em FASES_RELEVANTES
+    for f in ("bloco", "reiniciar", "limpar", "C_total", "C_recall", "dados", "btree"):
+        assert f not in FASES_RELEVANTES
