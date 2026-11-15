@@ -11,11 +11,11 @@ Execução:
 Escreve um arquivo .tex por tabela:
 - tab_recursos.tex
 - tab_a_<n>.tex
-- tab_b_<n>.tex
+- tab_b_<n>.tex (somente se houver JSON do Cenário B naquela escala)
 - tab_c_<n>.tex
 - tab_ponte.tex
 - tab_reprod.tex
-- tab_controle_<n>.tex
+- tab_controle_<n>.tex (somente onde 0,1 * n >= CORTE_FLAT_WEAVIATE)
 - tab_custo.tex
 E as figuras em PDF correspondentes.
 
@@ -43,6 +43,7 @@ from analise.tabelas import (
     linhas_recursos,
     linhas_reprodutibilidade,
 )
+from benchmarks.run_sessao import CORTE_FLAT_WEAVIATE
 
 
 def gerar_artefatos(
@@ -50,7 +51,7 @@ def gerar_artefatos(
     results_dir: str | Path,
     sessao_dir: str | Path,
     marcos_path: str | Path | None = None,
-    monitor_csv: str | Path | None = None,
+    monitor_csv: str | Path | Sequence[str | Path] | None = None,
     anterior_paths: Sequence[str | Path] | str | None = None,
     saida_tabelas: str | Path = "../docx/relatorio_parcial/gerado",
     saida_figuras: str | Path | None = "../docx/relatorio_parcial/figuras",
@@ -95,13 +96,18 @@ def gerar_artefatos(
         else:
             avisos.append(f"Sem dados de Cenário A para escala {n}; tab_a_{n}.tex pulada.")
 
-    # 3. tab_b_<n>.tex
+    # 3. tab_b_<n>.tex (somente se houver JSON do Cenário B para essa escala)
     for n in escalas:
-        conteudo_b = linhas_cenario_b(sessao, n, ef=ef_cenario_b)
-        if conteudo_b.strip():
-            (p_tab / f"tab_b_{n}.tex").write_text(conteudo_b, encoding="utf-8")
+        tem_b = any(
+            sessao.obter("B_padrao", s, n) is not None or sessao.obter("B_eq", s, n) is not None
+            for s in SISTEMAS_ORDEM
+        )
+        if tem_b:
+            conteudo_b = linhas_cenario_b(sessao, n, ef=ef_cenario_b)
+            if conteudo_b.strip():
+                (p_tab / f"tab_b_{n}.tex").write_text(conteudo_b, encoding="utf-8")
         else:
-            avisos.append(f"Sem dados de Cenário B para escala {n}; tab_b_{n}.tex pulada.")
+            avisos.append(f"Sem JSONs de Cenário B para escala {n}; tab_b_{n}.tex pulada.")
 
     # 4. tab_c_<n>.tex
     for n in escalas:
@@ -132,8 +138,15 @@ def gerar_artefatos(
     else:
         avisos.append("Nenhum dado anterior (--anterior) fornecido; tab_reprod.tex pulada.")
 
-    # 7. tab_controle_<n>.tex
+    # 7. tab_controle_<n>.tex (somente onde 0.1 * n >= CORTE_FLAT_WEAVIATE)
     for n in escalas:
+        if 0.1 * n < CORTE_FLAT_WEAVIATE:
+            avisos.append(
+                f"Escala {n} abaixo do corte de flat search ({0.1*n} < {CORTE_FLAT_WEAVIATE}); "
+                f"tab_controle_{n}.tex não aplicável."
+            )
+            continue
+
         arq_p = sessao.obter("B_padrao", "weaviate", n)
         arq_e = sessao.obter("B_eq", "weaviate", n)
         if arq_p and arq_e:
@@ -146,15 +159,24 @@ def gerar_artefatos(
             )
 
     # 8. tab_custo.tex
-    p_csv = Path(monitor_csv) if monitor_csv else None
-    if not p_csv and p_sessao.is_dir():
-        csvs = sorted(p_sessao.glob("monitor_*.csv"))
-        if csvs:
-            p_csv = csvs[-1]
+    caminhos_csv: list[Path] = []
+    if monitor_csv:
+        if isinstance(monitor_csv, str | Path):
+            caminhos_csv.append(Path(monitor_csv))
+        else:
+            caminhos_csv.extend(Path(c) for c in monitor_csv)
+    elif p_sessao.is_dir():
+        caminhos_csv = sorted(p_sessao.glob("monitor_*.csv"))
 
-    if p_csv and p_csv.is_file():
-        metricas_custo = calcular_custo(p_csv, p_marcos)
+    if caminhos_csv and any(c.is_file() for c in caminhos_csv):
+        metricas_custo = calcular_custo(caminhos_csv, p_marcos, somente_relevantes=True)
         if metricas_custo:
+            # Avisa se alguma fase teve amostras ausentes
+            for m in metricas_custo:
+                if m.pico_mem_mib is None and m.cpu_nucleos is None:
+                    avisos.append(
+                        f"Fase {m.sistema} {m.passo} (N={m.n}) não possui amostras válidas no monitor CSV."
+                    )
             conteudo_custo = linhas_custo(metricas_custo)
             (p_tab / "tab_custo.tex").write_text(conteudo_custo, encoding="utf-8")
         else:
@@ -173,9 +195,14 @@ def gerar_artefatos(
             if any(sessao.obter("C", s, n) is not None for s in SISTEMAS_ORDEM):
                 fig_cenario_c(sessao, n, caminho_saida=p_fig / f"fig_cenario_c_{n}.pdf")
 
-        if p_csv and p_csv.is_file():
+        if caminhos_csv and any(c.is_file() for c in caminhos_csv):
             for n in escalas:
-                fig_memoria(p_csv, p_marcos, n, caminho_saida=p_fig / f"fig_memoria_{n}.pdf")
+                fig_memoria(
+                    caminhos_csv,
+                    p_marcos,
+                    n,
+                    caminho_saida=p_fig / f"fig_memoria_{n}.pdf",
+                )
 
     return avisos
 
