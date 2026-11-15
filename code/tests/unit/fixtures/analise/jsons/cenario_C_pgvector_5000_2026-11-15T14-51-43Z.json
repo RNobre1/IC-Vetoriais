@@ -1,0 +1,60 @@
+{
+  "cenario": "C",
+  "n": 5000,
+  "sistema": "pgvector",
+  "timestamp_utc": "2026-11-15T14-51-43Z",
+  "pontos": [
+    {
+      "ambiente": {
+        "inicio_utc": "2026-11-15T14:51:45.901542Z",
+        "fim_utc": "2026-11-15T14:51:50.901479Z"
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "ordem_janela": 0,
+        "taxa_alvo": 0
+      },
+      "metricas": {
+        "atraso_max_s": 0.0,
+        "n_consultas": 1000,
+        "n_gt_novos": 0,
+        "p50": 0.85,
+        "p95": 1.55,
+        "p99": 2.45,
+        "qps": 880.0,
+        "recall_inferior": 0.9925,
+        "recall_novos": null,
+        "recall_superior": 0.9925,
+        "taxa_sustentada": 0
+      }
+    },
+    {
+      "ambiente": {
+        "inicio_utc": "2026-11-15T14:51:50.901542Z",
+        "fim_utc": "2026-11-15T14:51:55.901479Z",
+        "visibilidade_fracao": 1.0,
+        "visibilidade_n": 50
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "ordem_janela": 1,
+        "taxa_alvo": 10
+      },
+      "metricas": {
+        "atraso_max_s": 0.01,
+        "n_consultas": 1000,
+        "n_gt_novos": 1595,
+        "p50": 0.90,
+        "p95": 1.60,
+        "p99": 2.50,
+        "qps": 850.0,
+        "recall_inferior": 0.9915,
+        "recall_novos": 0.9492,
+        "recall_superior": 0.9915,
+        "taxa_sustentada": 10
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "cenario": "A",
+  "n": 100000,
+  "sistema": "qdrant",
+  "timestamp_utc": "2026-11-15T14:47:07Z",
+  "recursos": {
+    "disco": {"total_bytes": 322900000},
+    "memoria_rss_delta_bytes": 134119424,
+    "tempo_indice_utilizavel_s": 26.3
+  },
+  "pontos": [
+    {
+      "ambiente": {
+        "sistema": "qdrant"
+      },
+      "metricas": {
+        "p50": 2.29,
+        "p95": 2.91,
+        "p99": 3.43,
+        "qps": 432.8,
+        "recall_at_k": 0.9980
+      },
+      "parametros": {"ef_search": 64, "k": 10}
+    }
+  ]
+}

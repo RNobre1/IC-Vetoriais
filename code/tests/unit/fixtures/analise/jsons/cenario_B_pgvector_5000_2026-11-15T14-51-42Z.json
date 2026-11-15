@@ -1,0 +1,38 @@
+{
+  "cenario": "B",
+  "n": 5000,
+  "sistema": "pgvector",
+  "timestamp_utc": "2026-11-15T14-51-42Z",
+  "pontos": [
+    {
+      "ambiente": {
+        "equalizado": true,
+        "protocolo": "sessao-2026-11",
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.24,
+        "p95": 2.05,
+        "p99": 2.95,
+        "qps": 810.0,
+        "recall_at_k": 0.0595
+      },
+      "parametros": {"ef_search": 64, "k": 10, "seletividade": 0.01}
+    },
+    {
+      "ambiente": {
+        "equalizado": true,
+        "protocolo": "sessao-2026-11",
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.18,
+        "p95": 1.95,
+        "p99": 2.85,
+        "qps": 840.0,
+        "recall_at_k": 0.6310
+      },
+      "parametros": {"ef_search": 64, "k": 10, "seletividade": 0.10}
+    }
+  ]
+}

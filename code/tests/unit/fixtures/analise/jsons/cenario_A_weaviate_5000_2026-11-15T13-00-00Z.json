@@ -1,0 +1,7 @@
+{
+  "cenario": "A",
+  "n": 5000,
+  "sistema": "weaviate",
+  "timestamp_utc": "2026-11-15T13:00:00Z",
+  "pontos": []
+}

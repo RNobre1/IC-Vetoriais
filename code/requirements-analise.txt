@@ -1,0 +1,2 @@
+# Dependência exclusiva da máquina de análise; a máquina de medição não a instala.
+matplotlib==3.11.2

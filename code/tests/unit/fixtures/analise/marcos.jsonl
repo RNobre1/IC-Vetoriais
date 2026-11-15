@@ -1,0 +1,4 @@
+{"evento": "inicio", "n": 5000, "passo": "bloco", "sistema": "qdrant", "ts_utc": "2026-11-15T14:46:57.252Z"}
+{"evento": "inicio", "n": 5000, "passo": "seed_a", "sistema": "pgvector", "ts_utc": "2026-11-15T14:48:00.000Z"}
+{"evento": "fim", "n": 5000, "passo": "seed_a", "sistema": "pgvector", "ts_utc": "2026-11-15T14:49:00.000Z"}
+{"evento": "fim", "n": 5000, "passo": "bloco", "sistema": "pgvector", "ts_utc": "2026-11-15T14:52:45.227Z"}
