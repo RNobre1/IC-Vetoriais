@@ -13,11 +13,13 @@ em `results/` cujo timestamp pertença à janela são carregados e classificados
 - Escala N (100k, 500k, 1M, etc.)
 
 Tentativas repetidas para o mesmo par (condição, sistema, N) mantêm o arquivo mais
-recente e registram aviso informativo para auditoria da sessão.
+recente e registram aviso informativo para auditoria da sessão. Arquivos corrompidos
+também emitem aviso informativo em vez de falharem silenciosamente.
 """
 
 from __future__ import annotations
 
+import contextlib
 import glob
 import json
 from collections.abc import Sequence
@@ -133,7 +135,8 @@ def carregar_sessao(
         for linha in p.read_text(encoding="utf-8").splitlines():
             linha_s = linha.strip()
             if linha_s:
-                marcos_lista.append(json.loads(linha_s))
+                with contextlib.suppress(json.JSONDecodeError):
+                    marcos_lista.append(json.loads(linha_s))
     else:
         marcos_lista = list(marcos)
 
@@ -153,7 +156,10 @@ def carregar_sessao(
     for caminho_json in sorted(results_path.glob("cenario_*.json")):
         try:
             dados = json.loads(caminho_json.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
+        except (json.JSONDecodeError, OSError) as e:
+            avisos.append(
+                f"Arquivo JSON corrompido ou ilegível ignorado: {caminho_json.name} ({e})"
+            )
             continue
 
         ts_raw = dados.get("timestamp_utc")
@@ -188,13 +194,13 @@ def carregar_sessao(
             if ts_dt >= ts_antigo:
                 avisos.append(
                     f"Chave {chave} repetida: usando {caminho_json.name} ({ts_raw}) "
-                    f"em vez de {antigo.caminho.name} ({antigo.timestamp_utc})"
+                    f"e descartando {antigo.caminho.name} ({antigo.timestamp_utc})"
                 )
                 arquivos[chave] = novo
             else:
                 avisos.append(
                     f"Chave {chave} repetida: mantendo {antigo.caminho.name} ({antigo.timestamp_utc}) "
-                    f"em vez de {caminho_json.name} ({ts_raw})"
+                    f"e descartando mais antigo {caminho_json.name} ({ts_raw})"
                 )
         else:
             arquivos[chave] = novo
@@ -235,7 +241,8 @@ def carregar_arquivos(
             continue
         try:
             dados = json.loads(p.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
+        except (json.JSONDecodeError, OSError) as e:
+            avisos.append(f"Arquivo JSON corrompido ou ilegível ignorado: {p.name} ({e})")
             continue
 
         cenario = dados.get("cenario")
