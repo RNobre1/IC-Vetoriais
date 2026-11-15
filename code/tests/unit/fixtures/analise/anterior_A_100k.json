@@ -1,0 +1,18 @@
+{
+  "cenario": "A",
+  "n": 100000,
+  "sistema": "pgvector",
+  "timestamp_utc": "2026-08-23T15:08:57Z",
+  "pontos": [
+    {
+      "metricas": {
+        "p50": 1.14,
+        "p95": 2.09,
+        "p99": 2.52,
+        "qps": 822.0,
+        "recall_at_k": 0.9872
+      },
+      "parametros": {"ef_search": 64, "k": 10}
+    }
+  ]
+}

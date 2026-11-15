@@ -1,0 +1,50 @@
+{
+  "cenario": "A",
+  "n": 5000,
+  "sistema": "pgvector",
+  "timestamp_utc": "2026-11-15T14:51:40Z",
+  "recursos": {
+    "disco": {"total_bytes": 18604032},
+    "memoria_rss_delta_bytes": 10485760,
+    "tempo_carga_s": null,
+    "tempo_indice_utilizavel_s": 12.5
+  },
+  "pontos": [
+    {
+      "ambiente": {
+        "protocolo": "sessao-2026-11",
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.50,
+        "p95": 1.20,
+        "p99": 2.10,
+        "qps": 1200.0,
+        "recall_at_k": 0.9500,
+        "repeticoes": [
+          {"p50": 0.48, "p95": 1.15, "p99": 2.05, "qps": 1210.0, "recall_at_k": 0.9500, "posicao": 0},
+          {"p50": 0.52, "p95": 1.25, "p99": 2.15, "qps": 1190.0, "recall_at_k": 0.9500, "posicao": 1}
+        ]
+      },
+      "parametros": {"ef_search": 16, "k": 10, "repeticoes": 2}
+    },
+    {
+      "ambiente": {
+        "protocolo": "sessao-2026-11",
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.80,
+        "p95": 1.50,
+        "p99": 2.40,
+        "qps": 900.0,
+        "recall_at_k": 0.9800,
+        "repeticoes": [
+          {"p50": 0.79, "p95": 1.48, "p99": 2.38, "qps": 905.0, "recall_at_k": 0.9800, "posicao": 0},
+          {"p50": 0.81, "p95": 1.52, "p99": 2.42, "qps": 895.0, "recall_at_k": 0.9800, "posicao": 1}
+        ]
+      },
+      "parametros": {"ef_search": 64, "k": 10, "repeticoes": 2}
+    }
+  ]
+}

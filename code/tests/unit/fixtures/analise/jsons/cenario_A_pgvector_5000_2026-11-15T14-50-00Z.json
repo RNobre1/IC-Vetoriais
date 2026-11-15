@@ -1,0 +1,27 @@
+{
+  "cenario": "A",
+  "n": 5000,
+  "sistema": "pgvector",
+  "timestamp_utc": "2026-11-15T14:50:00Z",
+  "recursos": {
+    "disco": {"total_bytes": 18000000},
+    "memoria_rss_delta_bytes": 10000000,
+    "tempo_indice_utilizavel_s": 15.0
+  },
+  "pontos": [
+    {
+      "ambiente": {
+        "protocolo": "sessao-2026-11",
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.55,
+        "p95": 1.30,
+        "p99": 2.20,
+        "qps": 1100.0,
+        "recall_at_k": 0.9400
+      },
+      "parametros": {"ef_search": 16, "k": 10}
+    }
+  ]
+}
