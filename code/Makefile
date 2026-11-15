@@ -7,10 +7,10 @@ COMPOSE_UI   := docker compose -f docker-compose.yml -f docker-compose.ui.yml
 
 VENV := .venv
 # Se o venv existe, usa seus binários; caso contrário, cai pro PATH (necessário pra CI sem venv).
-PYTHON := $(if $(wildcard $(VENV)/bin/python),$(VENV)/bin/python,python)
-PIP    := $(if $(wildcard $(VENV)/bin/pip),$(VENV)/bin/pip,pip)
-PYTEST := $(if $(wildcard $(VENV)/bin/pytest),$(VENV)/bin/pytest,pytest)
-RUFF   := $(if $(wildcard $(VENV)/bin/ruff),$(VENV)/bin/ruff,ruff)
+PYTHON ?= $(if $(wildcard $(VENV)/bin/python),$(VENV)/bin/python,python3)
+PIP    ?= $(if $(wildcard $(VENV)/bin/pip),$(VENV)/bin/pip,pip3)
+PYTEST ?= $(if $(wildcard $(VENV)/bin/pytest),$(VENV)/bin/pytest,pytest)
+RUFF   ?= $(if $(wildcard $(VENV)/bin/ruff),$(VENV)/bin/ruff,ruff)
 
 help:  ## Lista os alvos do Makefile
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
