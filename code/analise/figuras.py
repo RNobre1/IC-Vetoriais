@@ -140,7 +140,9 @@ def fig_recall_qps(
                     va="center",
                 )
 
-        ax.legend(fontsize=8, loc="lower left", framealpha=0.9)
+        handles, labels = ax.get_legend_handles_labels()
+        if handles:
+            ax.legend(fontsize=8, loc="lower left", framealpha=0.9)
 
     fig.tight_layout()
     if caminho_saida:
@@ -206,13 +208,17 @@ def fig_cenario_c(
     ax1.set_xticklabels(rotulos_x)
     ax1.set_ylabel("Latência p99 (ms)", fontsize=9)
     ax1.set_xlabel("Taxa alvo (ins/s)", fontsize=9)
-    ax1.legend(fontsize=8, loc="best", framealpha=0.9)
+    h1, l1 = ax1.get_legend_handles_labels()
+    if h1:
+        ax1.legend(fontsize=8, loc="best", framealpha=0.9)
 
     ax2.set_xticks(range(len(rotulos_x)))
     ax2.set_xticklabels(rotulos_x)
     ax2.set_ylabel("Recall inferior", fontsize=9)
     ax2.set_xlabel("Taxa alvo (ins/s)", fontsize=9)
-    ax2.legend(fontsize=8, loc="best", framealpha=0.9)
+    h2, l2 = ax2.get_legend_handles_labels()
+    if h2:
+        ax2.legend(fontsize=8, loc="best", framealpha=0.9)
 
     fig.tight_layout()
     if caminho_saida:
@@ -351,7 +357,9 @@ def fig_memoria(
 
         ax.set_ylabel("Memória (MiB)", fontsize=9)
         ax.set_xlabel("Tempo (min)", fontsize=9)
-        ax.legend(fontsize=8, loc="upper right", framealpha=0.9)
+        handles, labels = ax.get_legend_handles_labels()
+        if handles:
+            ax.legend(fontsize=8, loc="upper right", framealpha=0.9)
 
     fig.tight_layout()
     if caminho_saida:
