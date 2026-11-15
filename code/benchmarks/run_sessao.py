@@ -362,11 +362,13 @@ def _nome_recurso(sistema: str, layout: str, n: int) -> str:
     return f"{nome_classe_weaviate(prefixo)}{n}"
 
 
-def _metricas_toleran(b: Any, *, gt: Any, k: int, id0: int) -> dict[str, Any]:
+def _metricas_tolerantes(b: Any, *, gt: Any, k: int, id0: int) -> dict[str, Any]:
     """Métricas da janela; se o recall falhar, grava o resto e o erro."""
     from benchmarks.cenario_c import metricas_da_janela, resumir_consultas, resumir_producao
 
     try:
+        if gt is None:
+            raise RuntimeError("verdade exata incremental indisponível")
         return metricas_da_janela(b, gt=gt, k=k, id_insercao_inicial=id0)
     except Exception as e:  # noqa: BLE001 — não perder latência e taxa por causa do recall
         return {
@@ -455,6 +457,7 @@ def executar(cfg: ConfigSessao) -> list[Path]:  # noqa: C901 — sequência line
         "sistema": s,
         "protocolo": "sessao-2026-11",
         "ordem_sistemas": ordem_dos_sistemas(n),
+        "tentativa": int(os.environ.get("SESSAO_TENTATIVA", "1")),
     }
 
     def conectar(layout: str) -> None:
@@ -612,10 +615,21 @@ def executar(cfg: ConfigSessao) -> list[Path]:  # noqa: C901 — sequência line
                 for c, v in zip(cols, linha, strict=True)
             }
 
+        def tentar(extra: dict[str, Any], chave: str, fn) -> None:
+            """Telemetria item a item: a falha de um não pula os outros."""
+            try:
+                extra[chave] = fn()
+            except Exception as e:  # noqa: BLE001
+                extra[f"erro_{chave}"] = repr(e)[:300]
+                if s == "pgvector":
+                    # Consulta que falhou deixa a transação abortada; a
+                    # busca seguinte falharia junto.
+                    with contextlib.suppress(Exception):
+                        est.recurso.rollback()
+
         def antes(ordem: int, taxa: int) -> dict[str, Any]:
-            extra: dict[str, Any] = {
-                "rss_inicio_bytes": medir_rss_bytes(executar_docker, sistema=s)
-            }
+            extra: dict[str, Any] = {}
+            # Passos de protocolo primeiro, telemetria depois.
             if ordem == ultima and cfg_c.assentar_antes_da_ultima:
                 t0 = time.perf_counter()
                 if s == "qdrant":
@@ -625,18 +639,18 @@ def executar(cfg: ConfigSessao) -> list[Path]:  # noqa: C901 — sequência line
                 extra["assentar_s"] = time.perf_counter() - t0
             if s == "pgvector":
                 _fora_de_transacao(est.recurso, "CHECKPOINT")
-                extra["checkpointer_antes"] = stats_checkpointer()
-            extra["swap_out_antes"] = ler_pswpout()
+                tentar(extra, "checkpointer_antes", stats_checkpointer)
+            tentar(extra, "swap_out_antes", ler_pswpout)
+            tentar(extra, "rss_inicio_bytes", lambda: medir_rss_bytes(executar_docker, sistema=s))
             marco("C", "janela_inicio", {"ordem": ordem, "taxa": taxa})
             return extra
 
         def depois(ordem: int, taxa: int) -> dict[str, Any]:
-            extra: dict[str, Any] = {
-                "rss_fim_bytes": medir_rss_bytes(executar_docker, sistema=s),
-                "swap_out_depois": ler_pswpout(),
-            }
+            extra: dict[str, Any] = {}
+            tentar(extra, "swap_out_depois", ler_pswpout)
             if s == "pgvector":
-                extra["checkpointer_depois"] = stats_checkpointer()
+                tentar(extra, "checkpointer_depois", stats_checkpointer)
+            tentar(extra, "rss_fim_bytes", lambda: medir_rss_bytes(executar_docker, sistema=s))
             marco("C", "janela_fim", {"ordem": ordem, "taxa": taxa})
             return extra
 
@@ -665,17 +679,51 @@ def executar(cfg: ConfigSessao) -> list[Path]:  # noqa: C901 — sequência line
                 for b in brutas
                 for campo in ("consultas", "ids_obtidos", "m_inicio", "m_fim", "latencias_ms")
             },
+            **{
+                f"j{b.ordem}_registros": np.asarray(
+                    [(r.t_agendado, r.t_envio, r.t_confirmado, r.n) for r in b.registros],
+                    dtype=np.float64,
+                ).reshape(-1, 4)
+                for b in brutas
+            },
+            janelas_json=np.asarray(
+                json.dumps(
+                    [
+                        {
+                            "ordem": b.ordem,
+                            "taxa": b.taxa,
+                            "inicio_medicao": b.inicio_medicao,
+                            "fim_medicao": b.fim_medicao,
+                            "inicio_utc": b.inicio_utc,
+                            "fim_utc": b.fim_utc,
+                            "m_antes": b.m_antes,
+                            "m_depois": b.m_depois,
+                            "extra": b.extra,
+                        }
+                        for b in brutas
+                    ],
+                    default=str,
+                )
+            ),
         )
-        contagem = contar(s, est.recurso, est.nome)
+        try:
+            contagem: int | None = contar(s, est.recurso, est.nome)
+        except Exception as e:  # noqa: BLE001
+            contagem = None
+            print(f"AVISO: contagem falhou: {e!r}", flush=True)
         marco("C", "fim", {"inseridos": m_final, "contagem": contagem})
         marco("C_recall", "inicio")
-        gt = GtIncremental(
-            base=base,
-            queries=queries,
-            insercoes=pool[: max(m_final, 1)],
-            k=cfg.k,
-            id_insercao_inicial=id0,
-        )
+        try:
+            gt: Any = GtIncremental(
+                base=base,
+                queries=queries,
+                insercoes=pool[: max(m_final, 1)],
+                k=cfg.k,
+                id_insercao_inicial=id0,
+            )
+        except Exception as e:  # noqa: BLE001 — sem verdade exata, o resto ainda vale
+            gt = None
+            print(f"AVISO: verdade incremental falhou: {e!r}", flush=True)
         resultados = []
         for b in brutas:
             resultados.append(
@@ -694,7 +742,7 @@ def executar(cfg: ConfigSessao) -> list[Path]:  # noqa: C901 — sequência line
                         "tick_s": cfg.tick_c_s,
                         "tamanho_lote": tamanho_lote(b.taxa, tick_s=cfg.tick_c_s),
                     },
-                    metricas=_metricas_toleran(b, gt=gt, k=cfg.k, id0=id0),
+                    metricas=_metricas_tolerantes(b, gt=gt, k=cfg.k, id0=id0),
                     ambiente={
                         **ambiente_base,
                         **est.extra_seed,
@@ -708,7 +756,7 @@ def executar(cfg: ConfigSessao) -> list[Path]:  # noqa: C901 — sequência line
             )
         marco("C_recall", "fim")
         gravar(resultados, None)
-        if contagem != n + m_final:
+        if contagem is not None and contagem != n + m_final:
             print(
                 f"AVISO: contagem {contagem} != esperado {n + m_final} — inserção confirmada ausente.",
                 flush=True,

@@ -50,7 +50,7 @@ reset-medicao:  ## DESTRUTIVO: zera volumes e reinicia os 3 SGBDs (linha de base
 	$(COMPOSE) up -d
 	@echo "Aguardando healthcheck dos 3 serviços..."
 	@for i in $$(seq 1 60); do \
-		n=$$($(COMPOSE) ps --format '{{.Health}}' | grep -c healthy); \
+		n=$$($(COMPOSE) ps --format '{{.Health}}' | grep -cx healthy); \
 		[ "$$n" = "3" ] && echo "3/3 healthy" && exit 0; \
 		sleep 2; \
 	done; echo "ERRO: nem todos ficaram healthy" >&2; exit 1

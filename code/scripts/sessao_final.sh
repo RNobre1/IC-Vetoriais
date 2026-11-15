@@ -30,6 +30,7 @@ PONTE_ARGS=${PONTE_ARGS:-}
 EXTRA=${EXTRA:-}
 RESULTS=${RESULTS:-results}
 PY=.venv/bin/python
+[ -x "$PY" ] || { echo "ERRO: $PY não existe; rode 'make deps' antes da sessão." >&2; exit 1; }
 
 DIR="$RESULTS/sessoes/$SESSAO_ID"
 mkdir -p "$DIR"
@@ -76,7 +77,11 @@ if [ "$PONTE" = "1" ] && ! grep -q "^ponte	" "$PROG"; then
 fi
 
 for N in $ESCALAS; do
-    ORDEM=$($PY -c "from benchmarks.run_sessao import ordem_dos_sistemas as o; print(' '.join(o($N)))")
+    ORDEM=$($PY -c "from benchmarks.run_sessao import ordem_dos_sistemas as o; print(' '.join(o($N)))") \
+        || { log "ERRO: não consegui obter a ordem dos sistemas"; exit 1; }
+    # Teto por par: um passo travado não pode consumir a janela inteira.
+    TETO=5400
+    [ "$N" -ge 1000000 ] && TETO=10800
     feitos=0
     for S in $ORDEM; do grep -q "^$N	$S	ok" "$PROG" && feitos=$((feitos + 1)); done
     [ "$feitos" = 3 ] && continue
@@ -89,17 +94,28 @@ for N in $ESCALAS; do
         for tentativa in 1 2; do
             log "N=$N $S tentativa $tentativa"
             sw0=$(pswpout); t0=$(date +%s)
+            LOGP="$DIR/log_${N}_${S}.txt"
+            L0=$(wc -l <"$LOGP" 2>/dev/null || echo 0)
             # shellcheck disable=SC2086
-            $PY -m benchmarks.run_sessao --n "$N" --sistema "$S" $C \
+            SESSAO_TENTATIVA=$tentativa timeout -k 60 "$TETO" \
+                $PY -m benchmarks.run_sessao --n "$N" --sistema "$S" $C \
                 --marcos "$MARCOS" --results-dir "$RESULTS" $EXTRA \
-                >>"$DIR/log_${N}_${S}.txt" 2>&1
+                >>"$LOGP" 2>&1
             rc=$?
             dur=$(($(date +%s) - t0)); dsw=$(($(pswpout) - sw0))
             printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$N" "$S" \
                 "$([ $rc = 0 ] && echo ok || echo "falha$rc")" "$tentativa" "$dur" "$dsw" >>"$PROG"
             log "N=$N $S rc=$rc ${dur}s swap_out_paginas=$dsw"
             [ $rc = 0 ] && break
-            tail -5 "$DIR/log_${N}_${S}.txt"
+            tail -5 "$LOGP"
+            # Falha depois de o C começar: os demais cenários do par já estão
+            # gravados e o C é o último passo. Refazer o par repetiria o seed
+            # (cerca de 1 h no pgvector em 1M) para recuperar só o C.
+            if tail -n +"$((L0 + 1))" "$LOGP" | grep -q '"passo": "C_total", "evento": "inicio"'; then
+                printf '%s\t%s\tfalhaC\t%s\t%s\t%s\n' "$N" "$S" "$tentativa" "$dur" "$dsw" >>"$PROG"
+                log "N=$N $S: falha no Cenário C; sem nova tentativa do par"
+                break
+            fi
         done
     done
 done
