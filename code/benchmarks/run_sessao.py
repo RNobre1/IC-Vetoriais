@@ -331,6 +331,17 @@ class _Estado:
         self.buscador = self.recurso = None
 
 
+def _fora_de_transacao(conn: Any, sql: str) -> None:
+    """Executa `sql` em autocommit (VACUUM e CHECKPOINT recusam transação)."""
+    conn.commit()
+    conn.autocommit = True
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql)
+    finally:
+        conn.autocommit = False
+
+
 def _nome_recurso(sistema: str, layout: str, n: int) -> str:
     prefixo = {"A": "bench_a", "B": "bench_b", "B_eq": "bench_b_eq"}[layout]
     if sistema != "weaviate":
@@ -461,10 +472,7 @@ def executar(cfg: ConfigSessao) -> list[Path]:  # noqa: C901 — sequência line
             # Fora do relógio: sem isto, hint bits e estatísticas de `seletor`
             # dependeriam do autovacuum, e o planner do B também.
             t0 = time.perf_counter()
-            est.recurso.autocommit = True
-            with est.recurso.cursor() as cur:
-                cur.execute(f"VACUUM (ANALYZE) {est.nome}")
-            est.recurso.autocommit = False
+            _fora_de_transacao(est.recurso, f"VACUUM (ANALYZE) {est.nome}")
             est.extra_seed["vacuum_analyze_s"] = time.perf_counter() - t0
 
     def gravar(resultados, recursos) -> None:
@@ -578,10 +586,7 @@ def executar(cfg: ConfigSessao) -> list[Path]:  # noqa: C901 — sequência line
                     aguardar_fila_weaviate(est.recurso, nome_classe=est.nome)
                 extra["assentar_s"] = time.perf_counter() - t0
             if s == "pgvector":
-                est.recurso.autocommit = True
-                with est.recurso.cursor() as cur:
-                    cur.execute("CHECKPOINT")
-                est.recurso.autocommit = False
+                _fora_de_transacao(est.recurso, "CHECKPOINT")
                 extra["checkpointer_antes"] = stats_checkpointer()
             extra["swap_out_antes"] = ler_pswpout()
             marco("C", "janela_inicio", {"ordem": ordem, "taxa": taxa})
