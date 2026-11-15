@@ -2,7 +2,12 @@
 
 from pathlib import Path
 
-from analise.custo import FASES_RELEVANTES, calcular_custo, linhas_custo
+from analise.custo import (
+    FASES_RELEVANTES,
+    MetricaCustoFase,
+    calcular_custo,
+    linhas_custo,
+)
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "analise"
 
@@ -27,12 +32,46 @@ def test_calcular_custo_e_linhas():
 
     linhas = linhas_custo(metricas)
     assert r"\multirow{1}{*}{5k}" in linhas
-    assert "pgvector" in linhas
-    assert r"seed\_a" in linhas
+    assert r"\multirow{1}{*}{pgvector}" in linhas
+    assert "seed A" in linhas
     assert "120,0" in linhas
     assert "60,0" in linhas
     assert "1,0" in linhas
     assert "4,5" in linhas
+    assert r"\hline" in linhas
+
+
+def test_linhas_custo_ordenacao_e_multirows():
+    # Cria métricas mock para testar:
+    # 1. multirow por escala E por sistema
+    # 2. nomes de exibição (pgvector, Qdrant, Weaviate)
+    # 3. nomes e ordem das fases (seeds primeiro: seed A, seed B, seed B eq., depois A, B, B eq., C)
+    # 4. \cline{2-7} entre sistemas na mesma escala
+    m1 = MetricaCustoFase(100000, "pgvector", "B", 800.0, 10.0, 1.0, 0, 0.0, 0.0, 1000.0)
+    m2 = MetricaCustoFase(100000, "pgvector", "seed_b", 850.0, 60.0, 2.0, 0, 0.5, 0.0, 900.0)
+    m3 = MetricaCustoFase(100000, "pgvector", "A", 820.0, 12.0, 1.0, 0, 0.0, 0.0, 950.0)
+    m4 = MetricaCustoFase(100000, "qdrant", "seed_a", 900.0, 400.0, 2.0, 0, 0.0, 0.0, 800.0)
+    m5 = MetricaCustoFase(100000, "qdrant", "A", 750.0, 300.0, 1.0, 0, 0.0, 0.0, 850.0)
+
+    linhas = linhas_custo([m1, m2, m3, m4, m5])
+
+    # Escala tem total de 5 linhas
+    assert r"\multirow{5}{*}{100k}" in linhas
+    # pgvector tem 3 linhas
+    assert r"\multirow{3}{*}{pgvector}" in linhas
+    # qdrant tem 2 linhas e nome de exibição Qdrant
+    assert r"\multirow{2}{*}{Qdrant}" in linhas
+
+    # Ordem das fases do pgvector: seed B antes de A e B
+    pos_seed_b = linhas.find("seed B")
+    pos_a = linhas.find(" & & A &")
+    pos_b = linhas.find(" & & B &")
+    assert pos_seed_b != -1 and pos_a != -1 and pos_b != -1
+    assert pos_seed_b < pos_a < pos_b
+
+    # Divisão entre sistemas com \cline{2-7}
+    assert r"\cline{2-7}" in linhas
+    # Fim da escala com \hline
     assert r"\hline" in linhas
 
 

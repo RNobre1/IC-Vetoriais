@@ -37,6 +37,43 @@ from lib.footprint import CONTAINER_POR_SISTEMA
 
 FASES_RELEVANTES = ("seed_a", "seed_b", "seed_b_eq", "A", "B", "B_eq", "C")
 
+MAPA_SISTEMAS = {
+    "pgvector": "pgvector",
+    "qdrant": "Qdrant",
+    "weaviate": "Weaviate",
+}
+SISTEMAS_ORDEM = ("pgvector", "Qdrant", "Weaviate")
+
+ORDEM_FASES = ("seed_a", "seed_b", "seed_b_eq", "A", "B", "B_eq", "C")
+MAPA_FASES = {
+    "seed_a": "seed A",
+    "seed_b": "seed B",
+    "seed_b_eq": "seed B eq.",
+    "A": "A",
+    "a": "A",
+    "B": "B",
+    "b": "B",
+    "B_eq": "B eq.",
+    "b_eq": "B eq.",
+    "C": "C",
+    "c": "C",
+}
+
+
+def _ordem_fase_key(passo: str) -> int:
+    p = passo
+    for idx, f in enumerate(ORDEM_FASES):
+        if f.lower() == p.lower():
+            return idx
+    return 99
+
+
+def _ordem_sistema_key(sis: str) -> int:
+    s_disp = MAPA_SISTEMAS.get(sis.lower(), sis)
+    if s_disp in SISTEMAS_ORDEM:
+        return SISTEMAS_ORDEM.index(s_disp)
+    return 99
+
 
 @dataclass(frozen=True)
 class MetricaCustoFase:
@@ -293,7 +330,7 @@ def calcular_custo(
 
 
 def linhas_custo(metricas: Sequence[MetricaCustoFase]) -> str:
-    """Gera linhas LaTeX para a tabela de custo de recursos."""
+    """Gera linhas LaTeX para a tabela de custo de recursos com multirow por escala e sistema."""
     linhas: list[str] = []
     por_escala: dict[int, list[MetricaCustoFase]] = defaultdict(list)
     for m in metricas:
@@ -301,25 +338,60 @@ def linhas_custo(metricas: Sequence[MetricaCustoFase]) -> str:
 
     for n in sorted(por_escala.keys()):
         rotulo_escala = formato_escala(n)
-        itens = por_escala[n]
-        k = len(itens)
+        itens_escala = por_escala[n]
 
-        for idx, m in enumerate(itens):
-            passo_tex = m.passo.replace("_", r"\_")
-            p_mem = num(m.pico_mem_mib, 1)
-            p_anon = num(m.pico_anon_mib, 1)
-            cpu = num(m.cpu_nucleos, 1)
-            sw = num(m.swap_out_mib, 1)
+        # Agrupa por sistema
+        por_sistema: dict[str, list[MetricaCustoFase]] = defaultdict(list)
+        for m in itens_escala:
+            por_sistema[m.sistema].append(m)
 
-            if idx == 0:
-                linhas.append(
-                    f"\\multirow{{{k}}}{{*}}{{{rotulo_escala}}}\n"
-                    f" & {m.sistema} & {passo_tex} & {p_mem} & {p_anon} & {cpu} & {sw} \\\\"
-                )
+        sistemas_ordenados = sorted(por_sistema.keys(), key=_ordem_sistema_key)
+
+        # Ordena as fases dentro de cada sistema
+        sistemas_com_fases: list[tuple[str, list[MetricaCustoFase]]] = []
+        total_linhas_escala = 0
+        for sis in sistemas_ordenados:
+            fases = sorted(por_sistema[sis], key=lambda m: _ordem_fase_key(m.passo))
+            sistemas_com_fases.append((sis, fases))
+            total_linhas_escala += len(fases)
+
+        if total_linhas_escala == 0:
+            continue
+
+        primeira_linha_escala = True
+
+        for idx_sis, (sis, fases) in enumerate(sistemas_com_fases):
+            nome_sis_disp = MAPA_SISTEMAS.get(sis.lower(), sis)
+            k_sis = len(fases)
+            primeira_linha_sistema = True
+
+            for m in fases:
+                passo_tex = MAPA_FASES.get(m.passo, m.passo.replace("_", r"\_"))
+                p_mem = num(m.pico_mem_mib, 1)
+                p_anon = num(m.pico_anon_mib, 1)
+                cpu = num(m.cpu_nucleos, 1)
+                sw = num(m.swap_out_mib, 1)
+
+                cols_dados = f"{passo_tex} & {p_mem} & {p_anon} & {cpu} & {sw} \\\\"
+
+                if primeira_linha_escala:
+                    linhas.append(
+                        f"\\multirow{{{total_linhas_escala}}}{{*}}{{{rotulo_escala}}}\n"
+                        f" & \\multirow{{{k_sis}}}{{*}}{{{nome_sis_disp}}} & {cols_dados}"
+                    )
+                    primeira_linha_escala = False
+                    primeira_linha_sistema = False
+                elif primeira_linha_sistema:
+                    linhas.append(
+                        f" & \\multirow{{{k_sis}}}{{*}}{{{nome_sis_disp}}} & {cols_dados}"
+                    )
+                    primeira_linha_sistema = False
+                else:
+                    linhas.append(f" & & {cols_dados}")
+
+            if idx_sis < len(sistemas_com_fases) - 1:
+                linhas.append(r"\cline{2-7}")
             else:
-                linhas.append(
-                    f" & {m.sistema} & {passo_tex} & {p_mem} & {p_anon} & {cpu} & {sw} \\\\"
-                )
-        linhas.append(r"\hline")
+                linhas.append(r"\hline")
 
     return "\n".join(linhas) + "\n"
