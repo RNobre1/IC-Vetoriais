@@ -18,6 +18,7 @@ from __future__ import annotations
 import contextlib
 import csv
 import json
+import math
 from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
@@ -28,9 +29,10 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
 from matplotlib.ticker import FuncFormatter
 
-from analise.formato import formato_escala, num
+from analise.formato import num
 from analise.sessao import Sessao, normalizar_timestamp
 from lib.footprint import CONTAINER_POR_SISTEMA
 
@@ -44,10 +46,40 @@ ESTILO_SISTEMAS = {
     "weaviate": {"color": "#1baf7a", "marker": "^", "label": "Weaviate"},
 }
 
+MAPA_SISTEMAS = {
+    "pgvector": "pgvector",
+    "qdrant": "Qdrant",
+    "weaviate": "Weaviate",
+}
+
+FASES_RELEVANTES_MEMORIA = {
+    "seed_a": "seed A",
+    "seed_b": "seed B",
+    "seed_b_eq": "seed B eq.",
+    "A": "A",
+    "a": "A",
+    "B": "B",
+    "b": "B",
+    "B_eq": "B eq.",
+    "b_eq": "B eq.",
+    "C": "C",
+    "c": "C",
+}
+
+
+def formato_escala_extenso(n: int) -> str:
+    """Formata escala por extenso (ex: 100 mil vetores, 1 milhão de vetores)."""
+    if n == 1_000_000:
+        return "1 milhão de vetores"
+    if n >= 1_000_000 and n % 1_000_000 == 0:
+        return f"{n // 1_000_000} milhões de vetores"
+    if n >= 1_000 and n % 1_000 == 0:
+        return f"{n // 1_000} mil vetores"
+    return f"{n} vetores"
+
 
 def _formatador_pt_br(val: float, pos: int) -> str:
     """Formata ticks dos eixos substituindo ponto decimal por vírgula."""
-    # Se for inteiro, formata sem decimais
     if val.is_integer():
         return f"{int(val):,}".replace(",", ".")
     s = f"{val:g}"
@@ -80,7 +112,7 @@ def fig_recall_qps(
     fig, eixos = plt.subplots(
         nrows=1,
         ncols=n_paineis,
-        figsize=(LARGURA_POL, 6.5 / POLEGADA_CM),
+        figsize=(LARGURA_POL, 7.5 / POLEGADA_CM),
         sharey=False,
     )
     if n_paineis == 1:
@@ -90,12 +122,13 @@ def fig_recall_qps(
 
     for ax, n in zip(eixos, escalas, strict=False):
         _configurar_eixo(ax)
-        ax.set_title(formato_escala(n), fontsize=9, fontweight="bold", pad=6)
+        ax.set_title(formato_escala_extenso(n), fontsize=9, fontweight="bold", pad=6)
         ax.set_yscale("log")
         ax.set_xlabel("Recall@10", fontsize=9)
-        ax.set_ylabel("QPS (log)", fontsize=9)
+        ax.set_ylabel("QPS (escala log)", fontsize=9)
 
         min_recall_medido = 0.84
+        pontas: list[dict[str, Any]] = []
 
         for sis, estilo in ESTILO_SISTEMAS.items():
             arq = sessao.obter("A", sis, n)
@@ -156,35 +189,62 @@ def fig_recall_qps(
                     label=estilo["label"],
                 )
 
-            # Rótulo direto na ponta da curva
             if recalls and qps_vals:
-                ax.annotate(
-                    estilo["label"],
-                    (recalls[-1], qps_vals[-1]),
-                    textcoords="offset points",
-                    xytext=(4, 0),
-                    fontsize=7,
-                    color=estilo["color"],
-                    va="center",
+                pontas.append(
+                    {
+                        "x": recalls[-1],
+                        "y": qps_vals[-1],
+                        "label": estilo["label"],
+                        "color": estilo["color"],
+                    }
                 )
+
+        # Evita colisão nos rótulos diretos da ponta da curva
+        for pt in pontas:
+            dx, dy = 6, 2
+            for other in pontas:
+                if other is not pt and abs(pt["x"] - other["x"]) < 0.03:
+                    diff_log_y = math.log10(pt["y"]) - math.log10(other["y"])
+                    if 0 <= diff_log_y < 0.15:
+                        dy = 8
+                    elif -0.15 < diff_log_y < 0:
+                        dy = -5
+            ax.annotate(
+                pt["label"],
+                (pt["x"], pt["y"]),
+                textcoords="offset points",
+                xytext=(dx, dy),
+                fontsize=7,
+                color=pt["color"],
+                va="center",
+            )
 
         limite_inf_x = max(0.0, min_recall_medido - 0.02)
         ax.set_xlim(limite_inf_x, 1.005)
 
-        handles, labels = ax.get_legend_handles_labels()
-        if handles:
-            ax.legend(
-                handles,
-                labels,
-                fontsize=8,
-                loc="upper center",
-                bbox_to_anchor=(0.5, -0.18),
-                ncol=3,
-                frameon=True,
-                framealpha=0.9,
-            )
+    # Legenda única da figura abaixo de tudo, sem sobrepor os eixos x
+    handles_unicos: list[Any] = []
+    labels_unicos: list[str] = []
+    for ax in eixos:
+        handles, labels_list = ax.get_legend_handles_labels()
+        for handle, label in zip(handles, labels_list, strict=False):
+            if label not in labels_unicos:
+                handles_unicos.append(handle)
+                labels_unicos.append(label)
 
     fig.tight_layout()
+    fig.subplots_adjust(bottom=0.26)
+    if handles_unicos:
+        fig.legend(
+            handles_unicos,
+            labels_unicos,
+            loc="lower center",
+            ncol=3,
+            bbox_to_anchor=(0.5, 0.0),
+            fontsize=9,
+            frameon=False,
+        )
+
     if caminho_saida:
         p = Path(caminho_saida)
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -204,7 +264,7 @@ def fig_cenario_c(
     fig, (ax1, ax2) = plt.subplots(
         nrows=1,
         ncols=2,
-        figsize=(LARGURA_POL, 6.5 / POLEGADA_CM),
+        figsize=(LARGURA_POL, 7.5 / POLEGADA_CM),
     )
     fig.patch.set_facecolor("white")
     _configurar_eixo(ax1)
@@ -221,7 +281,7 @@ def fig_cenario_c(
             )
 
     rotulos_x: list[str] = []
-    for _idx, p in enumerate(pontos_referencia):
+    for p in pontos_referencia:
         taxa = p.get("parametros", {}).get("taxa_alvo", 0)
         amb = p.get("ambiente", {})
         rotulo_taxa = num(taxa, 0)
@@ -230,7 +290,7 @@ def fig_cenario_c(
         rotulos_x.append(rotulo_taxa)
 
     if not rotulos_x:
-        rotulos_x = ["0", "10", "100", "1000", "0", "0*"]
+        rotulos_x = ["0", "10", "100", "1.000", "0", "0*"]
 
     for sis, estilo in ESTILO_SISTEMAS.items():
         arq = sessao.obter("C", sis, n)
@@ -282,43 +342,43 @@ def fig_cenario_c(
                 label=estilo["label"],
             )
 
+    # Linha vertical tracejada cinza entre janela 4 e 5 (x=3.5) indicando fim da escrita
+    ax1.axvline(3.5, color="#888888", linestyle="--", linewidth=1.0, alpha=0.7)
+    ax2.axvline(3.5, color="#888888", linestyle="--", linewidth=1.0, alpha=0.7)
+
     ax1.set_xticks(range(len(rotulos_x)))
     ax1.set_xticklabels(rotulos_x)
     ax1.set_ylabel("Latência p99 (ms)", fontsize=9)
-    ax1.set_xlabel("Taxa alvo (ins/s)", fontsize=9)
-
-    h1, l1 = ax1.get_legend_handles_labels()
-    if h1:
-        ax1.legend(
-            h1,
-            l1,
-            fontsize=8,
-            loc="upper center",
-            bbox_to_anchor=(0.5, -0.18),
-            ncol=3,
-            frameon=True,
-            framealpha=0.9,
-        )
+    ax1.set_xlabel("Janela (taxa alvo, ins/s)", fontsize=9)
 
     ax2.set_xticks(range(len(rotulos_x)))
     ax2.set_xticklabels(rotulos_x)
-    ax2.set_ylabel("Recall inferior", fontsize=9)
-    ax2.set_xlabel("Taxa alvo (ins/s)", fontsize=9)
+    ax2.set_ylabel("Recall@10 (limite inferior)", fontsize=9)
+    ax2.set_xlabel("Janela (taxa alvo, ins/s)", fontsize=9)
 
-    h2, l2 = ax2.get_legend_handles_labels()
-    if h2:
-        ax2.legend(
-            h2,
-            l2,
-            fontsize=8,
-            loc="upper center",
-            bbox_to_anchor=(0.5, -0.18),
-            ncol=3,
-            frameon=True,
-            framealpha=0.9,
-        )
+    # Legenda única abaixo dos painéis
+    handles_unicos: list[Any] = []
+    labels_unicos: list[str] = []
+    for ax in (ax1, ax2):
+        handles, labels_list = ax.get_legend_handles_labels()
+        for handle, label in zip(handles, labels_list, strict=False):
+            if label not in labels_unicos:
+                handles_unicos.append(handle)
+                labels_unicos.append(label)
 
     fig.tight_layout()
+    fig.subplots_adjust(bottom=0.26)
+    if handles_unicos:
+        fig.legend(
+            handles_unicos,
+            labels_unicos,
+            loc="lower center",
+            ncol=3,
+            bbox_to_anchor=(0.5, 0.0),
+            fontsize=9,
+            frameon=False,
+        )
+
     if caminho_saida:
         p = Path(caminho_saida)
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -333,10 +393,9 @@ def fig_memoria(
     *,
     caminho_saida: str | Path | None = None,
 ) -> Figure:
-    """Gera figura de memória (mem_current e anon em MiB) por sistema ao longo do tempo."""
+    """Gera figura temporal de memória (memory.current e anon) com sombreamento por fase."""
     plt.rcParams.update({"font.size": 9, "font.sans-serif": ["Helvetica", "Arial", "sans-serif"]})
 
-    # Carrega marcos
     marcos_lista: list[dict[str, Any]] = []
     if isinstance(marcos, str | Path):
         p_marcos = Path(marcos)
@@ -400,22 +459,27 @@ def fig_memoria(
     if not sistemas_ativos:
         sistemas_ativos = list(ESTILO_SISTEMAS.keys())
 
+    altura_total = max(8.0, (3.5 * len(sistemas_ativos) + 1.8)) / POLEGADA_CM
     fig, eixos = plt.subplots(
         nrows=len(sistemas_ativos),
         ncols=1,
-        figsize=(LARGURA_POL, 3.5 * len(sistemas_ativos) / POLEGADA_CM),
+        figsize=(LARGURA_POL, altura_total),
         sharex=False,
     )
     if len(sistemas_ativos) == 1:
         eixos = [eixos]
     fig.patch.set_facecolor("white")
 
-    for ax, sis in zip(eixos, sistemas_ativos, strict=False):
+    for idx, (ax, sis) in enumerate(zip(eixos, sistemas_ativos, strict=False)):
         _configurar_eixo(ax)
         estilo = ESTILO_SISTEMAS[sis]
         c = CONTAINER_POR_SISTEMA.get(sis, sis)
         col_mem = f"{c}_mem_current_b"
         col_anon = f"{c}_anon_b"
+
+        # Título do painel = nome do sistema de exibição
+        nome_sistema_disp = MAPA_SISTEMAS.get(sis.lower(), estilo["label"])
+        ax.set_title(nome_sistema_disp, fontsize=9, fontweight="bold", pad=4)
 
         fases = fases_por_sistema.get(sis, [])
         if fases:
@@ -435,19 +499,21 @@ def fig_memoria(
                 with contextlib.suppress(ValueError):
                     amostras_validas.append((r["_dt"], float(vm), float(va)))
 
+        span_x_min = 1.0
         if amostras_validas:
             ts_rel_min = [
                 (dt - t_bloco_inicio).total_seconds() / 60.0 for dt, _, _ in amostras_validas
             ]
             mem_mib = [vm / 1048576.0 for _, vm, _ in amostras_validas]
             anon_mib = [va / 1048576.0 for _, _, va in amostras_validas]
+            if ts_rel_min:
+                span_x_min = max(1.0, max(ts_rel_min) - min(ts_rel_min))
 
             ax.plot(
                 ts_rel_min,
                 mem_mib,
                 color=estilo["color"],
                 linewidth=1.5,
-                label=f"{estilo['label']} Total",
             )
             ax.plot(
                 ts_rel_min,
@@ -455,39 +521,77 @@ def fig_memoria(
                 color=estilo["color"],
                 linestyle="--",
                 linewidth=1.5,
-                label=f"{estilo['label']} Anônima",
             )
 
-        # Sombreamento das fases
-        for i, (passo, t0, t1) in enumerate(fases):
+        # Sombreamento apenas das fases nomeadas de medição e seed
+        cinzas = ["#f5f5f5", "#e8e8e8"]
+        i_fase_nomeada = 0
+
+        for passo, t0, t1 in fases:
+            rotulo_fase = FASES_RELEVANTES_MEMORIA.get(passo)
+            if not rotulo_fase:
+                # Fases auxiliares (dados, reiniciar, limpar, etc.) ficam sem rótulo e sem sombreado
+                continue
+
             x0 = (t0 - t_bloco_inicio).total_seconds() / 60.0
             x1 = (t1 - t_bloco_inicio).total_seconds() / 60.0
-            cor_fundo = "#f2f2f2" if i % 2 == 0 else "#e6e6e6"
-            ax.axvspan(x0, x1, color=cor_fundo, alpha=0.5, zorder=0)
-            ax.text(
-                (x0 + x1) / 2.0,
-                0.92,
-                passo,
-                transform=ax.get_xaxis_transform(),
-                ha="center",
-                va="top",
-                fontsize=7,
-                color="#555555",
-            )
+            largura_trecho = x1 - x0
+
+            cor_fundo = cinzas[i_fase_nomeada % 2]
+            i_fase_nomeada += 1
+
+            ax.axvspan(x0, x1, color=cor_fundo, alpha=0.7, zorder=0)
+
+            # Centralizado no topo do trecho, 7 pt, sem sobrepor (omite se o trecho for estreito demais)
+            largura_minima_necessaria = max(0.015, len(rotulo_fase) * 0.005) * span_x_min
+            if largura_trecho >= largura_minima_necessaria:
+                ax.text(
+                    (x0 + x1) / 2.0,
+                    0.92,
+                    rotulo_fase,
+                    transform=ax.get_xaxis_transform(),
+                    ha="center",
+                    va="top",
+                    fontsize=7,
+                    color="#444444",
+                )
 
         ax.set_ylabel("Memória (MiB)", fontsize=9)
-        ax.set_xlabel("Tempo (min)", fontsize=9)
-        handles, labels = ax.get_legend_handles_labels()
-        if handles:
-            ax.legend(
-                handles,
-                labels,
-                fontsize=8,
-                loc="upper right",
-                framealpha=0.9,
-            )
+        if idx == len(eixos) - 1:
+            ax.set_xlabel("Tempo desde o início do bloco (min)", fontsize=9)
+
+    # Legenda única abaixo da figura em cinza escuro
+    elementos_legenda = [
+        Line2D(
+            [0],
+            [0],
+            color="#444444",
+            linestyle="-",
+            linewidth=1.5,
+            label="Total (memory.current)",
+        ),
+        Line2D(
+            [0],
+            [0],
+            color="#444444",
+            linestyle="--",
+            linewidth=1.5,
+            label="Anônima (anon)",
+        ),
+    ]
 
     fig.tight_layout()
+    # Reserva espaço inferior para a legenda sem colidir com o eixo x
+    fig.subplots_adjust(bottom=0.18, hspace=0.38)
+    fig.legend(
+        handles=elementos_legenda,
+        loc="lower center",
+        ncol=2,
+        bbox_to_anchor=(0.5, 0.0),
+        fontsize=9,
+        frameon=False,
+    )
+
     if caminho_saida:
         p = Path(caminho_saida)
         p.parent.mkdir(parents=True, exist_ok=True)
