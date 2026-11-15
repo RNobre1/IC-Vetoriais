@@ -5,6 +5,8 @@ Diretrizes visuais:
 - Tipografia sans-serif (Helvetica/Arial/DejaVu Sans) a 9 pt
 - Fundo branco limpo, grade cinza clara sutil
 - Sem título interno nas figuras (o caption LaTeX atua como título)
+- Formatação de eixos com vírgula decimal (padrão PT-BR)
+- Legenda fora da área das curvas para evitar sobreposição
 - Mapeamento estrito e imutável de cores e marcadores por sistema:
   - pgvector: `#2a78d6`, círculo ('o')
   - Qdrant: `#eb6834`, quadrado ('s')
@@ -13,6 +15,7 @@ Diretrizes visuais:
 
 from __future__ import annotations
 
+import contextlib
 import csv
 import json
 from collections.abc import Sequence
@@ -25,10 +28,11 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
+from matplotlib.ticker import FuncFormatter
 
-from analise.custo import CONTAINER_POR_SISTEMA
-from analise.formato import formato_escala
+from analise.formato import formato_escala, num
 from analise.sessao import Sessao, normalizar_timestamp
+from lib.footprint import CONTAINER_POR_SISTEMA
 
 LARGURA_CM = 16.0
 POLEGADA_CM = 2.54
@@ -41,6 +45,15 @@ ESTILO_SISTEMAS = {
 }
 
 
+def _formatador_pt_br(val: float, pos: int) -> str:
+    """Formata ticks dos eixos substituindo ponto decimal por vírgula."""
+    # Se for inteiro, formata sem decimais
+    if val.is_integer():
+        return f"{int(val):,}".replace(",", ".")
+    s = f"{val:g}"
+    return s.replace(".", ",")
+
+
 def _configurar_eixo(ax: plt.Axes) -> None:
     """Aplica estilo padrão ao eixo."""
     ax.set_facecolor("white")
@@ -49,6 +62,9 @@ def _configurar_eixo(ax: plt.Axes) -> None:
         spine.set_color("#666666")
         spine.set_linewidth(0.8)
     ax.tick_params(colors="#333333", labelsize=8)
+    formatter = FuncFormatter(_formatador_pt_br)
+    ax.xaxis.set_major_formatter(formatter)
+    ax.yaxis.set_major_formatter(formatter)
 
 
 def fig_recall_qps(
@@ -64,7 +80,7 @@ def fig_recall_qps(
     fig, eixos = plt.subplots(
         nrows=1,
         ncols=n_paineis,
-        figsize=(LARGURA_POL, 6.0 / POLEGADA_CM),
+        figsize=(LARGURA_POL, 6.5 / POLEGADA_CM),
         sharey=False,
     )
     if n_paineis == 1:
@@ -75,10 +91,11 @@ def fig_recall_qps(
     for ax, n in zip(eixos, escalas, strict=False):
         _configurar_eixo(ax)
         ax.set_title(formato_escala(n), fontsize=9, fontweight="bold", pad=6)
-        ax.set_xlim(0.84, 1.005)
         ax.set_yscale("log")
         ax.set_xlabel("Recall@10", fontsize=9)
         ax.set_ylabel("QPS (log)", fontsize=9)
+
+        min_recall_medido = 0.84
 
         for sis, estilo in ESTILO_SISTEMAS.items():
             arq = sessao.obter("A", sis, n)
@@ -89,12 +106,23 @@ def fig_recall_qps(
                 arq.pontos,
                 key=lambda p: p.get("parametros", {}).get("ef_search", 0),
             )
-            recalls = [p["metricas"]["recall_at_k"] for p in pontos]
-            qps_vals = [p["metricas"]["qps"] for p in pontos]
+            recalls = [
+                p["metricas"]["recall_at_k"]
+                for p in pontos
+                if p["metricas"].get("recall_at_k") is not None
+            ]
+            qps_vals = [
+                p["metricas"]["qps"] for p in pontos if p["metricas"].get("recall_at_k") is not None
+            ]
+
+            if recalls:
+                min_recall_medido = min(min_recall_medido, min(recalls))
 
             yerr_inf = []
             yerr_sup = []
             for p in pontos:
+                if p["metricas"].get("recall_at_k") is None:
+                    continue
                 reps = p["metricas"].get("repeticoes")
                 if reps and len(reps) > 1:
                     qs = [r["qps"] for r in reps if "qps" in r]
@@ -140,9 +168,21 @@ def fig_recall_qps(
                     va="center",
                 )
 
+        limite_inf_x = max(0.0, min_recall_medido - 0.02)
+        ax.set_xlim(limite_inf_x, 1.005)
+
         handles, labels = ax.get_legend_handles_labels()
         if handles:
-            ax.legend(fontsize=8, loc="lower left", framealpha=0.9)
+            ax.legend(
+                handles,
+                labels,
+                fontsize=8,
+                loc="upper center",
+                bbox_to_anchor=(0.5, -0.18),
+                ncol=3,
+                frameon=True,
+                framealpha=0.9,
+            )
 
     fig.tight_layout()
     if caminho_saida:
@@ -164,13 +204,33 @@ def fig_cenario_c(
     fig, (ax1, ax2) = plt.subplots(
         nrows=1,
         ncols=2,
-        figsize=(LARGURA_POL, 6.0 / POLEGADA_CM),
+        figsize=(LARGURA_POL, 6.5 / POLEGADA_CM),
     )
     fig.patch.set_facecolor("white")
     _configurar_eixo(ax1)
     _configurar_eixo(ax2)
 
-    rotulos_x = ["0", "10", "100", "1000", "0", "0*"]
+    # Identifica pontos de qualquer sistema para derivar eixos x
+    pontos_referencia: list[dict[str, Any]] = []
+    for sis in ESTILO_SISTEMAS:
+        arq = sessao.obter("C", sis, n)
+        if arq and arq.pontos and len(arq.pontos) > len(pontos_referencia):
+            pontos_referencia = sorted(
+                arq.pontos,
+                key=lambda p: p.get("parametros", {}).get("ordem_janela", 0),
+            )
+
+    rotulos_x: list[str] = []
+    for _idx, p in enumerate(pontos_referencia):
+        taxa = p.get("parametros", {}).get("taxa_alvo", 0)
+        amb = p.get("ambiente", {})
+        rotulo_taxa = num(taxa, 0)
+        if amb.get("assentar_s") is not None:
+            rotulo_taxa = f"{rotulo_taxa}*"
+        rotulos_x.append(rotulo_taxa)
+
+    if not rotulos_x:
+        rotulos_x = ["0", "10", "100", "1000", "0", "0*"]
 
     for sis, estilo in ESTILO_SISTEMAS.items():
         arq = sessao.obter("C", sis, n)
@@ -181,44 +241,82 @@ def fig_cenario_c(
             arq.pontos,
             key=lambda p: p.get("parametros", {}).get("ordem_janela", 0),
         )
-        x_indices = list(range(len(pontos)))
-        p99s = [p["metricas"].get("p99", 0) for p in pontos]
-        recs = [p["metricas"].get("recall_inferior", 0) for p in pontos]
 
-        ax1.plot(
-            x_indices,
-            p99s,
-            f"{estilo['marker']}-",
-            color=estilo["color"],
-            linewidth=1.5,
-            markersize=5,
-            label=estilo["label"],
-        )
-        ax2.plot(
-            x_indices,
-            recs,
-            f"{estilo['marker']}-",
-            color=estilo["color"],
-            linewidth=1.5,
-            markersize=5,
-            label=estilo["label"],
-        )
+        x_indices_p99: list[int] = []
+        p99s: list[float] = []
+        x_indices_rec: list[int] = []
+        recs: list[float] = []
+
+        for idx, p in enumerate(pontos):
+            ordem = p.get("parametros", {}).get("ordem_janela", idx)
+            m = p.get("metricas", {})
+            p99_val = m.get("p99")
+            if p99_val is not None:
+                x_indices_p99.append(ordem)
+                p99s.append(float(p99_val))
+
+            rec_val = m.get("recall_inferior")
+            # Recall ausente NUNCA é plotado como 0
+            if rec_val is not None:
+                x_indices_rec.append(ordem)
+                recs.append(float(rec_val))
+
+        if x_indices_p99:
+            ax1.plot(
+                x_indices_p99,
+                p99s,
+                f"{estilo['marker']}-",
+                color=estilo["color"],
+                linewidth=1.5,
+                markersize=5,
+                label=estilo["label"],
+            )
+        if x_indices_rec:
+            ax2.plot(
+                x_indices_rec,
+                recs,
+                f"{estilo['marker']}-",
+                color=estilo["color"],
+                linewidth=1.5,
+                markersize=5,
+                label=estilo["label"],
+            )
 
     ax1.set_xticks(range(len(rotulos_x)))
     ax1.set_xticklabels(rotulos_x)
     ax1.set_ylabel("Latência p99 (ms)", fontsize=9)
     ax1.set_xlabel("Taxa alvo (ins/s)", fontsize=9)
+
     h1, l1 = ax1.get_legend_handles_labels()
     if h1:
-        ax1.legend(fontsize=8, loc="best", framealpha=0.9)
+        ax1.legend(
+            h1,
+            l1,
+            fontsize=8,
+            loc="upper center",
+            bbox_to_anchor=(0.5, -0.18),
+            ncol=3,
+            frameon=True,
+            framealpha=0.9,
+        )
 
     ax2.set_xticks(range(len(rotulos_x)))
     ax2.set_xticklabels(rotulos_x)
     ax2.set_ylabel("Recall inferior", fontsize=9)
     ax2.set_xlabel("Taxa alvo (ins/s)", fontsize=9)
+
     h2, l2 = ax2.get_legend_handles_labels()
     if h2:
-        ax2.legend(fontsize=8, loc="best", framealpha=0.9)
+        ax2.legend(
+            h2,
+            l2,
+            fontsize=8,
+            loc="upper center",
+            bbox_to_anchor=(0.5, -0.18),
+            ncol=3,
+            frameon=True,
+            framealpha=0.9,
+        )
 
     fig.tight_layout()
     if caminho_saida:
@@ -229,7 +327,7 @@ def fig_cenario_c(
 
 
 def fig_memoria(
-    monitor_csv: str | Path,
+    monitor_csv: str | Path | Sequence[str | Path],
     marcos: str | Path | Sequence[dict[str, Any]],
     n: int,
     *,
@@ -275,16 +373,27 @@ def fig_memoria(
             t0 = inicios.pop((sis, passo))
             fases_por_sistema[sis].append((passo, t0, ts))
 
-    # Carrega CSV
+    # Carrega CSV(s)
+    caminhos_csv: list[Path] = []
+    if isinstance(monitor_csv, str | Path):
+        caminhos_csv.append(Path(monitor_csv))
+    else:
+        caminhos_csv.extend(Path(c) for c in monitor_csv)
+
     amostras: list[dict[str, Any]] = []
-    with Path(monitor_csv).open(encoding="utf-8") as f:
-        leitor = csv.DictReader(f)
-        for linha in leitor:
-            ts_str = linha.get("ts_utc")
-            if not ts_str:
-                continue
-            linha["_dt"] = normalizar_timestamp(ts_str)
-            amostras.append(linha)
+    for p_csv in caminhos_csv:
+        if not p_csv.is_file():
+            continue
+        with p_csv.open(encoding="utf-8") as f:
+            leitor = csv.DictReader(f)
+            for linha in leitor:
+                ts_str = linha.get("ts_utc")
+                if not ts_str:
+                    continue
+                linha["_dt"] = normalizar_timestamp(ts_str)
+                amostras.append(linha)
+
+    amostras.sort(key=lambda r: r["_dt"])
 
     # Determina sistemas que possuem amostras/fases
     sistemas_ativos = [sis for sis in ESTILO_SISTEMAS if fases_por_sistema[sis] or amostras]
@@ -294,7 +403,7 @@ def fig_memoria(
     fig, eixos = plt.subplots(
         nrows=len(sistemas_ativos),
         ncols=1,
-        figsize=(LARGURA_POL, 3.0 * len(sistemas_ativos) / POLEGADA_CM),
+        figsize=(LARGURA_POL, 3.5 * len(sistemas_ativos) / POLEGADA_CM),
         sharex=False,
     )
     if len(sistemas_ativos) == 1:
@@ -317,10 +426,21 @@ def fig_memoria(
             t_bloco_inicio = amostras[0]["_dt"] if amostras else datetime.now()
             amostras_sis = amostras
 
-        if amostras_sis and col_mem in amostras_sis[0]:
-            ts_rel_min = [(r["_dt"] - t_bloco_inicio).total_seconds() / 60.0 for r in amostras_sis]
-            mem_mib = [float(r[col_mem]) / 1048576.0 for r in amostras_sis]
-            anon_mib = [float(r[col_anon]) / 1048576.0 for r in amostras_sis]
+        # Filtra apenas amostras com valores válidos (pula células vazias)
+        amostras_validas = []
+        for r in amostras_sis:
+            vm = r.get(col_mem)
+            va = r.get(col_anon)
+            if vm is not None and str(vm).strip() and va is not None and str(va).strip():
+                with contextlib.suppress(ValueError):
+                    amostras_validas.append((r["_dt"], float(vm), float(va)))
+
+        if amostras_validas:
+            ts_rel_min = [
+                (dt - t_bloco_inicio).total_seconds() / 60.0 for dt, _, _ in amostras_validas
+            ]
+            mem_mib = [vm / 1048576.0 for _, vm, _ in amostras_validas]
+            anon_mib = [va / 1048576.0 for _, _, va in amostras_validas]
 
             ax.plot(
                 ts_rel_min,
@@ -359,7 +479,13 @@ def fig_memoria(
         ax.set_xlabel("Tempo (min)", fontsize=9)
         handles, labels = ax.get_legend_handles_labels()
         if handles:
-            ax.legend(fontsize=8, loc="upper right", framealpha=0.9)
+            ax.legend(
+                handles,
+                labels,
+                fontsize=8,
+                loc="upper right",
+                framealpha=0.9,
+            )
 
     fig.tight_layout()
     if caminho_saida:
