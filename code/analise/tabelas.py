@@ -211,10 +211,15 @@ def linhas_cenario_c(sessao: Sessao, n: int) -> str:
         k = len(pontos)
 
         for idx, p in enumerate(pontos):
-            janela = idx + 1
             params = p.get("parametros", {})
             m = p.get("metricas", {})
             amb = p.get("ambiente", {})
+
+            ordem = params.get("ordem_janela", idx)
+            janela_num = ordem + 1
+            # Rótulo de janela: se houver assentar_s ou for a janela 6 com assentar, marca com *
+            tem_assentamento = amb.get("assentar_s") is not None
+            janela_str = f"{janela_num}*" if tem_assentamento else str(janela_num)
 
             taxa_alvo = num(params.get("taxa_alvo"), 0)
             taxa_sust = num(m.get("taxa_sustentada"), 0)
@@ -222,9 +227,16 @@ def linhas_cenario_c(sessao: Sessao, n: int) -> str:
             p99 = num(m.get("p99"), 2)
             qps = num(m.get("qps"), 1)
 
-            inf = num(m.get("recall_inferior"), 4)
-            sup = num(m.get("recall_superior"), 4)
-            rec_inf_sup = inf if inf == sup or sup == "---" else f"{inf}--{sup}"
+            rec_inf_val = m.get("recall_inferior")
+            rec_sup_val = m.get("recall_superior")
+
+            if rec_inf_val is None or rec_sup_val is None:
+                # Um dos lados ausente -> não é intervalo completo
+                rec_inf_sup = "---"
+            else:
+                inf = num(rec_inf_val, 4)
+                sup = num(rec_sup_val, 4)
+                rec_inf_sup = inf if inf == sup else f"{inf}--{sup}"
 
             rec_novos = m.get("recall_novos")
             n_gt = m.get("n_gt_novos", 0) or 0
@@ -240,11 +252,11 @@ def linhas_cenario_c(sessao: Sessao, n: int) -> str:
             if idx == 0:
                 linhas.append(
                     f"\\multirow{{{k}}}{{*}}{{{sis}}}\n"
-                    f" & {janela} & {taxa_alvo} & {taxa_sust} & {p50} & {p99} & {qps} & {rec_inf_sup} & {rec_novos_str} & {vis_str} \\\\"
+                    f" & {janela_str} & {taxa_alvo} & {taxa_sust} & {p50} & {p99} & {qps} & {rec_inf_sup} & {rec_novos_str} & {vis_str} \\\\"
                 )
             else:
                 linhas.append(
-                    f" & {janela} & {taxa_alvo} & {taxa_sust} & {p50} & {p99} & {qps} & {rec_inf_sup} & {rec_novos_str} & {vis_str} \\\\"
+                    f" & {janela_str} & {taxa_alvo} & {taxa_sust} & {p50} & {p99} & {qps} & {rec_inf_sup} & {rec_novos_str} & {vis_str} \\\\"
                 )
         linhas.append(r"\hline")
 
