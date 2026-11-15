@@ -43,6 +43,7 @@ class Config:
     k: int = 10
     ef_search: list[int] = field(default_factory=lambda: list(EF_SEARCH_PADRAO))
     warmup: int = 50
+    repeticoes: int = 1
     sistemas: list[str] = field(default_factory=lambda: list(SISTEMAS_VALIDOS))
     ms_marco_dir: Path = Path("../data/ms_marco")
     embeddings_dir: Path = Path("../data/embeddings")
@@ -65,6 +66,7 @@ def parse_args(argv: Sequence[str]) -> Config:
     p.add_argument("--k", type=int, default=10, help="K do recall@K / top-K.")
     p.add_argument("--ef-search", type=_lista_int, default=list(EF_SEARCH_PADRAO))
     p.add_argument("--warmup", type=int, default=50, help="buscas de aquecimento descartadas.")
+    p.add_argument("--repeticoes", type=int, default=1, help="número de repetições por ponto.")
     p.add_argument(
         "--sistemas",
         type=lambda s: [x.strip() for x in s.split(",") if x.strip()],
@@ -83,6 +85,8 @@ def parse_args(argv: Sequence[str]) -> Config:
         p.error(f"--k deve ser > 0 (recebido {a.k}).")
     if a.warmup < 0:
         p.error(f"--warmup deve ser >= 0 (recebido {a.warmup}).")
+    if a.repeticoes < 1:
+        p.error(f"--repeticoes deve ser >= 1 (recebido {a.repeticoes}).")
     if not a.ef_search:
         p.error("--ef-search vazio.")
     desconhecidos = set(a.sistemas) - set(SISTEMAS_VALIDOS)
@@ -95,6 +99,7 @@ def parse_args(argv: Sequence[str]) -> Config:
         k=a.k,
         ef_search=a.ef_search,
         warmup=a.warmup,
+        repeticoes=a.repeticoes,
         sistemas=a.sistemas,
         ms_marco_dir=a.ms_marco_dir,
         embeddings_dir=a.embeddings_dir,
@@ -363,6 +368,7 @@ def executar(cfg: Config) -> list[Path]:
                 n_base=cfg.n_base,
                 timestamp_utc=ts,
                 warmup=cfg.warmup,
+                repeticoes=cfg.repeticoes,
                 ambiente={"sistema": sistema},
             )
             escritos.append(

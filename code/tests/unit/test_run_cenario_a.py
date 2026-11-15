@@ -159,3 +159,20 @@ def test_cliente_qdrant_recebe_timeout_explicito(monkeypatch: pytest.MonkeyPatch
     assert "timeout" in capturado, "o cliente precisa receber timeout explícito"
     assert isinstance(capturado["timeout"], int | float)
     assert capturado["timeout"] >= 60, "timeout curto demais para uso sob carga de I/O"
+
+
+def test_parse_args_repeticoes_default() -> None:
+    cfg = parse_args([])
+    assert cfg.repeticoes == 1
+
+
+def test_parse_args_repeticoes_custom() -> None:
+    cfg = parse_args(["--repeticoes", "5"])
+    assert cfg.repeticoes == 5
+
+
+def test_parse_args_rejeita_repeticoes_menor_que_um() -> None:
+    with pytest.raises(SystemExit):
+        parse_args(["--repeticoes", "0"])
+    with pytest.raises(SystemExit):
+        parse_args(["--repeticoes", "-2"])

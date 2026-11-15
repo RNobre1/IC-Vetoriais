@@ -285,3 +285,209 @@ def test_levanta_se_num_queries_difere_do_gt(queries: np.ndarray) -> None:
             n_base=100,
             timestamp_utc="2026-05-10T00-00-00Z",
         )
+
+
+# ---------------------------------------------------------------------------
+# Repetições (Contrato Atualizado T1)
+# ---------------------------------------------------------------------------
+
+
+def test_repeticoes_rejeita_menor_que_um(queries: np.ndarray, gt_ids: np.ndarray) -> None:
+    buscador = FakeBuscador(gt_ids)
+    for r_invalido in (0, -1, -5):
+        with pytest.raises(ValueError, match="repeticoes"):
+            medir_sistema(
+                buscador,
+                queries=queries,
+                gt_ids=gt_ids,
+                ef_search_values=[16],
+                k=10,
+                n_base=100,
+                timestamp_utc="2026-05-10T00-00-00Z",
+                repeticoes=r_invalido,
+            )
+
+
+def test_repeticoes_padrao_um_preserva_contrato_existente(
+    queries: np.ndarray, gt_ids: np.ndarray
+) -> None:
+    buscador = FakeBuscador(gt_ids)
+    res = medir_sistema(
+        buscador,
+        queries=queries,
+        gt_ids=gt_ids,
+        ef_search_values=[16],
+        k=10,
+        n_base=100,
+        timestamp_utc="2026-05-10T00-00-00Z",
+        repeticoes=1,
+    )[0]
+    # Com repeticoes == 1, chaves devem ser estritamente idênticas às originais
+    assert set(res.parametros) == {"ef_search", "k", "warmup"}
+    assert set(res.metricas) == {"p50", "p95", "p99", "qps", "recall_at_k"}
+    assert "repeticoes" not in res.parametros
+    assert "repeticoes" not in res.metricas
+    assert "p50_agrupado" not in res.metricas
+
+
+def test_repeticoes_ordem_varredura_zig_zag_e_aquecimento_por_bloco(
+    queries: np.ndarray, gt_ids: np.ndarray
+) -> None:
+    # Registra a sequência exata de chamadas a configurar_ef_search
+    buscador = FakeBuscador(gt_ids)
+    warmup = 3
+    r = 3
+    efs = [16, 32, 64]
+    medir_sistema(
+        buscador,
+        queries=queries,
+        gt_ids=gt_ids,
+        ef_search_values=efs,
+        k=10,
+        n_base=100,
+        timestamp_utc="2026-05-10T00-00-00Z",
+        warmup=warmup,
+        repeticoes=r,
+    )
+    # Repetições:
+    # rep 0 (par): 16, 32, 64
+    # rep 1 (ímpar): 64, 32, 16
+    # rep 2 (par): 16, 32, 64
+    esperado_efs = [16, 32, 64, 64, 32, 16, 16, 32, 64]
+    assert buscador.efs_configurados == esperado_efs
+
+    # Para cada bloco (R * len(efs) = 3 * 3 = 9 blocos):
+    # cada bloco executa warmup (3) + queries (len(queries) = 20) = 23 buscas
+    assert buscador.chamadas_busca == 9 * (warmup + len(queries))
+
+
+def test_repeticoes_multiplas_calcula_medianas_agrupados_e_posicoes(
+    queries: np.ndarray, gt_ids: np.ndarray
+) -> None:
+    sub_queries = queries[:2]  # 2 queries
+    sub_gt = gt_ids[:2]
+    efs = [16, 32]
+
+    class BuscadorControlado:
+        nome = "fake_rep"
+
+        def __init__(self) -> None:
+            self.ef_atual = 16
+            self.historico_ef: list[int] = []
+            self.total_buscas = 0
+
+        def configurar_ef_search(self, ef: int) -> None:
+            self.ef_atual = ef
+            self.historico_ef.append(ef)
+
+        def buscar_uma(self, query: np.ndarray, k: int) -> list[int]:
+            del query
+            self.total_buscas += 1
+            # Na primeira repetição (onde self.ef_atual foi configurado na 1ª vez), retorna perfeito
+            # Nas seguintes, retorna errado, para validar que recall_at_k vem da 1ª repetição.
+            if len(self.historico_ef) <= 2:
+                idx = (self.total_buscas - 1) % len(sub_gt)
+                return list(sub_gt[idx][:k])
+            return list(sub_gt[0][:k] + 999_999)
+
+    buscador = BuscadorControlado()
+
+    # R = 2 repetições, 2 efs -> 4 blocos.
+    # Bloco 0: rep 0, ef 16 (pos 0) -> 2 queries
+    # Bloco 1: rep 0, ef 32 (pos 1) -> 2 queries
+    # Bloco 2: rep 1, ef 32 (pos 0) -> 2 queries (ordem reversa!)
+    # Bloco 3: rep 1, ef 16 (pos 1) -> 2 queries
+    # Cada query precisa de 2 timestamps (t0, t1)
+    # Total de chamadas de relógio = 4 blocos * 2 queries * 2 = 16 timestamps
+
+    # Latências desejadas para ef=16:
+    # rep 0: 10ms, 10ms -> p50=10, p95=10, p99=10, tempo_total = 0.02s -> qps = 2/0.02 = 100
+    # rep 1: 30ms, 30ms -> p50=30, p95=30, p99=30, tempo_total = 0.06s -> qps = 2/0.06 = 33.333
+    # Mediana ef 16: p50=20, p95=20, p99=20, qps=median(100, 33.333)=66.666
+    # Agrupado ef 16 (10, 10, 30, 30): p50=20, etc.
+
+    # Latências desejadas para ef=32:
+    # rep 0: 20ms, 20ms
+    # rep 1: 40ms, 40ms
+
+    # Timestamps (s):
+    # Bloco 0 (rep 0, ef 16):
+    #   q0: 0.000 -> 0.010 (10ms)
+    #   q1: 0.010 -> 0.020 (10ms)
+    # Bloco 1 (rep 0, ef 32):
+    #   q0: 0.020 -> 0.040 (20ms)
+    #   q1: 0.040 -> 0.060 (20ms)
+    # Bloco 2 (rep 1, ef 32): [reverso: ef 32 vem primeiro!]
+    #   q0: 0.060 -> 0.100 (40ms)
+    #   q1: 0.100 -> 0.140 (40ms)
+    # Bloco 3 (rep 1, ef 16):
+    #   q0: 0.140 -> 0.170 (30ms)
+    #   q1: 0.170 -> 0.200 (30ms)
+
+    tempos = [
+        0.000,
+        0.010,
+        0.010,
+        0.020,  # Bloco 0 (ef 16)
+        0.020,
+        0.040,
+        0.040,
+        0.060,  # Bloco 1 (ef 32)
+        0.060,
+        0.100,
+        0.100,
+        0.140,  # Bloco 2 (ef 32)
+        0.140,
+        0.170,
+        0.170,
+        0.200,  # Bloco 3 (ef 16)
+    ]
+    ponteiro = [0]
+
+    def relogio_fake() -> float:
+        t = tempos[ponteiro[0]]
+        ponteiro[0] += 1
+        return t
+
+    resultados = medir_sistema(
+        buscador,
+        queries=sub_queries,
+        gt_ids=sub_gt,
+        ef_search_values=efs,
+        k=10,
+        n_base=100,
+        timestamp_utc="2026-05-10T00-00-00Z",
+        warmup=0,
+        repeticoes=2,
+        relogio=relogio_fake,
+    )
+
+    # Resultados devem estar na ordem original de ef_search_values: [16, 32]
+    assert len(resultados) == 2
+    res_16 = resultados[0]
+    res_32 = resultados[1]
+    assert res_16.parametros["ef_search"] == 16
+    assert res_32.parametros["ef_search"] == 32
+
+    # Verifica ef 16
+    assert res_16.parametros["repeticoes"] == 2
+    assert res_16.metricas["recall_at_k"] == pytest.approx(1.0)  # da 1ª repetição
+    assert res_16.metricas["p50"] == pytest.approx(20.0)
+    assert res_16.metricas["p95"] == pytest.approx(20.0)
+    assert res_16.metricas["p99"] == pytest.approx(20.0)
+    assert res_16.metricas["qps"] == pytest.approx((100.0 + (2.0 / 0.06)) / 2.0)
+    assert res_16.metricas["p50_agrupado"] == pytest.approx(20.0)
+
+    # Repetições de ef 16:
+    reps_16 = res_16.metricas["repeticoes"]
+    assert len(reps_16) == 2
+    assert reps_16[0]["posicao"] == 0  # no rep 0, ef 16 foi testado na posição 0
+    assert reps_16[0]["recall_at_k"] == pytest.approx(1.0)
+    assert reps_16[1]["posicao"] == 1  # no rep 1 (reverso), ef 16 foi testado na posição 1
+    assert reps_16[1]["recall_at_k"] == pytest.approx(0.0)
+
+    # Repetições de ef 32:
+    reps_32 = res_32.metricas["repeticoes"]
+    assert len(reps_32) == 2
+    assert reps_32[0]["posicao"] == 1  # no rep 0, ef 32 foi testado na posição 1
+    assert reps_32[1]["posicao"] == 0  # no rep 1 (reverso), ef 32 foi testado na posição 0

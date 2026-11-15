@@ -73,16 +73,17 @@ Q      ?= 1000
 K      ?= 10
 EF     ?= 16,32,64,128,256
 WARMUP ?= 50
+REP    ?= 1
 SYS    ?= pgvector,qdrant,weaviate
 SEL    ?= 0.01,0.1,0.5,1.0
 
 seed:  ## Semeia N embeddings nos SGBDs sem benchmark (requer 'make up'). Vars: N SYS
 	$(PYTHON) -m benchmarks.run_seed --n $(N) --sistemas $(SYS)
 
-bench-A:  ## Cenário A — busca pura (requer 'make up'). Vars: N Q K EF WARMUP SYS
+bench-A:  ## Cenário A — busca pura (requer 'make up'). Vars: N Q K EF WARMUP SYS REP
 	$(PYTHON) -m benchmarks.run_cenario_a \
 		--n $(N) --queries $(Q) --k $(K) \
-		--ef-search $(EF) --warmup $(WARMUP) --sistemas $(SYS)
+		--ef-search $(EF) --warmup $(WARMUP) --repeticoes $(REP) --sistemas $(SYS)
 
 bench-B:  ## Cenário B — busca com filtro (requer 'make up'). Vars: N Q K EF WARMUP SYS SEL EQ
 	$(PYTHON) -m benchmarks.run_cenario_b \
