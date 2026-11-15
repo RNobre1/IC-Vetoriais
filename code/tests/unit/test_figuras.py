@@ -81,9 +81,10 @@ def test_fig_memoria_smoke(tmp_path):
     titulos = [ax.get_title() for ax in fig.axes]
     assert any(t in ("pgvector", "Qdrant", "Weaviate") for t in titulos)
 
-    # Eixo x com texto completo
-    for ax in fig.axes:
-        assert ax.get_xlabel() == "Tempo desde o início do bloco (min)"
+    # Rótulo do eixo x só no último painel: repetido em cada um, colidia com
+    # o título do painel seguinte.
+    assert fig.axes[-1].get_xlabel() == "Tempo desde o início do bloco (min)"
+    assert all(ax.get_xlabel() == "" for ax in fig.axes[:-1])
 
     # Legenda única abaixo com Total e Anônima em cinza escuro
     assert len(fig.legends) == 1
