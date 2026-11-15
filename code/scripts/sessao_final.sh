@@ -40,6 +40,12 @@ touch "$PROG"
 
 log() { echo "[sessao $(date +%H:%M:%S)] $*"; }
 pswpout() { awk '/^pswpout /{print $2}' /proc/vmstat; }
+# A ponte roda pelos CLIs antigos, que não gravam marcos; sem estes, os JSONs
+# dela cairiam fora da janela da sessão na análise.
+marco_ponte() {
+    $PY -c "from pathlib import Path; from benchmarks.run_sessao import registrar_marco as r; \
+r(Path('$MARCOS'), n=100000, sistema='todos', passo='ponte', evento='$1')" >/dev/null
+}
 
 {
     date -u +%Y-%m-%dT%H:%M:%SZ
@@ -68,9 +74,11 @@ if [ "$PONTE" = "1" ] && ! grep -q "^ponte	" "$PROG"; then
     log "ponte: reset + bench-A N=100000 (protocolo anterior)"
     make reset-medicao >>"$DIR/log_ponte.txt" 2>&1
     sw0=$(pswpout); t0=$(date +%s)
+    marco_ponte inicio
     # shellcheck disable=SC2086
     make bench-A N=100000 $PONTE_ARGS >>"$DIR/log_ponte.txt" 2>&1
     rc=$?
+    marco_ponte fim
     printf 'ponte\t100000\t%s\t1\t%s\t%s\n' "$([ $rc = 0 ] && echo ok || echo "falha$rc")" \
         "$(($(date +%s) - t0))" "$(($(pswpout) - sw0))" >>"$PROG"
     log "ponte rc=$rc"
