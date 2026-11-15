@@ -1,41 +1,41 @@
 """Teste de frescor das tabelas geradas para o relatório."""
 
-from pathlib import Path
-
 import pytest
 
+from analise.config_oficial import (
+    ANTERIOR_PATHS,
+    RESULTS_DIR,
+    SAIDA_TABELAS,
+    SESSAO_DIR,
+)
 from analise.gerar import gerar_artefatos
 
 
 def test_frescor_tabelas_geradas(tmp_path):
-    # O diretório do relatório parcial
-    repo_root = Path(__file__).resolve().parents[3]
-    gerado_dir = repo_root / "docx" / "relatorio_parcial" / "gerado"
-
-    if not gerado_dir.exists() or not list(gerado_dir.glob("*.tex")):
+    if not SAIDA_TABELAS.exists() or not list(SAIDA_TABELAS.glob("*.tex")):
         pytest.skip(
-            f"Diretório {gerado_dir} ainda não existe ou não contém tabelas — pulando teste de frescor."
+            f"Diretório {SAIDA_TABELAS} ainda não existe ou não contém tabelas — pulando teste de frescor."
         )
 
-    # Quando existir, regera em tmp_path e compara byte a byte
+    # Se gerado/ existe mas a sessão oficial apontada não existe, deve FALHAR (não pular)
+    if not SESSAO_DIR.exists():
+        pytest.fail(
+            f"Diretório de tabelas oficiais {SAIDA_TABELAS} existe, mas a sessão oficial "
+            f"referida em config_oficial.py ({SESSAO_DIR}) não foi encontrada."
+        )
+
     tmp_tabelas = tmp_path / "tabelas"
     tmp_figuras = tmp_path / "figuras"
 
-    results_dir = repo_root / "code" / "results"
-    sessoes_dir = results_dir / "sessoes"
-    sessoes = sorted(sessoes_dir.glob("*")) if sessoes_dir.exists() else []
-    if not sessoes:
-        pytest.skip("Nenhuma sessão encontrada para executar teste de frescor.")
-
-    sessao_ativa = sessoes[-1]
     gerar_artefatos(
-        results_dir=results_dir,
-        sessao_dir=sessao_ativa,
+        results_dir=RESULTS_DIR,
+        sessao_dir=SESSAO_DIR,
+        anterior_paths=ANTERIOR_PATHS,
         saida_tabelas=tmp_tabelas,
         saida_figuras=tmp_figuras,
     )
 
-    for arquivo_tex in gerado_dir.glob("*.tex"):
+    for arquivo_tex in SAIDA_TABELAS.glob("*.tex"):
         arquivo_regerado = tmp_tabelas / arquivo_tex.name
         assert (
             arquivo_regerado.exists()
