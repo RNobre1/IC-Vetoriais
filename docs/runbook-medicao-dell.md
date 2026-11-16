@@ -90,7 +90,7 @@ A sessão de medição do relatório final roda por um roteiro único, que mede 
 
 ```bash
 cd code
-make sessao SESSAO_ID=2026-11-15-final
+make sessao SESSAO_ID=2026-11-16-final
 ```
 
 O que o alvo faz, em ordem:

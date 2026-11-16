@@ -56,7 +56,7 @@ Medir cada sistema sozinho troca uma confusão por outra: elimina a pressão de 
 
 ## Consequência
 
-- A sessão de 15/11/2026 substitui a de 23/08 como sessão vigente. A de 23/08 continua como dado datado, útil para tendência e reprodutibilidade do recall, sem mesclar valores nas mesmas tabelas.
+- A sessão iniciada em 16/11/2026 (`code/results/sessoes/2026-11-16-final/`) substitui a de 23/08 como sessão vigente. A de 23/08 continua como dado datado, útil para tendência e reprodutibilidade do recall, sem mesclar valores nas mesmas tabelas.
 - Footprint e tempo de indexação do pgvector passam a vir do seed com `seletor` preenchido; a diferença de disco entre os layouts é medida no ensaio em 100k e declarada.
 - Novos artefatos versionados por sessão em `code/results/sessoes/<id>/`: ambiente, progresso, marcos e o CSV do amostrador.
 - O executor é `benchmarks/run_sessao.py`; o roteiro, `scripts/sessao_final.sh` (`make sessao`).
