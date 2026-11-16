@@ -65,6 +65,11 @@ Medir cada sistema sozinho troca uma confusão por outra: elimina a pressão de 
 
 Reabrir se o controle do Weaviate falhar; se a ponte mostrar diferença de protocolo maior que a variação entre repetições; se o amostrador mostrar pressão de memória sustentada durante medição; ou se a sessão não couber na janela e precisar ser partida.
 
+## Desfecho (16/11/2026)
+
+- A sessão coube na janela (02h39 a 07h40) e não precisou ser partida.
+- O controle do Weaviate falhou em 1 de 10 pontos (500k, ef = 16, |Δ| = 0,0121). A regra acima previa registrar a hipótese de caminho idêntico como refutada. Com contraponto, a leitura passou a depender de um terceiro grafo medido no mesmo ponto: ele deu 0,7592, entre os dois valores, e as oito células omitidas em 500k ficaram a no máximo 0,0040 do equalizado. A hipótese não foi registrada como refutada; o relatório diz que ela não é afirmada nesse ponto. Detalhes em [[../sessões/2026-11-16]] e em `code/results/sessoes/2026-11-16-final/complementar/README.md`.
+
 ## Backlinks
 
 - [[2026-04-28-cenarios-A-B-C]]

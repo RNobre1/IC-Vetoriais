@@ -56,7 +56,7 @@ Os valores estão nas tabelas geradas em `docx/relatorio_parcial/gerado/` (alvo 
 
 ## Observações
 
-- **Controle do B padrão do Weaviate:** passou em 9 de 10 pontos; falhou em 500k, ef = 16 (|Δ| = 0,0121). Execução complementar logo após a sessão (`sessoes/2026-11-16-final/complementar/`), fora das tabelas: um terceiro grafo deu 0,7592, entre os dois valores — variância entre construções em ef baixo.
+- **Controle do B padrão do Weaviate:** passou em 9 de 10 pontos; falhou em 500k, ef = 16 (|Δ| = 0,0121). Execução complementar logo após a sessão (`sessoes/2026-11-16-final/complementar/`), fora das tabelas: um terceiro grafo deu 0,7592, entre os dois valores — variância entre construções em ef baixo. As oito células omitidas em 500k (p = 50% e 100%, ef 16/32/128/256) ficaram a 0,0004–0,0040 do equalizado, cada seletividade num grafo à parte. Em 1M as células omitidas não foram medidas.
 - **Latência cai sob escrita no Qdrant e no Weaviate** no Cenário C, junto com a subida da frequência média da CPU (1.961 → 2.933 MHz e 2.083 → 3.540 MHz). Hipótese de escalonamento de frequência, não testada com frequência fixa.
 - **Disco do Qdrant** não proporcional e diferente de agosto em 500k (1.668,6 contra 808,8 MiB); a medida por diretório depende do estado dos segmentos.
 - A amplitude da mediana de latência entre as cinco repetições chegou a 74%.
