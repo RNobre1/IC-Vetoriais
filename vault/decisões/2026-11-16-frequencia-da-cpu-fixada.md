@@ -7,7 +7,7 @@ tags: [protocolo, hospedeiro, cpu, sessão-final, reprodutibilidade]
 
 # Decisão: frequência da CPU fixada e sessão final refeita
 
-Registrada às 11h40 de 16/11/2026, antes de qualquer resultado da sessão nova (`2026-11-16-cpu-fixa`, iniciada às 11h31).
+Registrada às 11h35 de 16/11/2026 (commit `fbdf21a`), antes de qualquer resultado da sessão nova (`2026-11-16-cpu-fixa`, iniciada às 11h31).
 
 ## Contexto
 
@@ -29,7 +29,7 @@ O gerenciador foi removido do hospedeiro em 16/11, por decisão do Rafael, que t
 
 ## Contraponto
 
-Revisão independente às 11h37. D10a, D10b e D10c foram aprovados com as condições que estão incorporadas acima: base de P e E registrada, protocolo declarado intacto, regra registrada antes da análise, limiares justificados, média sobre o intervalo da rajada, PSI de E/S, relógios alinhados e fase marcada em vez de omitida.
+Revisão independente às 11h33, antes de qualquer resultado. D10a, D10b e D10c foram aprovados com as condições que estão incorporadas acima: base de P e E registrada, protocolo declarado intacto, regra registrada antes da análise, limiares justificados, média sobre o intervalo da rajada, PSI de E/S, relógios alinhados e fase marcada em vez de omitida.
 
 Em D10d, o contraponto reprovou a omissão da sessão descartada no relatório e propôs uma frase sem o nome do gerenciador nem números ("uma sessão completa anterior foi descartada por controle insuficiente da frequência da CPU e refeita em condição controlada"). A instrução literal do Rafael de não citar o problema no texto prevalece. A transparência fica garantida por esta nota, que é pública no repositório, e a frase fica oferecida ao Rafael como opção. Também por condição do contraponto, a concordância de recall, memória e disco entre as duas sessões será anotada aqui como verificação.
 
