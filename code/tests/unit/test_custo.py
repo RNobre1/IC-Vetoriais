@@ -28,6 +28,8 @@ def test_calcular_custo_e_linhas():
     assert abs(m.cpu_nucleos - 1.0) < 0.05
     assert m.swap_out_paginas == 1156
     assert abs(m.swap_out_mib - 4.515625) < 0.01
+    assert m.swap_in_paginas == 0
+    assert abs(m.swap_in_mib - 0.0) < 1e-4
     assert abs(m.pico_psi_mem_full - 0.05) < 1e-4
 
     linhas = linhas_custo(metricas)
@@ -38,6 +40,8 @@ def test_calcular_custo_e_linhas():
     assert "60,0" in linhas
     assert "1,0" in linhas
     assert "4,5" in linhas
+    assert "0,0" in linhas
+    assert "0,05" in linhas
     assert r"\hline" in linhas
 
 
@@ -46,12 +50,14 @@ def test_linhas_custo_ordenacao_e_multirows():
     # 1. multirow por escala E por sistema
     # 2. nomes de exibição (pgvector, Qdrant, Weaviate)
     # 3. nomes e ordem das fases (seeds primeiro: seed A, seed B, seed B eq., depois A, B, B eq., C)
-    # 4. \cline{2-7} entre sistemas na mesma escala
-    m1 = MetricaCustoFase(100000, "pgvector", "B", 800.0, 10.0, 1.0, 0, 0.0, 0.0, 1000.0)
-    m2 = MetricaCustoFase(100000, "pgvector", "seed_b", 850.0, 60.0, 2.0, 0, 0.5, 0.0, 900.0)
-    m3 = MetricaCustoFase(100000, "pgvector", "A", 820.0, 12.0, 1.0, 0, 0.0, 0.0, 950.0)
-    m4 = MetricaCustoFase(100000, "qdrant", "seed_a", 900.0, 400.0, 2.0, 0, 0.0, 0.0, 800.0)
-    m5 = MetricaCustoFase(100000, "qdrant", "A", 750.0, 300.0, 1.0, 0, 0.0, 0.0, 850.0)
+    # 4. \cline{2-9} entre sistemas na mesma escala
+    m1 = MetricaCustoFase(100000, "pgvector", "B", 800.0, 10.0, 1.0, 0, 0.0, 0, 0.0, 0.0, 1000.0)
+    m2 = MetricaCustoFase(
+        100000, "pgvector", "seed_b", 850.0, 60.0, 2.0, 0, 0.5, 10, 0.04, 0.0, 900.0
+    )
+    m3 = MetricaCustoFase(100000, "pgvector", "A", 820.0, 12.0, 1.0, 0, 0.0, 0, 0.0, 0.0, 950.0)
+    m4 = MetricaCustoFase(100000, "qdrant", "seed_a", 900.0, 400.0, 2.0, 0, 0.0, 0, 0.0, 0.0, 800.0)
+    m5 = MetricaCustoFase(100000, "qdrant", "A", 750.0, 300.0, 1.0, 0, 0.0, 0, 0.0, 0.0, 850.0)
 
     linhas = linhas_custo([m1, m2, m3, m4, m5])
 
@@ -69,27 +75,31 @@ def test_linhas_custo_ordenacao_e_multirows():
     assert pos_seed_b != -1 and pos_a != -1 and pos_b != -1
     assert pos_seed_b < pos_a < pos_b
 
-    # Divisão entre sistemas com \cline{2-7}
-    assert r"\cline{2-7}" in linhas
+    # Divisão entre sistemas com \cline{2-9}
+    assert r"\cline{2-9}" in linhas
     # Fim da escala com \hline
     assert r"\hline" in linhas
 
 
 def test_linhas_custo_sem_escala():
-    m1 = MetricaCustoFase(100000, "pgvector", "B", 800.0, 10.0, 1.0, 0, 0.0, 0.0, 1000.0)
-    m2 = MetricaCustoFase(100000, "pgvector", "seed_b", 850.0, 60.0, 2.0, 0, 0.5, 0.0, 900.0)
-    m3 = MetricaCustoFase(100000, "qdrant", "A", 750.0, 300.0, 1.0, 0, 0.0, 0.0, 850.0)
+    m1 = MetricaCustoFase(100000, "pgvector", "B", 800.0, 10.0, 1.0, 0, 0.0, 0, 0.0, 0.0, 1000.0)
+    m2 = MetricaCustoFase(
+        100000, "pgvector", "seed_b", 850.0, 60.0, 2.0, 0, 0.5, 0, 0.0, 0.0, 900.0
+    )
+    m3 = MetricaCustoFase(100000, "qdrant", "A", 750.0, 300.0, 1.0, 0, 0.0, 0, 0.0, 0.0, 850.0)
 
     linhas = linhas_custo([m1, m2, m3], incluir_escala=False)
     # Não deve ter multirow de escala nem menção a 100k
     assert r"\multirow{3}{*}{100k}" not in linhas
     assert "100k" not in linhas
 
-    # Começa direto no multirow do sistema
-    assert linhas.startswith(r"\multirow{2}{*}{pgvector} & seed B")
-    assert " & B &" in linhas
+    # Começa direto no multirow do sistema com as colunas incluindo swap-in e psi-mem
+    assert linhas.startswith(
+        r"\multirow{2}{*}{pgvector} & seed B & 850,0 & 60,0 & 2,0 & 0,5 & 0,0 & 0,00 \\"
+    )
+    assert " & B & 800,0 & 10,0 & 1,0 & 0,0 & 0,0 & 0,00 \\" in linhas
     assert r"\hline" in linhas
-    assert r"\multirow{1}{*}{Qdrant} & A &" in linhas
+    assert r"\multirow{1}{*}{Qdrant} & A & 750,0 & 300,0 & 1,0 & 0,0 & 0,0 & 0,00 \\" in linhas
 
 
 def test_calcular_custo_celulas_vazias_e_reinicio():
@@ -130,3 +140,36 @@ def test_calcular_custo_filtra_fases_irrelevantes():
     assert len(metricas) == 0  # reiniciar e vazio não estão em FASES_RELEVANTES
     for f in ("bloco", "reiniciar", "limpar", "C_total", "C_recall", "dados", "btree"):
         assert f not in FASES_RELEVANTES
+
+
+def test_referencia_preliminar_custo_1m():
+    """Valida valores de referência da sessão preliminar (1M pgvector seed_b e 1M Weaviate B)."""
+    p_results = Path(
+        "/Users/rnobre/.traycer/epics/04d7ef96-f88f-4c9b-9007-745670c439de/scratch/preliminar/results"
+    )
+    sessao_dir = p_results / "sessoes" / "2026-11-16-final"
+    csv_path = sessao_dir / "monitor_023936.csv"
+    marcos_path = sessao_dir / "marcos.jsonl"
+
+    if not csv_path.exists() or not marcos_path.exists():
+        return
+
+    metricas = calcular_custo(csv_path, marcos_path)
+
+    # 1M pgvector seed_b: PSI full pico 1,50 e swap-in ≈ 317,6 MiB (81.306 páginas)
+    m_pg = next(
+        (m for m in metricas if m.n == 1000000 and m.sistema == "pgvector" and m.passo == "seed_b"),
+        None,
+    )
+    assert m_pg is not None
+    assert m_pg.swap_in_paginas == 81306
+    assert abs(m_pg.swap_in_mib - 317.6) < 0.1
+    assert abs(m_pg.pico_psi_mem_full - 1.50) < 0.01
+
+    # 1M Weaviate B: swap-in ≈ 15,1 MiB e PSI 0,18
+    m_weav = next(
+        (m for m in metricas if m.n == 1000000 and m.sistema == "weaviate" and m.passo == "B"), None
+    )
+    assert m_weav is not None
+    assert abs(m_weav.swap_in_mib - 15.1) < 0.1
+    assert abs(m_weav.pico_psi_mem_full - 0.18) < 0.01

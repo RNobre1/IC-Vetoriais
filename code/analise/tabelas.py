@@ -14,11 +14,15 @@ Todas as tabelas seguem o padrão tipográfico e numérico do relatório parcial
 
 from __future__ import annotations
 
+import contextlib
 import statistics
 from collections.abc import Sequence
+from pathlib import Path
+from typing import Any
 
+from analise.custo import carregar_amostras_monitor
 from analise.formato import formato_escala, num
-from analise.sessao import Sessao
+from analise.sessao import Sessao, normalizar_timestamp
 
 SISTEMAS_ORDEM = ("pgvector", "Qdrant", "Weaviate")
 SELETIVIDADES = (0.01, 0.10, 0.50, 1.00)
@@ -119,57 +123,50 @@ def linhas_cenario_a(sessao: Sessao, n: int) -> str:
 
 
 def linhas_cenario_b(sessao: Sessao, n: int, ef: int = 64) -> str:
-    """Gera linhas do Cenário B (padrão vs equalizado) para ef fixo."""
+    """Gera linhas do Cenário B (padrão vs equalizado) para ef fixado (default 64)."""
     linhas: list[str] = []
 
     for sis in SISTEMAS_ORDEM:
         arq_padrao = sessao.obter("B_padrao", sis, n)
         arq_eq = sessao.obter("B_eq", sis, n)
 
-        pontos_padrao = arq_padrao.pontos if arq_padrao else []
-        pontos_eq = arq_eq.pontos if arq_eq else []
+        if not arq_padrao and not arq_eq:
+            continue
 
         sublinhas: list[tuple[str, str, str, str, str]] = []
 
         for sel in SELETIVIDADES:
-            sel_label = SELETIVIDADES_LABEL[sel]
+            sel_label = SELETIVIDADES_LABEL.get(sel, f"{sel:g}")
 
-            # Todos os pontos medidos daquela seletividade na condição padrão
-            pts_sel_padrao = [
-                p
-                for p in pontos_padrao
-                if abs(p.get("parametros", {}).get("seletividade", -1) - sel) < 1e-4
-            ]
-            # Atalho: recall padrão exatamente 1.0 e invariante a ef
-            eh_atalho = bool(
-                pts_sel_padrao
-                and all(
-                    abs(p.get("metricas", {}).get("recall_at_k", 0) - 1.0) < 1e-9
-                    for p in pts_sel_padrao
+            pt_p = (
+                next(
+                    (
+                        p
+                        for p in (arq_padrao.pontos if arq_padrao else [])
+                        if abs(p.get("parametros", {}).get("seletividade", 0) - sel) < 1e-5
+                        and p.get("parametros", {}).get("ef_search") == ef
+                    ),
+                    None,
                 )
+                if arq_padrao
+                else None
             )
 
-            # Ponto específico no ef consultado
-            pt_p = next(
-                (p for p in pts_sel_padrao if p.get("parametros", {}).get("ef_search") == ef),
-                None,
-            )
-            pt_e = next(
-                (
-                    p
-                    for p in pontos_eq
-                    if abs(p.get("parametros", {}).get("seletividade", -1) - sel) < 1e-4
-                    and p.get("parametros", {}).get("ef_search") == ef
-                ),
-                None,
+            pt_e = (
+                next(
+                    (
+                        p
+                        for p in (arq_eq.pontos if arq_eq else [])
+                        if abs(p.get("parametros", {}).get("seletividade", 0) - sel) < 1e-5
+                        and p.get("parametros", {}).get("ef_search") == ef
+                    ),
+                    None,
+                )
+                if arq_eq
+                else None
             )
 
-            if pt_p:
-                r_p = num(pt_p.get("metricas", {}).get("recall_at_k"), 4)
-                if eh_atalho and r_p != "---":
-                    r_p = f"\\textbf{{{r_p}}}"
-            else:
-                r_p = "---"
+            r_p = num(pt_p.get("metricas", {}).get("recall_at_k"), 4) if pt_p else "---"
 
             if pt_e:
                 m_e = pt_e.get("metricas", {})
@@ -261,6 +258,108 @@ def linhas_cenario_c(sessao: Sessao, n: int) -> str:
         linhas.append(r"\hline")
 
     return "\n".join(linhas) + "\n"
+
+
+def linhas_cenario_c_hospedeiro(
+    sessao: Sessao,
+    n: int,
+    amostras_monitor: Sequence[dict[str, Any]] | str | Path | Sequence[str | Path] | None = None,
+) -> str:
+    r"""Gera linhas da tabela de monitoramento do hospedeiro no Cenário C por janela.
+
+    Para cada sistema e janela do Cenário C (intervalo [ambiente.inicio_utc, ambiente.fim_utc]):
+    - Frequência média da CPU do hospedeiro (MHz, 0 casas, média de cpu_mhz_medio)
+    - Ocupação média da CPU do hospedeiro em % (Δcpu_host_ocupado / Δcpu_host_total × 100, 0 casas)
+    - Pico de psi_cpu_some_avg10 (2 casas)
+
+    Colunas: Jan., Taxa alvo, MHz médio, CPU host (%), PSI CPU pico. Célula sem amostra -> ---.
+    """
+    amostras: list[dict[str, Any]] = []
+    if amostras_monitor:
+        if isinstance(amostras_monitor, str | Path):
+            amostras = carregar_amostras_monitor(amostras_monitor)
+        elif isinstance(amostras_monitor, Sequence) and len(amostras_monitor) > 0:
+            if isinstance(amostras_monitor[0], dict):
+                amostras = list(amostras_monitor)
+            else:
+                amostras = carregar_amostras_monitor(amostras_monitor)  # type: ignore
+
+    for r in amostras:
+        if "_dt" not in r and "ts_utc" in r:
+            r["_dt"] = normalizar_timestamp(r["ts_utc"])
+
+    linhas: list[str] = []
+
+    for sis in SISTEMAS_ORDEM:
+        arq = sessao.obter("C", sis, n)
+        if not arq or not arq.pontos:
+            continue
+
+        pontos = sorted(
+            arq.pontos,
+            key=lambda p: p.get("parametros", {}).get("ordem_janela", 0),
+        )
+        k = len(pontos)
+
+        for idx, p in enumerate(pontos):
+            params = p.get("parametros", {})
+            amb = p.get("ambiente", {})
+
+            ordem = params.get("ordem_janela", idx)
+            janela_num = ordem + 1
+            tem_assentamento = amb.get("assentar_s") is not None
+            janela_str = f"{janela_num}*" if tem_assentamento else str(janela_num)
+
+            taxa_alvo = num(params.get("taxa_alvo"), 0)
+
+            t0_str = amb.get("inicio_utc")
+            t1_str = amb.get("fim_utc")
+
+            pts: list[dict[str, Any]] = []
+            if t0_str and t1_str and amostras:
+                t0 = normalizar_timestamp(t0_str)
+                t1 = normalizar_timestamp(t1_str)
+                pts = [r for r in amostras if t0 <= r["_dt"] <= t1]
+
+            # 1. MHz médio (0 casas)
+            mhz_vals: list[float] = []
+            for r in pts:
+                v = r.get("cpu_mhz_medio")
+                if v is not None and str(v).strip():
+                    with contextlib.suppress(ValueError):
+                        mhz_vals.append(float(v))
+            mhz_medio = sum(mhz_vals) / len(mhz_vals) if mhz_vals else None
+            mhz_str = num(mhz_medio, 0)
+
+            # 2. CPU host % (0 casas)
+            ocup_pct = None
+            if len(pts) >= 2:
+                with contextlib.suppress(ValueError):
+                    docup = float(pts[-1]["cpu_host_ocupado"]) - float(pts[0]["cpu_host_ocupado"])
+                    dtotal = float(pts[-1]["cpu_host_total"]) - float(pts[0]["cpu_host_total"])
+                    if dtotal > 0:
+                        ocup_pct = (docup / dtotal) * 100.0
+            ocup_str = num(ocup_pct, 0)
+
+            # 3. PSI CPU pico (2 casas)
+            psi_vals: list[float] = []
+            for r in pts:
+                v = r.get("psi_cpu_some_avg10")
+                if v is not None and str(v).strip():
+                    with contextlib.suppress(ValueError):
+                        psi_vals.append(float(v))
+            psi_pico = max(psi_vals) if psi_vals else None
+            psi_str = num(psi_pico, 2)
+
+            cols_dados = f"{janela_str} & {taxa_alvo} & {mhz_str} & {ocup_str} & {psi_str} \\\\"
+
+            if idx == 0:
+                linhas.append(f"\\multirow{{{k}}}{{*}}{{{sis}}}\n" f" & {cols_dados}")
+            else:
+                linhas.append(f" & {cols_dados}")
+        linhas.append(r"\hline")
+
+    return "\n".join(linhas) + "\n" if linhas else ""
 
 
 def linhas_ponte(sessao: Sessao, ef: int = 64) -> str:

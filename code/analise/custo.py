@@ -87,8 +87,38 @@ class MetricaCustoFase:
     cpu_nucleos: float | None
     swap_out_paginas: int | None
     swap_out_mib: float | None
-    pico_psi_mem_full: float | None
-    mem_disponivel_min_mib: float | None
+    swap_in_paginas: int | None = None
+    swap_in_mib: float | None = None
+    pico_psi_mem_full: float | None = None
+    mem_disponivel_min_mib: float | None = None
+
+
+def carregar_amostras_monitor(
+    monitor_csv: str | Path | Sequence[str | Path] | None,
+) -> list[dict[str, Any]]:
+    """Carrega e ordena cronologicamente as amostras de monitor CSV."""
+    if not monitor_csv:
+        return []
+    caminhos: list[Path] = []
+    if isinstance(monitor_csv, str | Path):
+        caminhos.append(Path(monitor_csv))
+    else:
+        caminhos.extend(Path(c) for c in monitor_csv)
+
+    amostras: list[dict[str, Any]] = []
+    for p in caminhos:
+        if not p.is_file():
+            continue
+        with p.open(encoding="utf-8") as f:
+            leitor = csv.DictReader(f)
+            for linha in leitor:
+                ts_str = linha.get("ts_utc")
+                if not ts_str:
+                    continue
+                linha["_dt"] = normalizar_timestamp(ts_str)
+                amostras.append(linha)
+    amostras.sort(key=lambda r: r["_dt"])
+    return amostras
 
 
 def _tempo_segundos(r: dict[str, Any]) -> float:
@@ -153,18 +183,20 @@ def _calcular_cpu_nucleos(linhas_validas: Sequence[dict[str, Any]], col_cpu: str
 
 
 def calcular_custo(
-    monitor_csv: str | Path | Sequence[str | Path],
+    monitor_csv: str | Path | Sequence[str | Path] | Sequence[dict[str, Any]],
     marcos: str | Path | Sequence[dict[str, Any]],
     *,
     somente_relevantes: bool = True,
+    amostras: Sequence[dict[str, Any]] | None = None,
 ) -> list[MetricaCustoFase]:
     """Cruza CSV(s) do monitor com marcos para derivar métricas de custo por fase.
 
     Args:
-        monitor_csv: Caminho ou lista de caminhos para os CSVs do monitor.
-            Se múltiplos forem passados, são concatenados e ordenados por ts_utc.
+        monitor_csv: Caminho ou lista de caminhos para os CSVs do monitor,
+            ou lista pré-carregada de amostras.
         marcos: Caminho para marcos.jsonl ou lista de dicionários.
         somente_relevantes: Se True, filtra apenas passos em FASES_RELEVANTES.
+        amostras: Amostras já carregadas e indexadas com `_dt`.
     """
     marcos_lista: list[dict[str, Any]] = []
     if isinstance(marcos, str | Path):
@@ -206,34 +238,24 @@ def calcular_custo(
             # Se já existir, a ocorrência posterior sobrescreve (tentativa mais recente)
             intervalos_por_chave[chave] = (t0, ts)
 
-    # Lê amostras do(s) monitor CSV(s)
-    caminhos_csv: list[Path] = []
-    if isinstance(monitor_csv, str | Path):
-        caminhos_csv.append(Path(monitor_csv))
+    # Resolve amostras
+    amostras_lista: list[dict[str, Any]] = []
+    if amostras is not None:
+        amostras_lista = list(amostras)
+    elif (
+        isinstance(monitor_csv, Sequence)
+        and len(monitor_csv) > 0
+        and isinstance(monitor_csv[0], dict)
+    ):
+        amostras_lista = list(monitor_csv)  # type: ignore
     else:
-        caminhos_csv.extend(Path(c) for c in monitor_csv)
-
-    amostras: list[dict[str, Any]] = []
-    for p_csv in caminhos_csv:
-        if not p_csv.is_file():
-            continue
-        with p_csv.open(encoding="utf-8") as f:
-            leitor = csv.DictReader(f)
-            for linha in leitor:
-                ts_str = linha.get("ts_utc")
-                if not ts_str:
-                    continue
-                linha["_dt"] = normalizar_timestamp(ts_str)
-                amostras.append(linha)
-
-    # Ordena amostras por timestamp se vierem de múltiplos arquivos
-    amostras.sort(key=lambda r: r["_dt"])
+        amostras_lista = carregar_amostras_monitor(monitor_csv)  # type: ignore
 
     resultados: list[MetricaCustoFase] = []
 
     # Mantém ordenação estável por n, sistema, passo
     for (n, sis, passo), (t0, t1) in sorted(intervalos_por_chave.items()):
-        linhas_fase = [r for r in amostras if t0 <= r["_dt"] <= t1]
+        linhas_fase = [r for r in amostras_lista if t0 <= r["_dt"] <= t1]
         if not linhas_fase:
             # Fase sem nenhuma amostra registrada
             resultados.append(
@@ -246,6 +268,8 @@ def calcular_custo(
                     cpu_nucleos=None,
                     swap_out_paginas=None,
                     swap_out_mib=None,
+                    swap_in_paginas=None,
+                    swap_in_mib=None,
                     pico_psi_mem_full=None,
                     mem_disponivel_min_mib=None,
                 )
@@ -288,9 +312,22 @@ def calcular_custo(
                 with contextlib.suppress(ValueError):
                     swap_vals.append(int(v))
         if len(swap_vals) >= 2:
-            dswap = swap_vals[-1] - swap_vals[0]
+            dswap = max(0, swap_vals[-1] - swap_vals[0])
             swap_paginas = dswap
             swap_mib = (dswap * 4096.0) / 1048576.0
+
+        swap_in_paginas = None
+        swap_in_mib = None
+        swap_in_vals: list[int] = []
+        for r in linhas_fase:
+            v = r.get("pswpin")
+            if v is not None and str(v).strip():
+                with contextlib.suppress(ValueError):
+                    swap_in_vals.append(int(v))
+        if len(swap_in_vals) >= 2:
+            dswap_in = max(0, swap_in_vals[-1] - swap_in_vals[0])
+            swap_in_paginas = dswap_in
+            swap_in_mib = (dswap_in * 4096.0) / 1048576.0
 
         pico_psi = None
         psi_vals: list[float] = []
@@ -322,6 +359,8 @@ def calcular_custo(
                 cpu_nucleos=cpu_nucleos,
                 swap_out_paginas=swap_paginas,
                 swap_out_mib=swap_mib,
+                swap_in_paginas=swap_in_paginas,
+                swap_in_mib=swap_in_mib,
                 pico_psi_mem_full=pico_psi,
                 mem_disponivel_min_mib=mem_disp_min,
             )
@@ -342,7 +381,7 @@ def linhas_custo(
         metricas: Amostras agregadas de custo por fase.
         escala: Se informado, filtra apenas as métricas desta escala.
         incluir_escala: Se True, inclui a primeira coluna com multirow da escala
-            (formato da tabela consolidada tab_custo.tex com \cline{2-7}).
+            (formato da tabela consolidada tab_custo.tex com \cline{2-9}).
             Se False, omite a coluna de escala e começa diretamente no multirow
             do sistema (formato por escala tab_custo_<n>.tex com \hline).
     """
@@ -387,8 +426,12 @@ def linhas_custo(
                 p_anon = num(m.pico_anon_mib, 1)
                 cpu = num(m.cpu_nucleos, 1)
                 sw = num(m.swap_out_mib, 1)
+                sw_in = num(m.swap_in_mib, 1)
+                psi_mem = num(m.pico_psi_mem_full, 2)
 
-                cols_dados = f"{passo_tex} & {p_mem} & {p_anon} & {cpu} & {sw} \\\\"
+                cols_dados = (
+                    f"{passo_tex} & {p_mem} & {p_anon} & {cpu} & {sw} & {sw_in} & {psi_mem} \\\\"
+                )
 
                 if incluir_escala:
                     if primeira_linha_escala:
@@ -416,7 +459,7 @@ def linhas_custo(
 
             if incluir_escala:
                 if idx_sis < len(sistemas_com_fases) - 1:
-                    linhas.append(r"\cline{2-7}")
+                    linhas.append(r"\cline{2-9}")
                 else:
                     linhas.append(r"\hline")
             else:

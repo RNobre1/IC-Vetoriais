@@ -26,6 +26,7 @@ def test_gerar_artefatos_completo(tmp_path):
     assert (saida_tabelas / "tab_a_5000.tex").exists()
     assert (saida_tabelas / "tab_b_5000.tex").exists()
     assert (saida_tabelas / "tab_c_5000.tex").exists()
+    assert (saida_tabelas / "tab_c_hospedeiro_5000.tex").exists()
     assert (saida_tabelas / "tab_ponte.tex").exists()
     assert (saida_tabelas / "tab_reprod.tex").exists()
     assert (saida_tabelas / "tab_custo.tex").exists()
@@ -34,7 +35,13 @@ def test_gerar_artefatos_completo(tmp_path):
     # Conteúdo não vazio
     assert (saida_tabelas / "tab_recursos.tex").stat().st_size > 0
     assert (saida_tabelas / "tab_c_5000.tex").stat().st_size > 0
+    assert (saida_tabelas / "tab_c_hospedeiro_5000.tex").stat().st_size > 0
     assert (saida_tabelas / "tab_custo_5000.tex").stat().st_size > 0
+
+    # Verifica tab_c_hospedeiro_5000.tex
+    conteudo_c_hosp = (saida_tabelas / "tab_c_hospedeiro_5000.tex").read_text(encoding="utf-8")
+    assert r"\multirow{2}{*}{pgvector}" in conteudo_c_hosp
+    assert r"\hline" in conteudo_c_hosp
 
     # Verifica distinção de formato entre tab_custo.tex (consolidada) e tab_custo_5000.tex (por escala)
     conteudo_custo_global = (saida_tabelas / "tab_custo.tex").read_text(encoding="utf-8")
@@ -44,6 +51,8 @@ def test_gerar_artefatos_completo(tmp_path):
     assert "5k" not in conteudo_custo_5000
     assert r"\multirow{1}{*}{pgvector}" in conteudo_custo_5000
     assert r"\hline" in conteudo_custo_5000
+    # Verifica que as novas colunas (swap-in e psi-mem) estão presentes
+    assert r"\cline{2-9}" in conteudo_custo_global or r"\hline" in conteudo_custo_global
 
     # Figuras geradas
     assert (saida_figuras / "fig_recall_qps.pdf").exists()

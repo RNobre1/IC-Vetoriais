@@ -13,6 +13,7 @@ Escreve um arquivo .tex por tabela:
 - tab_a_<n>.tex
 - tab_b_<n>.tex (somente se houver JSON do Cenário B naquela escala)
 - tab_c_<n>.tex
+- tab_c_hospedeiro_<n>.tex (somente se houver dados de monitor e Cenário C)
 - tab_ponte.tex
 - tab_reprod.tex
 - tab_controle_<n>.tex (somente onde 0,1 * n >= CORTE_FLAT_WEAVIATE)
@@ -31,7 +32,7 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from analise.custo import calcular_custo, linhas_custo
+from analise.custo import calcular_custo, carregar_amostras_monitor, linhas_custo
 from analise.figuras import fig_cenario_c, fig_memoria, fig_recall_qps
 from analise.sessao import carregar_arquivos, carregar_sessao
 from analise.tabelas import (
@@ -39,6 +40,7 @@ from analise.tabelas import (
     linhas_cenario_a,
     linhas_cenario_b,
     linhas_cenario_c,
+    linhas_cenario_c_hospedeiro,
     linhas_controle_weaviate,
     linhas_ponte,
     linhas_recursos,
@@ -70,15 +72,27 @@ def gerar_artefatos(
         else (p_sessao / "marcos.jsonl" if p_sessao.is_dir() else p_sessao)
     )
 
-    sessao = carregar_sessao(p_results, p_marcos)
-    avisos: list[str] = list(sessao.avisos)
-
     p_tab = Path(saida_tabelas)
     p_tab.mkdir(parents=True, exist_ok=True)
 
     p_fig = Path(saida_figuras) if saida_figuras else None
     if p_fig:
         p_fig.mkdir(parents=True, exist_ok=True)
+
+    # Resolve caminhos do monitor CSV e pré-carrega amostras
+    caminhos_csv: list[Path] = []
+    if monitor_csv:
+        if isinstance(monitor_csv, str | Path):
+            caminhos_csv.append(Path(monitor_csv))
+        else:
+            caminhos_csv.extend(Path(c) for c in monitor_csv)
+    elif p_sessao.is_dir():
+        caminhos_csv = sorted(p_sessao.glob("monitor_*.csv"))
+
+    amostras_monitor = carregar_amostras_monitor(caminhos_csv) if caminhos_csv else []
+
+    sessao = carregar_sessao(p_results, p_marcos)
+    avisos: list[str] = list(sessao.avisos)
 
     escalas = sessao.escalas
 
@@ -87,7 +101,7 @@ def gerar_artefatos(
         conteudo_rec = linhas_recursos(sessao, escalas)
         (p_tab / "tab_recursos.tex").write_text(conteudo_rec, encoding="utf-8")
     else:
-        avisos.append("Nenhuma escala presente para gerar tab_recursos.tex.")
+        avisos.append("Nenhuma escala encontrada na sessão; tab_recursos.tex pulada.")
 
     # 2. tab_a_<n>.tex
     for n in escalas:
@@ -110,13 +124,24 @@ def gerar_artefatos(
         else:
             avisos.append(f"Sem JSONs de Cenário B para escala {n}; tab_b_{n}.tex pulada.")
 
-    # 4. tab_c_<n>.tex
+    # 4. tab_c_<n>.tex e tab_c_hospedeiro_<n>.tex
     for n in escalas:
         tem_c = any(sessao.obter("C", s, n) is not None for s in SISTEMAS_ORDEM)
         if tem_c:
             conteudo_c = linhas_cenario_c(sessao, n)
             if conteudo_c.strip():
                 (p_tab / f"tab_c_{n}.tex").write_text(conteudo_c, encoding="utf-8")
+
+            if caminhos_csv and any(c.is_file() for c in caminhos_csv):
+                conteudo_c_hosp = linhas_cenario_c_hospedeiro(
+                    sessao, n, amostras_monitor=amostras_monitor
+                )
+                if conteudo_c_hosp.strip():
+                    (p_tab / f"tab_c_hospedeiro_{n}.tex").write_text(
+                        conteudo_c_hosp, encoding="utf-8"
+                    )
+            else:
+                avisos.append(f"Nenhum CSV de monitor encontrado; tab_c_hospedeiro_{n}.tex pulada.")
         else:
             avisos.append(f"Sem dados de Cenário C para escala {n}; tab_c_{n}.tex pulada.")
 
@@ -159,18 +184,11 @@ def gerar_artefatos(
                 f"Sem par de controle Weaviate para escala {n}; tab_controle_{n}.tex pulada."
             )
 
-    # 8. tab_custo.tex
-    caminhos_csv: list[Path] = []
-    if monitor_csv:
-        if isinstance(monitor_csv, str | Path):
-            caminhos_csv.append(Path(monitor_csv))
-        else:
-            caminhos_csv.extend(Path(c) for c in monitor_csv)
-    elif p_sessao.is_dir():
-        caminhos_csv = sorted(p_sessao.glob("monitor_*.csv"))
-
+    # 8. tab_custo.tex e tab_custo_<n>.tex
     if caminhos_csv and any(c.is_file() for c in caminhos_csv):
-        metricas_custo = calcular_custo(caminhos_csv, p_marcos, somente_relevantes=True)
+        metricas_custo = calcular_custo(
+            caminhos_csv, p_marcos, somente_relevantes=True, amostras=amostras_monitor
+        )
         if metricas_custo:
             # Avisa se alguma fase teve amostras ausentes
             for m in metricas_custo:
