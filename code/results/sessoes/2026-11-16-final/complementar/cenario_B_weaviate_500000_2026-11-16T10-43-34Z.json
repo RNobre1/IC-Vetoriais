@@ -1,0 +1,43 @@
+{
+  "cenario": "B",
+  "n": 500000,
+  "pontos": [
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 26.391593999505858,
+        "p95": 51.43201739774663,
+        "p99": 267.3037667801691,
+        "qps": 27.675176125957677,
+        "recall_at_k": 0.7592000000000001
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    }
+  ],
+  "recursos": {
+    "configuracao": {},
+    "container": "ic-weaviate",
+    "criterio_indice_utilizavel": "fila_vetorial_drenada",
+    "disco": {
+      "aparente_bytes": 1691967674,
+      "total_bytes": 1692057600
+    },
+    "instrumento_disco": "du_sk_diretorio_classe",
+    "memoria_rss_baseline_bytes": 43295703,
+    "memoria_rss_bytes": 2892660474,
+    "memoria_rss_delta_bytes": 2849364771,
+    "sistema": "weaviate",
+    "tempo_carga_s": 102.86633567199897,
+    "tempo_indice_utilizavel_s": 103.14832023800045
+  },
+  "sistema": "weaviate",
+  "timestamp_utc": "2026-11-16T10-43-34Z"
+}

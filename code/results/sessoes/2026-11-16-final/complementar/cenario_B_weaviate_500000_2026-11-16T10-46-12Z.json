@@ -1,0 +1,100 @@
+{
+  "cenario": "B",
+  "n": 500000,
+  "pontos": [
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 82.94475100228738,
+        "p95": 148.32155225140013,
+        "p99": 167.03381658826402,
+        "qps": 11.236267790420733,
+        "recall_at_k": 0.8925
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 81.72206900235324,
+        "p95": 101.7299544029811,
+        "p99": 155.82551653951668,
+        "qps": 11.530507492438016,
+        "recall_at_k": 0.9478
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 83.12812900112476,
+        "p95": 148.82023484933598,
+        "p99": 163.9179366794997,
+        "qps": 11.161508119682019,
+        "recall_at_k": 0.9910999999999999
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "sistema": "weaviate"
+      },
+      "metricas": {
+        "p50": 84.24201600064407,
+        "p95": 153.69094339985165,
+        "p99": 168.78544756866177,
+        "qps": 10.761968611139405,
+        "recall_at_k": 0.9964
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    }
+  ],
+  "recursos": {
+    "configuracao": {},
+    "container": "ic-weaviate",
+    "criterio_indice_utilizavel": "fila_vetorial_drenada",
+    "disco": {
+      "aparente_bytes": 1360160918,
+      "total_bytes": 1360244736
+    },
+    "instrumento_disco": "du_sk_diretorio_classe",
+    "memoria_rss_baseline_bytes": 2389075558,
+    "memoria_rss_bytes": 3098818904,
+    "memoria_rss_delta_bytes": 709743346,
+    "sistema": "weaviate",
+    "tempo_carga_s": 112.33085110699903,
+    "tempo_indice_utilizavel_s": 112.33251471499898
+  },
+  "sistema": "weaviate",
+  "timestamp_utc": "2026-11-16T10-46-12Z"
+}

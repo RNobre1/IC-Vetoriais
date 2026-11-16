@@ -1,0 +1,6 @@
+Cenário B: 1 resultado(s) gravado(s) em results/sessoes/2026-11-16-final/complementar
+  results/sessoes/2026-11-16-final/complementar/cenario_B_weaviate_500000_2026-11-16T10-43-34Z.json
+Cenário B: 1 resultado(s) gravado(s) em results/sessoes/2026-11-16-final/complementar
+  results/sessoes/2026-11-16-final/complementar/cenario_B_weaviate_500000_2026-11-16T10-46-12Z.json
+Cenário B: 1 resultado(s) gravado(s) em results/sessoes/2026-11-16-final/complementar
+  results/sessoes/2026-11-16-final/complementar/cenario_B_weaviate_500000_2026-11-16T10-54-45Z.json

@@ -1,0 +1,46 @@
+Isto APAGA os volumes dos 3 SGBDs (coleções de execuções anteriores).
+Os JSONs de code/results/ não são tocados. Ctrl-C em 5s para abortar.
+docker compose down -v
+ Container ic-qdrant Stopping 
+ Container ic-weaviate Stopping 
+ Container ic-pgvector Stopping 
+ Container ic-qdrant Stopped 
+ Container ic-qdrant Removing 
+ Container ic-weaviate Stopped 
+ Container ic-weaviate Removing 
+ Container ic-pgvector Stopped 
+ Container ic-pgvector Removing 
+ Container ic-pgvector Removed 
+ Container ic-weaviate Removed 
+ Container ic-qdrant Removed 
+ Volume code_weaviatedata Removing 
+ Volume code_qdrantdata Removing 
+ Volume code_pgdata Removing 
+ Network code_default Removing 
+ Volume code_weaviatedata Removed 
+ Volume code_qdrantdata Removed 
+ Volume code_pgdata Removed 
+ Network code_default Removed 
+docker compose up -d
+ Network code_default Creating 
+ Network code_default Created 
+ Volume code_weaviatedata Creating 
+ Volume code_weaviatedata Created 
+ Volume code_pgdata Creating 
+ Volume code_pgdata Created 
+ Volume code_qdrantdata Creating 
+ Volume code_qdrantdata Created 
+ Container ic-weaviate Creating 
+ Container ic-pgvector Creating 
+ Container ic-qdrant Creating 
+ Container ic-pgvector Created 
+ Container ic-weaviate Created 
+ Container ic-qdrant Created 
+ Container ic-qdrant Starting 
+ Container ic-weaviate Starting 
+ Container ic-pgvector Starting 
+ Container ic-weaviate Started 
+ Container ic-pgvector Started 
+ Container ic-qdrant Started 
+Aguardando healthcheck dos 3 serviços...
+make: *** [Makefile:52: reset-medicao] Terminado
