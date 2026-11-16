@@ -5,31 +5,44 @@ como separador de milhar e a vírgula (,) como separador decimal.
 
 Arredondamento:
 Utiliza-se arredondamento aritmético simétrico / half-up (`ROUND_HALF_UP` do módulo
-`decimal`), onde frações 0,5 arredondam para cima (afastando-se de zero).
+`decimal`) sobre a representação decimal curta do float (obtida via `str(x)`),
+onde frações 0,5 arredondam para cima (afastando-se de zero), evitando dízimas
+espúrias da representação binária IEEE 754.
 Zeros negativos (ex.: -0,00001 arredondado para 2 casas) são explicitamente
 normalizados para "0,00" para evitar a exibição de "-0,0" ou "-0,0000".
 
-Valores ausentes (None) são representados convencionalmente por travessão ("---").
+Valores ausentes (None) ou indefinidos/infinitos (inf, -inf, nan) são representados
+convencionalmente por travessão ("---").
 """
 
 from __future__ import annotations
 
+import math
 from decimal import ROUND_HALF_UP, Decimal
 
 
 def num(x: float | int | Decimal | None, casas: int | None = None) -> str:
     """Formata número com separador de milhar '.' e decimal ','.
 
+    Aplica arredondamento half-up (ROUND_HALF_UP) sobre a representação decimal
+    curta do float (obtida via str(x)), preservando a precisão pretendida.
+
     Args:
-        x: Valor numérico ou None.
+        x: Valor numérico, float('inf'), float('nan') ou None.
         casas: Quantidade de casas decimais. Se None, inteiros não recebem
             casas decimais e floats recebem 2 casas por padrão.
             Se 0, arredonda para inteiro e omite a vírgula decimal.
 
     Returns:
-        String formatada em padrão PT-BR ou "---" se x for None.
+        String formatada em padrão PT-BR ou "---" se x for None, inf, -inf ou nan.
     """
     if x is None:
+        return "---"
+
+    if isinstance(x, float) and (math.isnan(x) or math.isinf(x)):
+        return "---"
+
+    if isinstance(x, Decimal) and (x.is_nan() or x.is_infinite()):
         return "---"
 
     if casas is None:
@@ -38,7 +51,7 @@ def num(x: float | int | Decimal | None, casas: int | None = None) -> str:
             return f"{d:,}".replace(",", ".")
         casas = 2
 
-    # Converte para Decimal preservando representação exata
+    # Converte para Decimal preservando representação exata a partir da string curta do float
     d = Decimal(str(x)) if not isinstance(x, Decimal) else x
     q = Decimal("10") ** -casas if casas > 0 else Decimal("1")
     arredondado = d.quantize(q, rounding=ROUND_HALF_UP)

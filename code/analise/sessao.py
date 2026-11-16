@@ -19,7 +19,6 @@ também emitem aviso informativo em vez de falharem silenciosamente.
 
 from __future__ import annotations
 
-import contextlib
 import glob
 import json
 from collections.abc import Sequence
@@ -125,6 +124,7 @@ def carregar_sessao(
     """Lê marcos e indexa os arquivos JSON cujo timestamp cai na janela da sessão."""
     results_path = Path(results_dir)
     marcos_lista: list[dict[str, Any]] = []
+    avisos: list[str] = []
 
     if isinstance(marcos, str | Path):
         p = Path(marcos)
@@ -132,11 +132,13 @@ def carregar_sessao(
             p = p / "marcos.jsonl"
         if not p.is_file():
             raise FileNotFoundError(f"Arquivo de marcos não encontrado: {p}")
-        for linha in p.read_text(encoding="utf-8").splitlines():
+        for idx_l, linha in enumerate(p.read_text(encoding="utf-8").splitlines(), start=1):
             linha_s = linha.strip()
             if linha_s:
-                with contextlib.suppress(json.JSONDecodeError):
+                try:
                     marcos_lista.append(json.loads(linha_s))
+                except json.JSONDecodeError as e:
+                    avisos.append(f"Linha {idx_l} corrompida ignorada em {p.name}: {e}")
     else:
         marcos_lista = list(marcos)
 
@@ -151,7 +153,6 @@ def carregar_sessao(
     t_fim = max(tempos)
 
     arquivos: dict[tuple[str, str, int], ArquivoSessao] = {}
-    avisos: list[str] = []
 
     for caminho_json in sorted(results_path.glob("cenario_*.json")):
         try:

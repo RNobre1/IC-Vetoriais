@@ -1,5 +1,7 @@
 """Testes unitários de formatação numérica no padrão brasileiro."""
 
+import math
+
 from analise.formato import formato_escala, num
 
 
@@ -7,6 +9,18 @@ def test_num_trata_none_como_traco():
     assert num(None) == "---"
     assert num(None, 2) == "---"
     assert num(None, 0) == "---"
+
+
+def test_num_inf_e_nan():
+    assert num(float("inf")) == "---"
+    assert num(float("-inf")) == "---"
+    assert num(float("nan")) == "---"
+    assert num(float("inf"), 2) == "---"
+    assert num(float("-inf"), 1) == "---"
+    assert num(float("nan"), 0) == "---"
+    assert num(math.inf) == "---"
+    assert num(-math.inf) == "---"
+    assert num(math.nan) == "---"
 
 
 def test_num_valores_do_relatorio_parcial():
