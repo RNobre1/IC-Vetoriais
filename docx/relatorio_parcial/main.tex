@@ -50,6 +50,31 @@
 % Trecho de código inline (fonte monoespaçada)
 \newcommand{\code}[1]{\texttt{\small #1}}
 
+% --- Listagens de código ------------------------------------------------------
+% Os arquivos gerado/codigo_*.txt são extraídos do código-fonte por
+% `make tabelas` (code/analise/trechos.py); não editar à mão.
+\usepackage{listings}
+\renewcommand{\lstlistingname}{Código}
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\footnotesize\setstretch{1},
+    commentstyle=\itshape\color{black!60},
+    stringstyle=\color{black!75},
+    showstringspaces=false,
+    columns=fullflexible,
+    keepspaces=true,
+    breaklines=true,
+    frame=single,
+    framesep=4pt,
+    xleftmargin=4pt,
+    xrightmargin=4pt,
+    captionpos=t,
+    float=H,
+    literate={á}{{\'a}}1 {à}{{\`a}}1 {â}{{\^a}}1 {ã}{{\~a}}1 {é}{{\'e}}1 {ê}{{\^e}}1
+             {í}{{\'i}}1 {ó}{{\'o}}1 {ô}{{\^o}}1 {õ}{{\~o}}1 {ú}{{\'u}}1 {ç}{{\c{c}}}1
+             {Á}{{\'A}}1 {É}{{\'E}}1 {Ç}{{\c{C}}}1 {Ã}{{\~A}}1,
+}
+
 % --- Espaçamento entre seções ------------------------------------------------
 \usepackage{titlesec}
 \titlespacing*{\section}{0pt}{18pt}{12pt}

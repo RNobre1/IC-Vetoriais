@@ -65,7 +65,7 @@ O produtor roda em um processo separado do consumidor, para que o trabalho de se
 
 O consumidor é único e sequencial, como nos demais cenários, com $ef\_search = 64$. Como a coleção muda durante a medição, o \textit{recall} de cada consulta é calculado contra a busca exata sobre a base mais os vetores cuja inserção já estava confirmada. Um vetor confirmado enquanto a consulta estava em andamento pode aparecer ou não na resposta; por isso cada consulta é comparada com a verdade exata do início e com a do fim, e a janela reporta dois limites, o \textit{recall} inferior e o superior. Mede-se também o \textit{recall} dos vetores novos --- a fração dos vizinhos verdadeiros que são vetores recém-inseridos e foram devolvidos --- e, após cada janela com escrita, se os últimos 50 vetores confirmados são encontrados quando buscados pelo próprio vetor. Ao fim, a contagem de vetores na coleção é conferida contra a soma da base com as inserções confirmadas. No pgvector, um \textit{checkpoint} é forçado antes de cada janela, para que a gravação periódica de páginas sujas não caia aleatoriamente dentro ou fora dos 60 segundos medidos.
 
-As definições desta seção, inclusive a forma de calcular o \textit{recall} sob escrita, foram registradas no repositório antes da execução da sessão de medição.
+As definições desta seção, inclusive a forma de calcular o \textit{recall} sob escrita, foram registradas no repositório (Apêndice~\ref{ap:repositorio}) antes da execução da sessão de medição.
 
 \subsection{Análise dos resultados}
 
