@@ -2,7 +2,7 @@
 
 Ambiente experimental para a IC **"Comparação de Desempenho de Soluções de Bancos de Dados Vetoriais para Busca Semântica"** (UFOPA/IEG; bolsista: Rafael Nobre; orientador: Prof. Dr. Celson Pantoja Lima).
 
-> **Status:** Etapa 2 **concluída** — ambiente + pipeline de embeddings + ground truth + Cenários A e B completos (em TDD, com smoke real nos 3 SGBDs) + esqueleto do Cenário C. Plano completo em [`../docs/tasks/etapa-2-preparacao-ambiente.md`](../docs/tasks/etapa-2-preparacao-ambiente.md). Decisões metodológicas em [`../vault/decisões/`](../vault/decisões/).
+> **Status:** Etapas 4 e 5 concluídas — Cenários A, B e C em 100k, 500k e 1M, medidos numa sessão única pelo executor `benchmarks/run_sessao.py` (`make sessao`), com amostrador de recursos (`lib/monitor.py`) e tabelas, figuras e trechos do relatório gerados por `analise/` (`make tabelas`). Decisões metodológicas em [`../vault/decisões/`](../vault/decisões/).
 >
 > **Snapshot atual de versões dos SGBDs** (vide [`../vault/decisões/2026-05-06-bump-versoes-sgbds.md`](../vault/decisões/2026-05-06-bump-versoes-sgbds.md)):
 > - `pgvector/pgvector:0.8.2-pg18-bookworm` (Postgres 18.3 + pgvector 0.8.2)
@@ -45,7 +45,7 @@ Os Cenários precisam do subset MS MARCO baixado (`make` baixa sob demanda no pr
 make seed N=10000                       # semeia 10k embeddings nos 3 SGBDs (idempotente)
 make bench-A N=10000 Q=1000             # Cenário A — busca pura (curva recall×QPS por sistema)
 make bench-B N=10000 Q=1000             # Cenário B — busca com filtro de seletividade
-make bench-C-dryrun                     # Cenário C — só imprime o plano de carga (roda na Etapa 4)
+make bench-C-dryrun                     # Cenário C — só imprime o plano de carga (execução: make sessao)
 ```
 
 Saída: um JSON de curva por sistema em `code/results/cenario_<A|B>_<sistema>_<n>_<timestamp>.json`; ground truth exato em `data/ground_truth/`. Todos os alvos aceitam `N Q K EF WARMUP SYS` (e `SEL` no `bench-B`); ver `make help`.
@@ -66,7 +66,7 @@ Saída: um JSON de curva por sistema em `code/results/cenario_<A|B>_<sistema>_<n
 | `make seed`              | Semeia N embeddings nos 3 SGBDs (sem benchmark)          |
 | `make bench-A`           | Cenário A — busca pura (curva recall×QPS)                |
 | `make bench-B`           | Cenário B — busca com filtro de seletividade             |
-| `make bench-C-dryrun`    | Cenário C — imprime plano de carga (execução na Etapa 4) |
+| `make bench-C-dryrun`    | Cenário C — imprime plano de carga (execução: `make sessao`) |
 | `make lint`              | `ruff check` + `ruff format --check`                     |
 | `make fmt`               | Aplica formatação `ruff`                                 |
 | `make clean`             | Remove containers, volumes e caches Python               |
@@ -86,7 +86,7 @@ code/
 ├── seeders/                # pgvector / qdrant / weaviate (HNSW + atributo seletor)
 ├── ground_truth/           # exact_search (FAISS; top-K exato e filtrado)
 ├── lib/                    # metrics (p50/p95/p99, QPS, recall@K), reporting
-├── benchmarks/             # cenario_a, cenario_b, cenario_c (esqueleto),
+├── benchmarks/             # cenario_a, cenario_b, cenario_c, run_sessao,
 │                           #   buscadores (adaptadores), run_cenario_a/b, run_seed
 └── tests/
     ├── unit/               # rápidos, sem Docker (alvo padrão do CI)
