@@ -1,0 +1,28 @@
+{
+ "chave_base_esperada": "08a3b1932b898784a309416b2d8471c308d16c5d09d6b800870d5eac06534c51",
+ "chave_ins_esperada": "b6b24410185a33b676c370dc7a107a622247f0cddfccf823019b320ca598e95b",
+ "chave_base_arquivo": "08a3b1932b898784a309416b2d8471c308d16c5d09d6b800870d5eac06534c51",
+ "chave_ins_arquivo": "b6b24410185a33b676c370dc7a107a622247f0cddfccf823019b320ca598e95b",
+ "textos_identicos": true,
+ "base_shape": [
+  1001000,
+  384
+ ],
+ "base_dtype": "float32",
+ "base_nan": 0,
+ "base_norma_desvio_max": 1.1920928955078125e-07,
+ "base_sha256": "42dfb289817b5793da132eb9ac3ce21aecc4c3b67ed4096532094c1693c5f168",
+ "insercoes_shape": [
+  80000,
+  384
+ ],
+ "insercoes_dtype": "float32",
+ "insercoes_nan": 0,
+ "insercoes_norma_desvio_max": 1.7881393432617188e-07,
+ "insercoes_sha256": "eb457e0dab9967e8035d2cdad45b5866d7cb31b254db94a6a8dba691d48f5702",
+ "dif_max_501k": 4.998873919248581e-07,
+ "dif_media_501k": 3.33129577256841e-08,
+ "top10_conjunto_igual_frac": 1.0,
+ "dif_max_cauda_2000": 3.0919909477233887e-07,
+ "aceite": true
+}

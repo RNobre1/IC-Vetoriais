@@ -1,0 +1,321 @@
+{
+  "cenario": "C",
+  "n": 1000000,
+  "pontos": [
+    {
+      "ambiente": {
+        "contagem_esperada": 1072261,
+        "contagem_final": 1072261,
+        "fim_utc": "2026-11-16T08:02:29.468609Z",
+        "inicio_utc": "2026-11-16T08:01:29.468790Z",
+        "layout_seed": "A",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "rss_fim_bytes": 5157181981,
+        "rss_inicio_bytes": 5662914380,
+        "sistema": "weaviate",
+        "swap_out_antes": 322071,
+        "swap_out_depois": 322071,
+        "swap_out_paginas_no_seed": 60961,
+        "tentativa": 1
+      },
+      "metricas": {
+        "atraso_max_s": 0.0,
+        "inseridos_acumulados_antes": 0,
+        "inseridos_acumulados_depois": 0,
+        "inseridos_na_medicao": 0,
+        "inseridos_total": 0,
+        "lote_p50_ms": null,
+        "lote_p99_ms": null,
+        "n_consultas": 42587,
+        "n_gt_novos": 0,
+        "p50": 1.3458950015774462,
+        "p95": 2.2974668998358534,
+        "p99": 2.6750928206820386,
+        "qps": 713.0247445245598,
+        "recall_inferior": 0.9629887054735013,
+        "recall_novos": null,
+        "recall_superior": 0.9629887054735013,
+        "taxa_sustentada": 0.0
+      },
+      "parametros": {
+        "aquecimento_s": 5.0,
+        "duracao_s": 60.0,
+        "ef_search": 64,
+        "k": 10,
+        "ordem_janela": 0,
+        "tamanho_lote": 0,
+        "taxa_alvo": 0,
+        "tick_s": 0.1
+      }
+    },
+    {
+      "ambiente": {
+        "contagem_esperada": 1072261,
+        "contagem_final": 1072261,
+        "fim_utc": "2026-11-16T08:03:38.688042Z",
+        "inicio_utc": "2026-11-16T08:02:38.687588Z",
+        "layout_seed": "A",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "rss_fim_bytes": 5158255722,
+        "rss_inicio_bytes": 5157181981,
+        "sistema": "weaviate",
+        "swap_out_antes": 322071,
+        "swap_out_depois": 322071,
+        "swap_out_paginas_no_seed": 60961,
+        "tentativa": 1,
+        "visibilidade_fracao": 1.0,
+        "visibilidade_n": 50
+      },
+      "metricas": {
+        "atraso_max_s": 0.0005833949981024489,
+        "inseridos_acumulados_antes": 0,
+        "inseridos_acumulados_depois": 651,
+        "inseridos_na_medicao": 600,
+        "inseridos_total": 651,
+        "lote_p50_ms": 2.811973999996553,
+        "lote_p99_ms": 5.4046319992266945,
+        "n_consultas": 41983,
+        "n_gt_novos": 352,
+        "p50": 1.3176449992897687,
+        "p95": 2.4096831997667323,
+        "p99": 2.7605494609451853,
+        "qps": 703.454153590959,
+        "recall_inferior": 0.9628778315032275,
+        "recall_novos": 1.0,
+        "recall_superior": 0.9628778315032275,
+        "taxa_sustentada": 10.0
+      },
+      "parametros": {
+        "aquecimento_s": 5.0,
+        "duracao_s": 60.0,
+        "ef_search": 64,
+        "k": 10,
+        "ordem_janela": 1,
+        "tamanho_lote": 1,
+        "taxa_alvo": 10,
+        "tick_s": 0.1
+      }
+    },
+    {
+      "ambiente": {
+        "contagem_esperada": 1072261,
+        "contagem_final": 1072261,
+        "fim_utc": "2026-11-16T08:04:47.739585Z",
+        "inicio_utc": "2026-11-16T08:03:47.739162Z",
+        "layout_seed": "A",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "rss_fim_bytes": 5176509334,
+        "rss_inicio_bytes": 5157181981,
+        "sistema": "weaviate",
+        "swap_out_antes": 322071,
+        "swap_out_depois": 322071,
+        "swap_out_paginas_no_seed": 60961,
+        "tentativa": 1,
+        "visibilidade_fracao": 1.0,
+        "visibilidade_n": 50
+      },
+      "metricas": {
+        "atraso_max_s": 0.000559325999347493,
+        "inseridos_acumulados_antes": 651,
+        "inseridos_acumulados_depois": 7161,
+        "inseridos_na_medicao": 6000,
+        "inseridos_total": 6510,
+        "lote_p50_ms": 4.5973349988344125,
+        "lote_p99_ms": 8.251370500147459,
+        "n_consultas": 44366,
+        "n_gt_novos": 1627,
+        "p50": 1.194007999401947,
+        "p95": 2.3617397487214475,
+        "p99": 2.8262028996323347,
+        "qps": 743.1997040072529,
+        "recall_inferior": 0.9630122165622323,
+        "recall_novos": 0.9735709895513215,
+        "recall_superior": 0.9630122165622323,
+        "taxa_sustentada": 100.0
+      },
+      "parametros": {
+        "aquecimento_s": 5.0,
+        "duracao_s": 60.0,
+        "ef_search": 64,
+        "k": 10,
+        "ordem_janela": 2,
+        "tamanho_lote": 10,
+        "taxa_alvo": 100,
+        "tick_s": 0.1
+      }
+    },
+    {
+      "ambiente": {
+        "contagem_esperada": 1072261,
+        "contagem_final": 1072261,
+        "fim_utc": "2026-11-16T08:05:57.205848Z",
+        "inicio_utc": "2026-11-16T08:04:57.207007Z",
+        "layout_seed": "A",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "rss_fim_bytes": 5331128156,
+        "rss_inicio_bytes": 5175435592,
+        "sistema": "weaviate",
+        "swap_out_antes": 322071,
+        "swap_out_depois": 322071,
+        "swap_out_paginas_no_seed": 60961,
+        "tentativa": 1,
+        "visibilidade_fracao": 1.0,
+        "visibilidade_n": 50
+      },
+      "metricas": {
+        "atraso_max_s": 0.00017637599921727087,
+        "inseridos_acumulados_antes": 7161,
+        "inseridos_acumulados_depois": 72261,
+        "inseridos_na_medicao": 60000,
+        "inseridos_total": 65100,
+        "lote_p50_ms": 20.61341400076344,
+        "lote_p99_ms": 33.49332800007687,
+        "n_consultas": 48678,
+        "n_gt_novos": 18093,
+        "p50": 1.0586384987618658,
+        "p95": 1.8005481992986463,
+        "p99": 5.259645239475511,
+        "qps": 815.1898831242565,
+        "recall_inferior": 0.9640042729775258,
+        "recall_novos": 0.970209473276958,
+        "recall_superior": 0.9640042729775258,
+        "taxa_sustentada": 1000.0
+      },
+      "parametros": {
+        "aquecimento_s": 5.0,
+        "duracao_s": 60.0,
+        "ef_search": 64,
+        "k": 10,
+        "ordem_janela": 3,
+        "tamanho_lote": 100,
+        "taxa_alvo": 1000,
+        "tick_s": 0.1
+      }
+    },
+    {
+      "ambiente": {
+        "contagem_esperada": 1072261,
+        "contagem_final": 1072261,
+        "fim_utc": "2026-11-16T08:07:05.406234Z",
+        "inicio_utc": "2026-11-16T08:06:05.407244Z",
+        "layout_seed": "A",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "rss_fim_bytes": 5654324445,
+        "rss_inicio_bytes": 5330054414,
+        "sistema": "weaviate",
+        "swap_out_antes": 322071,
+        "swap_out_depois": 322071,
+        "swap_out_paginas_no_seed": 60961,
+        "tentativa": 1
+      },
+      "metricas": {
+        "atraso_max_s": 0.0,
+        "inseridos_acumulados_antes": 72261,
+        "inseridos_acumulados_depois": 72261,
+        "inseridos_na_medicao": 0,
+        "inseridos_total": 0,
+        "lote_p50_ms": null,
+        "lote_p99_ms": null,
+        "n_consultas": 46593,
+        "n_gt_novos": 29315,
+        "p50": 1.1293059997115051,
+        "p95": 2.1994399998220615,
+        "p99": 2.6794933588098506,
+        "qps": 780.2315392924713,
+        "recall_inferior": 0.9642757495761166,
+        "recall_novos": 0.9589288760020467,
+        "recall_superior": 0.9642757495761166,
+        "taxa_sustentada": 0.0
+      },
+      "parametros": {
+        "aquecimento_s": 5.0,
+        "duracao_s": 60.0,
+        "ef_search": 64,
+        "k": 10,
+        "ordem_janela": 4,
+        "tamanho_lote": 0,
+        "taxa_alvo": 0,
+        "tick_s": 0.1
+      }
+    },
+    {
+      "ambiente": {
+        "assentar_s": 0.0018684569986362476,
+        "contagem_esperada": 1072261,
+        "contagem_final": 1072261,
+        "fim_utc": "2026-11-16T08:08:13.426116Z",
+        "inicio_utc": "2026-11-16T08:07:13.426679Z",
+        "layout_seed": "A",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "rss_fim_bytes": 5483599495,
+        "rss_inicio_bytes": 5653250703,
+        "sistema": "weaviate",
+        "swap_out_antes": 322071,
+        "swap_out_depois": 322071,
+        "swap_out_paginas_no_seed": 60961,
+        "tentativa": 1
+      },
+      "metricas": {
+        "atraso_max_s": 0.0,
+        "inseridos_acumulados_antes": 72261,
+        "inseridos_acumulados_depois": 72261,
+        "inseridos_na_medicao": 0,
+        "inseridos_total": 0,
+        "lote_p50_ms": null,
+        "lote_p99_ms": null,
+        "n_consultas": 38679,
+        "n_gt_novos": 24317,
+        "p50": 1.5405940011987695,
+        "p95": 2.398114800962503,
+        "p99": 2.775496880276481,
+        "qps": 647.8145622067693,
+        "recall_inferior": 0.9643398226427777,
+        "recall_novos": 0.9589176296418144,
+        "recall_superior": 0.9643398226427777,
+        "taxa_sustentada": 0.0
+      },
+      "parametros": {
+        "aquecimento_s": 5.0,
+        "duracao_s": 60.0,
+        "ef_search": 64,
+        "k": 10,
+        "ordem_janela": 5,
+        "tamanho_lote": 0,
+        "taxa_alvo": 0,
+        "tick_s": 0.1
+      }
+    }
+  ],
+  "sistema": "weaviate",
+  "timestamp_utc": "2026-11-16T08-01-23Z"
+}

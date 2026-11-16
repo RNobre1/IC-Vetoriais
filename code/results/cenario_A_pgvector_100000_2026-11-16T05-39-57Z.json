@@ -1,0 +1,114 @@
+{
+  "cenario": "A",
+  "n": 100000,
+  "pontos": [
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.5652444997394923,
+        "p95": 1.223164550037836,
+        "p99": 1.7301625100208182,
+        "qps": 1585.7993821878863,
+        "recall_at_k": 0.9063000000000001
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 0.6830479997006478,
+        "p95": 1.3327481499345584,
+        "p99": 1.7856097702497207,
+        "qps": 1347.6165467958,
+        "recall_at_k": 0.9597
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.0524780004743661,
+        "p95": 1.9644344501102742,
+        "p99": 2.347086940189911,
+        "qps": 888.0329585118867,
+        "recall_at_k": 0.985
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 1.8439024997860542,
+        "p95": 3.4358991496446833,
+        "p99": 4.100717300298129,
+        "qps": 508.2468166598378,
+        "recall_at_k": 0.9973
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "sistema": "pgvector"
+      },
+      "metricas": {
+        "p50": 3.298121000170795,
+        "p95": 6.091517000368184,
+        "p99": 7.041848600201774,
+        "qps": 287.0728777103661,
+        "recall_at_k": 0.9997
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "warmup": 50
+      }
+    }
+  ],
+  "recursos": {
+    "configuracao": {
+      "maintenance_work_mem": "64MB",
+      "max_parallel_maintenance_workers": "2",
+      "shared_buffers": "128MB"
+    },
+    "container": "ic-pgvector",
+    "criterio_indice_utilizavel": "create_index_retornou",
+    "disco": {
+      "heap_bytes": 163840000,
+      "indices_bytes": 207020032,
+      "total_bytes": 370925568
+    },
+    "instrumento_disco": "pg_total_relation_size",
+    "memoria_rss_baseline_bytes": 50667192,
+    "memoria_rss_bytes": 187275674,
+    "memoria_rss_delta_bytes": 136608482,
+    "sistema": "pgvector",
+    "tempo_carga_s": null,
+    "tempo_indice_utilizavel_s": 76.72386056400046
+  },
+  "sistema": "pgvector",
+  "timestamp_utc": "2026-11-16T05-39-57Z"
+}

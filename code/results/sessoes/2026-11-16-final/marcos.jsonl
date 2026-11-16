@@ -1,0 +1,255 @@
+{"evento": "inicio", "n": 100000, "passo": "ponte", "sistema": "todos", "ts_utc": "2026-11-16T05:39:55.051Z"}
+{"evento": "fim", "n": 100000, "passo": "ponte", "sistema": "todos", "ts_utc": "2026-11-16T05:42:35.516Z"}
+{"evento": "inicio", "n": 100000, "passo": "bloco", "plano": ["seed_b", "A", "B", "btree", "B_eq", "limpar"], "sistema": "pgvector", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.1282924360002653, "ts_utc": "2026-11-16T05:42:54.222Z"}
+{"evento": "inicio", "n": 100000, "passo": "dados", "sistema": "pgvector", "ts_utc": "2026-11-16T05:42:54.222Z"}
+{"evento": "fim", "n": 100000, "passo": "dados", "sistema": "pgvector", "ts_utc": "2026-11-16T05:42:59.302Z"}
+{"evento": "inicio", "n": 100000, "passo": "reiniciar", "sistema": "pgvector", "ts_utc": "2026-11-16T05:42:59.302Z"}
+{"duracao_s": 5.720162677000189, "evento": "fim", "n": 100000, "passo": "reiniciar", "sistema": "pgvector", "ts_utc": "2026-11-16T05:43:05.022Z"}
+{"evento": "inicio", "n": 100000, "passo": "seed_b", "sistema": "pgvector", "ts_utc": "2026-11-16T05:43:05.024Z"}
+{"evento": "fim", "n": 100000, "passo": "seed_b", "sistema": "pgvector", "swap_out_paginas": 0, "ts_utc": "2026-11-16T05:44:25.680Z"}
+{"evento": "inicio", "n": 100000, "passo": "A", "sistema": "pgvector", "ts_utc": "2026-11-16T05:44:25.680Z"}
+{"evento": "fim", "n": 100000, "passo": "A", "sistema": "pgvector", "swap_out_paginas": 0, "ts_utc": "2026-11-16T05:45:11.483Z"}
+{"evento": "inicio", "n": 100000, "passo": "B", "sistema": "pgvector", "ts_utc": "2026-11-16T05:45:11.484Z"}
+{"evento": "fim", "n": 100000, "passo": "B", "sistema": "pgvector", "swap_out_paginas": 0, "ts_utc": "2026-11-16T05:45:48.404Z"}
+{"evento": "inicio", "n": 100000, "passo": "btree", "sistema": "pgvector", "ts_utc": "2026-11-16T05:45:48.404Z"}
+{"evento": "fim", "n": 100000, "passo": "btree", "sistema": "pgvector", "swap_out_paginas": 0, "ts_utc": "2026-11-16T05:45:48.493Z"}
+{"evento": "inicio", "n": 100000, "passo": "B_eq", "sistema": "pgvector", "ts_utc": "2026-11-16T05:45:49.508Z"}
+{"evento": "fim", "n": 100000, "passo": "B_eq", "sistema": "pgvector", "swap_out_paginas": 0, "ts_utc": "2026-11-16T05:46:23.399Z"}
+{"evento": "inicio", "n": 100000, "passo": "limpar", "sistema": "pgvector", "ts_utc": "2026-11-16T05:46:23.400Z"}
+{"duracao_s": 5.880574574999628, "evento": "fim", "n": 100000, "passo": "limpar", "sistema": "pgvector", "ts_utc": "2026-11-16T05:46:29.280Z"}
+{"evento": "fim", "n": 100000, "passo": "bloco", "sistema": "pgvector", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.24618020000070828, "ts_utc": "2026-11-16T05:46:29.527Z"}
+{"evento": "inicio", "n": 100000, "passo": "bloco", "plano": ["seed_b", "B", "limpar", "seed_b_eq", "B_eq", "limpar", "seed_a", "A", "limpar"], "sistema": "qdrant", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.24362421499972697, "ts_utc": "2026-11-16T05:46:30.271Z"}
+{"evento": "inicio", "n": 100000, "passo": "dados", "sistema": "qdrant", "ts_utc": "2026-11-16T05:46:30.271Z"}
+{"evento": "fim", "n": 100000, "passo": "dados", "sistema": "qdrant", "ts_utc": "2026-11-16T05:46:37.300Z"}
+{"evento": "inicio", "n": 100000, "passo": "reiniciar", "sistema": "qdrant", "ts_utc": "2026-11-16T05:46:37.300Z"}
+{"duracao_s": 5.677425148000111, "evento": "fim", "n": 100000, "passo": "reiniciar", "sistema": "qdrant", "ts_utc": "2026-11-16T05:46:42.977Z"}
+{"evento": "inicio", "n": 100000, "passo": "seed_b", "sistema": "qdrant", "ts_utc": "2026-11-16T05:46:42.978Z"}
+{"evento": "fim", "n": 100000, "passo": "seed_b", "sistema": "qdrant", "swap_out_paginas": 33, "ts_utc": "2026-11-16T05:47:04.833Z"}
+{"evento": "inicio", "n": 100000, "passo": "B", "sistema": "qdrant", "ts_utc": "2026-11-16T05:47:04.833Z"}
+{"evento": "fim", "n": 100000, "passo": "B", "sistema": "qdrant", "swap_out_paginas": 0, "ts_utc": "2026-11-16T05:48:16.637Z"}
+{"evento": "inicio", "n": 100000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T05:48:16.637Z"}
+{"duracao_s": 6.066249921000235, "evento": "fim", "n": 100000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T05:48:22.704Z"}
+{"evento": "inicio", "n": 100000, "passo": "seed_b_eq", "sistema": "qdrant", "ts_utc": "2026-11-16T05:48:22.704Z"}
+{"evento": "fim", "n": 100000, "passo": "seed_b_eq", "sistema": "qdrant", "swap_out_paginas": 173, "ts_utc": "2026-11-16T05:48:49.422Z"}
+{"evento": "inicio", "n": 100000, "passo": "B_eq", "sistema": "qdrant", "ts_utc": "2026-11-16T05:48:49.422Z"}
+{"evento": "fim", "n": 100000, "passo": "B_eq", "sistema": "qdrant", "swap_out_paginas": 0, "ts_utc": "2026-11-16T05:50:02.701Z"}
+{"evento": "inicio", "n": 100000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T05:50:02.702Z"}
+{"duracao_s": 6.108439551000629, "evento": "fim", "n": 100000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T05:50:08.810Z"}
+{"evento": "inicio", "n": 100000, "passo": "seed_a", "sistema": "qdrant", "ts_utc": "2026-11-16T05:50:08.811Z"}
+{"evento": "fim", "n": 100000, "passo": "seed_a", "sistema": "qdrant", "swap_out_paginas": 0, "ts_utc": "2026-11-16T05:50:48.300Z"}
+{"evento": "inicio", "n": 100000, "passo": "A", "sistema": "qdrant", "ts_utc": "2026-11-16T05:50:48.300Z"}
+{"evento": "fim", "n": 100000, "passo": "A", "sistema": "qdrant", "swap_out_paginas": 57, "ts_utc": "2026-11-16T05:52:18.546Z"}
+{"evento": "inicio", "n": 100000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T05:52:18.547Z"}
+{"duracao_s": 6.123152355000457, "evento": "fim", "n": 100000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T05:52:24.670Z"}
+{"evento": "fim", "n": 100000, "passo": "bloco", "sistema": "qdrant", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.26082497800052806, "ts_utc": "2026-11-16T05:52:24.931Z"}
+{"evento": "inicio", "n": 100000, "passo": "bloco", "plano": ["seed_b", "B", "limpar", "seed_b_eq", "B_eq", "limpar", "seed_a", "A", "limpar"], "sistema": "weaviate", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.24917528100013442, "ts_utc": "2026-11-16T05:52:25.762Z"}
+{"evento": "inicio", "n": 100000, "passo": "dados", "sistema": "weaviate", "ts_utc": "2026-11-16T05:52:25.762Z"}
+{"evento": "fim", "n": 100000, "passo": "dados", "sistema": "weaviate", "ts_utc": "2026-11-16T05:52:31.835Z"}
+{"evento": "inicio", "n": 100000, "passo": "reiniciar", "sistema": "weaviate", "ts_utc": "2026-11-16T05:52:31.835Z"}
+{"duracao_s": 12.309617534000608, "evento": "fim", "n": 100000, "passo": "reiniciar", "sistema": "weaviate", "ts_utc": "2026-11-16T05:52:44.145Z"}
+{"evento": "inicio", "n": 100000, "passo": "seed_b", "sistema": "weaviate", "ts_utc": "2026-11-16T05:52:44.145Z"}
+{"evento": "fim", "n": 100000, "passo": "seed_b", "sistema": "weaviate", "swap_out_paginas": 1482, "ts_utc": "2026-11-16T05:53:02.644Z"}
+{"evento": "inicio", "n": 100000, "passo": "B", "sistema": "weaviate", "ts_utc": "2026-11-16T05:53:02.644Z"}
+{"evento": "fim", "n": 100000, "passo": "B", "sistema": "weaviate", "swap_out_paginas": 2056, "ts_utc": "2026-11-16T05:59:45.894Z"}
+{"evento": "inicio", "n": 100000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T05:59:45.895Z"}
+{"duracao_s": 12.771705446999476, "evento": "fim", "n": 100000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T05:59:58.667Z"}
+{"evento": "inicio", "n": 100000, "passo": "seed_b_eq", "sistema": "weaviate", "ts_utc": "2026-11-16T05:59:58.667Z"}
+{"evento": "fim", "n": 100000, "passo": "seed_b_eq", "sistema": "weaviate", "swap_out_paginas": 0, "ts_utc": "2026-11-16T06:00:17.313Z"}
+{"evento": "inicio", "n": 100000, "passo": "B_eq", "sistema": "weaviate", "ts_utc": "2026-11-16T06:00:17.313Z"}
+{"evento": "fim", "n": 100000, "passo": "B_eq", "sistema": "weaviate", "swap_out_paginas": 2121, "ts_utc": "2026-11-16T06:07:18.829Z"}
+{"evento": "inicio", "n": 100000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T06:07:18.829Z"}
+{"duracao_s": 12.200838945000214, "evento": "fim", "n": 100000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T06:07:31.030Z"}
+{"evento": "inicio", "n": 100000, "passo": "seed_a", "sistema": "weaviate", "ts_utc": "2026-11-16T06:07:31.031Z"}
+{"evento": "fim", "n": 100000, "passo": "seed_a", "sistema": "weaviate", "swap_out_paginas": 0, "ts_utc": "2026-11-16T06:07:49.023Z"}
+{"evento": "inicio", "n": 100000, "passo": "A", "sistema": "weaviate", "ts_utc": "2026-11-16T06:07:49.023Z"}
+{"evento": "fim", "n": 100000, "passo": "A", "sistema": "weaviate", "swap_out_paginas": 0, "ts_utc": "2026-11-16T06:08:30.498Z"}
+{"evento": "inicio", "n": 100000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T06:08:30.499Z"}
+{"duracao_s": 12.205755595999108, "evento": "fim", "n": 100000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T06:08:42.705Z"}
+{"evento": "fim", "n": 100000, "passo": "bloco", "sistema": "weaviate", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.2546632120001959, "ts_utc": "2026-11-16T06:08:42.960Z"}
+{"evento": "inicio", "n": 1000000, "passo": "bloco", "plano": ["seed_b", "B", "limpar", "seed_b_eq", "B_eq", "limpar", "seed_a", "A", "C", "limpar"], "sistema": "qdrant", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.25150255000062316, "ts_utc": "2026-11-16T06:09:00.926Z"}
+{"evento": "inicio", "n": 1000000, "passo": "dados", "sistema": "qdrant", "ts_utc": "2026-11-16T06:09:00.927Z"}
+{"evento": "fim", "n": 1000000, "passo": "dados", "sistema": "qdrant", "ts_utc": "2026-11-16T06:09:57.326Z"}
+{"evento": "inicio", "n": 1000000, "passo": "reiniciar", "sistema": "qdrant", "ts_utc": "2026-11-16T06:09:57.327Z"}
+{"duracao_s": 6.074643334000029, "evento": "fim", "n": 1000000, "passo": "reiniciar", "sistema": "qdrant", "ts_utc": "2026-11-16T06:10:03.401Z"}
+{"evento": "inicio", "n": 1000000, "passo": "seed_b", "sistema": "qdrant", "ts_utc": "2026-11-16T06:10:03.402Z"}
+{"evento": "fim", "n": 1000000, "passo": "seed_b", "sistema": "qdrant", "swap_out_paginas": 29887, "ts_utc": "2026-11-16T06:17:27.595Z"}
+{"evento": "inicio", "n": 1000000, "passo": "B", "sistema": "qdrant", "ts_utc": "2026-11-16T06:17:27.595Z"}
+{"evento": "fim", "n": 1000000, "passo": "B", "sistema": "qdrant", "swap_out_paginas": 41, "ts_utc": "2026-11-16T06:18:47.711Z"}
+{"evento": "inicio", "n": 1000000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T06:18:47.712Z"}
+{"duracao_s": 6.310902660000465, "evento": "fim", "n": 1000000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T06:18:54.023Z"}
+{"evento": "inicio", "n": 1000000, "passo": "seed_b_eq", "sistema": "qdrant", "ts_utc": "2026-11-16T06:18:54.023Z"}
+{"evento": "fim", "n": 1000000, "passo": "seed_b_eq", "sistema": "qdrant", "swap_out_paginas": 16752, "ts_utc": "2026-11-16T06:24:14.078Z"}
+{"evento": "inicio", "n": 1000000, "passo": "B_eq", "sistema": "qdrant", "ts_utc": "2026-11-16T06:24:14.078Z"}
+{"evento": "fim", "n": 1000000, "passo": "B_eq", "sistema": "qdrant", "swap_out_paginas": 15, "ts_utc": "2026-11-16T06:25:34.260Z"}
+{"evento": "inicio", "n": 1000000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T06:25:34.261Z"}
+{"duracao_s": 6.443497780999678, "evento": "fim", "n": 1000000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T06:25:40.704Z"}
+{"evento": "inicio", "n": 1000000, "passo": "seed_a", "sistema": "qdrant", "ts_utc": "2026-11-16T06:25:40.705Z"}
+{"evento": "fim", "n": 1000000, "passo": "seed_a", "sistema": "qdrant", "swap_out_paginas": 552, "ts_utc": "2026-11-16T06:30:34.508Z"}
+{"evento": "inicio", "n": 1000000, "passo": "A", "sistema": "qdrant", "ts_utc": "2026-11-16T06:30:34.508Z"}
+{"evento": "fim", "n": 1000000, "passo": "A", "sistema": "qdrant", "swap_out_paginas": 25, "ts_utc": "2026-11-16T06:32:03.783Z"}
+{"evento": "inicio", "n": 1000000, "passo": "C_total", "sistema": "qdrant", "ts_utc": "2026-11-16T06:32:03.783Z"}
+{"evento": "inicio", "n": 1000000, "passo": "C", "sistema": "qdrant", "ts_utc": "2026-11-16T06:32:03.784Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 0, "passo": "C", "sistema": "qdrant", "taxa": 0, "ts_utc": "2026-11-16T06:32:04.797Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 0, "passo": "C", "sistema": "qdrant", "taxa": 0, "ts_utc": "2026-11-16T06:33:10.818Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 1, "passo": "C", "sistema": "qdrant", "taxa": 10, "ts_utc": "2026-11-16T06:33:12.821Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 1, "passo": "C", "sistema": "qdrant", "taxa": 10, "ts_utc": "2026-11-16T06:34:19.829Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 2, "passo": "C", "sistema": "qdrant", "taxa": 100, "ts_utc": "2026-11-16T06:34:21.835Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 2, "passo": "C", "sistema": "qdrant", "taxa": 100, "ts_utc": "2026-11-16T06:35:29.323Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 3, "passo": "C", "sistema": "qdrant", "taxa": 1000, "ts_utc": "2026-11-16T06:35:31.328Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 3, "passo": "C", "sistema": "qdrant", "taxa": 1000, "ts_utc": "2026-11-16T06:36:38.919Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 4, "passo": "C", "sistema": "qdrant", "taxa": 0, "ts_utc": "2026-11-16T06:36:40.922Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 4, "passo": "C", "sistema": "qdrant", "taxa": 0, "ts_utc": "2026-11-16T06:37:46.947Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 5, "passo": "C", "sistema": "qdrant", "taxa": 0, "ts_utc": "2026-11-16T06:37:48.951Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 5, "passo": "C", "sistema": "qdrant", "taxa": 0, "ts_utc": "2026-11-16T06:38:54.975Z"}
+{"contagem": 1072261, "evento": "fim", "inseridos": 72261, "n": 1000000, "passo": "C", "sistema": "qdrant", "ts_utc": "2026-11-16T06:38:55.379Z"}
+{"evento": "inicio", "n": 1000000, "passo": "C_recall", "sistema": "qdrant", "ts_utc": "2026-11-16T06:38:55.379Z"}
+{"evento": "fim", "n": 1000000, "passo": "C_recall", "sistema": "qdrant", "ts_utc": "2026-11-16T06:39:22.366Z"}
+{"evento": "fim", "n": 1000000, "passo": "C_total", "sistema": "qdrant", "swap_out_paginas": 225, "ts_utc": "2026-11-16T06:39:22.368Z"}
+{"evento": "inicio", "n": 1000000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T06:39:22.368Z"}
+{"duracao_s": 6.300324441999692, "evento": "fim", "n": 1000000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T06:39:28.668Z"}
+{"evento": "fim", "n": 1000000, "passo": "bloco", "sistema": "qdrant", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.253787753999859, "ts_utc": "2026-11-16T06:39:28.922Z"}
+{"evento": "inicio", "n": 1000000, "passo": "bloco", "plano": ["seed_b", "B", "limpar", "seed_b_eq", "B_eq", "limpar", "seed_a", "A", "C", "limpar"], "sistema": "weaviate", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.2624090529989189, "ts_utc": "2026-11-16T06:39:29.908Z"}
+{"evento": "inicio", "n": 1000000, "passo": "dados", "sistema": "weaviate", "ts_utc": "2026-11-16T06:39:29.908Z"}
+{"evento": "fim", "n": 1000000, "passo": "dados", "sistema": "weaviate", "ts_utc": "2026-11-16T06:40:24.527Z"}
+{"evento": "inicio", "n": 1000000, "passo": "reiniciar", "sistema": "weaviate", "ts_utc": "2026-11-16T06:40:24.527Z"}
+{"duracao_s": 12.549535467000169, "evento": "fim", "n": 1000000, "passo": "reiniciar", "sistema": "weaviate", "ts_utc": "2026-11-16T06:40:37.077Z"}
+{"evento": "inicio", "n": 1000000, "passo": "seed_b", "sistema": "weaviate", "ts_utc": "2026-11-16T06:40:37.077Z"}
+{"evento": "fim", "n": 1000000, "passo": "seed_b", "sistema": "weaviate", "swap_out_paginas": 69918, "ts_utc": "2026-11-16T06:44:46.759Z"}
+{"evento": "inicio", "n": 1000000, "passo": "B", "sistema": "weaviate", "ts_utc": "2026-11-16T06:44:46.759Z"}
+{"evento": "fim", "n": 1000000, "passo": "B", "sistema": "weaviate", "swap_out_paginas": 23660, "ts_utc": "2026-11-16T07:00:06.669Z"}
+{"evento": "inicio", "n": 1000000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T07:00:06.669Z"}
+{"duracao_s": 20.142175809000037, "evento": "fim", "n": 1000000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T07:00:26.812Z"}
+{"evento": "inicio", "n": 1000000, "passo": "seed_b_eq", "sistema": "weaviate", "ts_utc": "2026-11-16T07:00:26.812Z"}
+{"evento": "fim", "n": 1000000, "passo": "seed_b_eq", "sistema": "weaviate", "swap_out_paginas": 2737, "ts_utc": "2026-11-16T07:04:36.624Z"}
+{"evento": "inicio", "n": 1000000, "passo": "B_eq", "sistema": "weaviate", "ts_utc": "2026-11-16T07:04:36.624Z"}
+{"evento": "fim", "n": 1000000, "passo": "B_eq", "sistema": "weaviate", "swap_out_paginas": 11258, "ts_utc": "2026-11-16T07:56:35.810Z"}
+{"evento": "inicio", "n": 1000000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T07:56:35.811Z"}
+{"duracao_s": 13.876740546000292, "evento": "fim", "n": 1000000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T07:56:49.688Z"}
+{"evento": "inicio", "n": 1000000, "passo": "seed_a", "sistema": "weaviate", "ts_utc": "2026-11-16T07:56:49.688Z"}
+{"evento": "fim", "n": 1000000, "passo": "seed_a", "sistema": "weaviate", "swap_out_paginas": 60961, "ts_utc": "2026-11-16T08:00:47.789Z"}
+{"evento": "inicio", "n": 1000000, "passo": "A", "sistema": "weaviate", "ts_utc": "2026-11-16T08:00:47.790Z"}
+{"evento": "fim", "n": 1000000, "passo": "A", "sistema": "weaviate", "swap_out_paginas": 0, "ts_utc": "2026-11-16T08:01:23.401Z"}
+{"evento": "inicio", "n": 1000000, "passo": "C_total", "sistema": "weaviate", "ts_utc": "2026-11-16T08:01:23.401Z"}
+{"evento": "inicio", "n": 1000000, "passo": "C", "sistema": "weaviate", "ts_utc": "2026-11-16T08:01:23.409Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 0, "passo": "C", "sistema": "weaviate", "taxa": 0, "ts_utc": "2026-11-16T08:01:24.423Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 0, "passo": "C", "sistema": "weaviate", "taxa": 0, "ts_utc": "2026-11-16T08:02:30.483Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 1, "passo": "C", "sistema": "weaviate", "taxa": 10, "ts_utc": "2026-11-16T08:02:32.486Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 1, "passo": "C", "sistema": "weaviate", "taxa": 10, "ts_utc": "2026-11-16T08:03:39.991Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 2, "passo": "C", "sistema": "weaviate", "taxa": 100, "ts_utc": "2026-11-16T08:03:41.995Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 2, "passo": "C", "sistema": "weaviate", "taxa": 100, "ts_utc": "2026-11-16T08:04:49.025Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 3, "passo": "C", "sistema": "weaviate", "taxa": 1000, "ts_utc": "2026-11-16T08:04:51.030Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 3, "passo": "C", "sistema": "weaviate", "taxa": 1000, "ts_utc": "2026-11-16T08:05:58.399Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 4, "passo": "C", "sistema": "weaviate", "taxa": 0, "ts_utc": "2026-11-16T08:06:00.404Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 4, "passo": "C", "sistema": "weaviate", "taxa": 0, "ts_utc": "2026-11-16T08:07:06.419Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 5, "passo": "C", "sistema": "weaviate", "taxa": 0, "ts_utc": "2026-11-16T08:07:08.424Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 5, "passo": "C", "sistema": "weaviate", "taxa": 0, "ts_utc": "2026-11-16T08:08:14.446Z"}
+{"contagem": 1072261, "evento": "fim", "inseridos": 72261, "n": 1000000, "passo": "C", "sistema": "weaviate", "ts_utc": "2026-11-16T08:08:15.988Z"}
+{"evento": "inicio", "n": 1000000, "passo": "C_recall", "sistema": "weaviate", "ts_utc": "2026-11-16T08:08:15.989Z"}
+{"evento": "fim", "n": 1000000, "passo": "C_recall", "sistema": "weaviate", "ts_utc": "2026-11-16T08:08:54.601Z"}
+{"evento": "fim", "n": 1000000, "passo": "C_total", "sistema": "weaviate", "swap_out_paginas": 1643, "ts_utc": "2026-11-16T08:08:54.602Z"}
+{"evento": "inicio", "n": 1000000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T08:08:54.603Z"}
+{"duracao_s": 13.57828879200133, "evento": "fim", "n": 1000000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T08:09:08.181Z"}
+{"evento": "fim", "n": 1000000, "passo": "bloco", "sistema": "weaviate", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.2432689389988809, "ts_utc": "2026-11-16T08:09:08.425Z"}
+{"evento": "inicio", "n": 1000000, "passo": "bloco", "plano": ["seed_b", "A", "B", "btree", "B_eq", "drop_btree", "C", "limpar"], "sistema": "pgvector", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.2542562739999994, "ts_utc": "2026-11-16T08:09:09.343Z"}
+{"evento": "inicio", "n": 1000000, "passo": "dados", "sistema": "pgvector", "ts_utc": "2026-11-16T08:09:09.343Z"}
+{"evento": "fim", "n": 1000000, "passo": "dados", "sistema": "pgvector", "ts_utc": "2026-11-16T08:10:04.890Z"}
+{"evento": "inicio", "n": 1000000, "passo": "reiniciar", "sistema": "pgvector", "ts_utc": "2026-11-16T08:10:04.890Z"}
+{"duracao_s": 6.7422321810008725, "evento": "fim", "n": 1000000, "passo": "reiniciar", "sistema": "pgvector", "ts_utc": "2026-11-16T08:10:11.632Z"}
+{"evento": "inicio", "n": 1000000, "passo": "seed_b", "sistema": "pgvector", "ts_utc": "2026-11-16T08:10:11.634Z"}
+{"evento": "fim", "n": 1000000, "passo": "seed_b", "sistema": "pgvector", "swap_out_paginas": 616984, "ts_utc": "2026-11-16T09:08:34.775Z"}
+{"evento": "inicio", "n": 1000000, "passo": "A", "sistema": "pgvector", "ts_utc": "2026-11-16T09:08:34.778Z"}
+{"evento": "fim", "n": 1000000, "passo": "A", "sistema": "pgvector", "swap_out_paginas": 0, "ts_utc": "2026-11-16T09:09:58.414Z"}
+{"evento": "inicio", "n": 1000000, "passo": "B", "sistema": "pgvector", "ts_utc": "2026-11-16T09:09:58.415Z"}
+{"evento": "fim", "n": 1000000, "passo": "B", "sistema": "pgvector", "swap_out_paginas": 0, "ts_utc": "2026-11-16T09:11:04.970Z"}
+{"evento": "inicio", "n": 1000000, "passo": "btree", "sistema": "pgvector", "ts_utc": "2026-11-16T09:11:04.970Z"}
+{"evento": "fim", "n": 1000000, "passo": "btree", "sistema": "pgvector", "swap_out_paginas": 0, "ts_utc": "2026-11-16T09:11:07.183Z"}
+{"evento": "inicio", "n": 1000000, "passo": "B_eq", "sistema": "pgvector", "ts_utc": "2026-11-16T09:11:08.241Z"}
+{"evento": "fim", "n": 1000000, "passo": "B_eq", "sistema": "pgvector", "swap_out_paginas": 0, "ts_utc": "2026-11-16T09:12:19.220Z"}
+{"evento": "fim", "n": 1000000, "passo": "drop_btree", "sistema": "pgvector", "ts_utc": "2026-11-16T09:12:19.232Z"}
+{"evento": "inicio", "n": 1000000, "passo": "C_total", "sistema": "pgvector", "ts_utc": "2026-11-16T09:12:19.232Z"}
+{"evento": "inicio", "n": 1000000, "passo": "C", "sistema": "pgvector", "ts_utc": "2026-11-16T09:12:19.238Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 0, "passo": "C", "sistema": "pgvector", "taxa": 0, "ts_utc": "2026-11-16T09:12:20.364Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 0, "passo": "C", "sistema": "pgvector", "taxa": 0, "ts_utc": "2026-11-16T09:13:26.405Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 1, "passo": "C", "sistema": "pgvector", "taxa": 10, "ts_utc": "2026-11-16T09:13:28.409Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 1, "passo": "C", "sistema": "pgvector", "taxa": 10, "ts_utc": "2026-11-16T09:14:35.389Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 2, "passo": "C", "sistema": "pgvector", "taxa": 100, "ts_utc": "2026-11-16T09:14:37.394Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 2, "passo": "C", "sistema": "pgvector", "taxa": 100, "ts_utc": "2026-11-16T09:15:44.193Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 3, "passo": "C", "sistema": "pgvector", "taxa": 1000, "ts_utc": "2026-11-16T09:15:58.080Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 3, "passo": "C", "sistema": "pgvector", "taxa": 1000, "ts_utc": "2026-11-16T09:17:04.752Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 4, "passo": "C", "sistema": "pgvector", "taxa": 0, "ts_utc": "2026-11-16T09:17:06.755Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 4, "passo": "C", "sistema": "pgvector", "taxa": 0, "ts_utc": "2026-11-16T09:18:12.775Z"}
+{"evento": "janela_inicio", "n": 1000000, "ordem": 5, "passo": "C", "sistema": "pgvector", "taxa": 0, "ts_utc": "2026-11-16T09:18:14.779Z"}
+{"evento": "janela_fim", "n": 1000000, "ordem": 5, "passo": "C", "sistema": "pgvector", "taxa": 0, "ts_utc": "2026-11-16T09:19:20.795Z"}
+{"contagem": 1012961, "evento": "fim", "inseridos": 12961, "n": 1000000, "passo": "C", "sistema": "pgvector", "ts_utc": "2026-11-16T09:19:21.246Z"}
+{"evento": "inicio", "n": 1000000, "passo": "C_recall", "sistema": "pgvector", "ts_utc": "2026-11-16T09:19:21.247Z"}
+{"evento": "fim", "n": 1000000, "passo": "C_recall", "sistema": "pgvector", "ts_utc": "2026-11-16T09:19:44.502Z"}
+{"evento": "fim", "n": 1000000, "passo": "C_total", "sistema": "pgvector", "swap_out_paginas": 0, "ts_utc": "2026-11-16T09:19:44.503Z"}
+{"evento": "inicio", "n": 1000000, "passo": "limpar", "sistema": "pgvector", "ts_utc": "2026-11-16T09:19:44.504Z"}
+{"duracao_s": 19.14849713899821, "evento": "fim", "n": 1000000, "passo": "limpar", "sistema": "pgvector", "ts_utc": "2026-11-16T09:20:03.652Z"}
+{"evento": "fim", "n": 1000000, "passo": "bloco", "sistema": "pgvector", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.2613072549975186, "ts_utc": "2026-11-16T09:20:03.914Z"}
+{"evento": "inicio", "n": 500000, "passo": "bloco", "plano": ["seed_b", "B", "limpar", "seed_b_eq", "B_eq", "limpar", "seed_a", "A", "limpar"], "sistema": "weaviate", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.24556732500059297, "ts_utc": "2026-11-16T09:20:28.086Z"}
+{"evento": "inicio", "n": 500000, "passo": "dados", "sistema": "weaviate", "ts_utc": "2026-11-16T09:20:28.086Z"}
+{"evento": "fim", "n": 500000, "passo": "dados", "sistema": "weaviate", "ts_utc": "2026-11-16T09:20:57.039Z"}
+{"evento": "inicio", "n": 500000, "passo": "reiniciar", "sistema": "weaviate", "ts_utc": "2026-11-16T09:20:57.039Z"}
+{"duracao_s": 12.035493802999554, "evento": "fim", "n": 500000, "passo": "reiniciar", "sistema": "weaviate", "ts_utc": "2026-11-16T09:21:09.074Z"}
+{"evento": "inicio", "n": 500000, "passo": "seed_b", "sistema": "weaviate", "ts_utc": "2026-11-16T09:21:09.077Z"}
+{"evento": "fim", "n": 500000, "passo": "seed_b", "sistema": "weaviate", "swap_out_paginas": 1232, "ts_utc": "2026-11-16T09:23:13.967Z"}
+{"evento": "inicio", "n": 500000, "passo": "B", "sistema": "weaviate", "ts_utc": "2026-11-16T09:23:13.968Z"}
+{"evento": "fim", "n": 500000, "passo": "B", "sistema": "weaviate", "swap_out_paginas": 0, "ts_utc": "2026-11-16T09:30:46.057Z"}
+{"evento": "inicio", "n": 500000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T09:30:46.057Z"}
+{"duracao_s": 21.503971747999458, "evento": "fim", "n": 500000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T09:31:07.561Z"}
+{"evento": "inicio", "n": 500000, "passo": "seed_b_eq", "sistema": "weaviate", "ts_utc": "2026-11-16T09:31:07.562Z"}
+{"evento": "fim", "n": 500000, "passo": "seed_b_eq", "sistema": "weaviate", "swap_out_paginas": 0, "ts_utc": "2026-11-16T09:32:53.620Z"}
+{"evento": "inicio", "n": 500000, "passo": "B_eq", "sistema": "weaviate", "ts_utc": "2026-11-16T09:32:53.620Z"}
+{"evento": "fim", "n": 500000, "passo": "B_eq", "sistema": "weaviate", "swap_out_paginas": 5, "ts_utc": "2026-11-16T09:58:35.176Z"}
+{"evento": "inicio", "n": 500000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T09:58:35.177Z"}
+{"duracao_s": 12.248156855999696, "evento": "fim", "n": 500000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T09:58:47.425Z"}
+{"evento": "inicio", "n": 500000, "passo": "seed_a", "sistema": "weaviate", "ts_utc": "2026-11-16T09:58:47.425Z"}
+{"evento": "fim", "n": 500000, "passo": "seed_a", "sistema": "weaviate", "swap_out_paginas": 6, "ts_utc": "2026-11-16T10:00:34.036Z"}
+{"evento": "inicio", "n": 500000, "passo": "A", "sistema": "weaviate", "ts_utc": "2026-11-16T10:00:34.037Z"}
+{"evento": "fim", "n": 500000, "passo": "A", "sistema": "weaviate", "swap_out_paginas": 0, "ts_utc": "2026-11-16T10:01:25.599Z"}
+{"evento": "inicio", "n": 500000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T10:01:25.600Z"}
+{"duracao_s": 12.075254211998981, "evento": "fim", "n": 500000, "passo": "limpar", "sistema": "weaviate", "ts_utc": "2026-11-16T10:01:37.675Z"}
+{"evento": "fim", "n": 500000, "passo": "bloco", "sistema": "weaviate", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.2568527269977494, "ts_utc": "2026-11-16T10:01:37.932Z"}
+{"evento": "inicio", "n": 500000, "passo": "bloco", "plano": ["seed_b", "A", "B", "btree", "B_eq", "limpar"], "sistema": "pgvector", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.252364628999203, "ts_utc": "2026-11-16T10:01:38.774Z"}
+{"evento": "inicio", "n": 500000, "passo": "dados", "sistema": "pgvector", "ts_utc": "2026-11-16T10:01:38.774Z"}
+{"evento": "fim", "n": 500000, "passo": "dados", "sistema": "pgvector", "ts_utc": "2026-11-16T10:02:06.642Z"}
+{"evento": "inicio", "n": 500000, "passo": "reiniciar", "sistema": "pgvector", "ts_utc": "2026-11-16T10:02:06.642Z"}
+{"duracao_s": 6.71855709999727, "evento": "fim", "n": 500000, "passo": "reiniciar", "sistema": "pgvector", "ts_utc": "2026-11-16T10:02:13.360Z"}
+{"evento": "inicio", "n": 500000, "passo": "seed_b", "sistema": "pgvector", "ts_utc": "2026-11-16T10:02:13.361Z"}
+{"evento": "fim", "n": 500000, "passo": "seed_b", "sistema": "pgvector", "swap_out_paginas": 16005, "ts_utc": "2026-11-16T10:23:33.861Z"}
+{"evento": "inicio", "n": 500000, "passo": "A", "sistema": "pgvector", "ts_utc": "2026-11-16T10:23:33.861Z"}
+{"evento": "fim", "n": 500000, "passo": "A", "sistema": "pgvector", "swap_out_paginas": 394, "ts_utc": "2026-11-16T10:25:08.753Z"}
+{"evento": "inicio", "n": 500000, "passo": "B", "sistema": "pgvector", "ts_utc": "2026-11-16T10:25:08.755Z"}
+{"evento": "fim", "n": 500000, "passo": "B", "sistema": "pgvector", "swap_out_paginas": 0, "ts_utc": "2026-11-16T10:26:16.789Z"}
+{"evento": "inicio", "n": 500000, "passo": "btree", "sistema": "pgvector", "ts_utc": "2026-11-16T10:26:16.790Z"}
+{"evento": "fim", "n": 500000, "passo": "btree", "sistema": "pgvector", "swap_out_paginas": 0, "ts_utc": "2026-11-16T10:26:17.160Z"}
+{"evento": "inicio", "n": 500000, "passo": "B_eq", "sistema": "pgvector", "ts_utc": "2026-11-16T10:26:18.182Z"}
+{"evento": "fim", "n": 500000, "passo": "B_eq", "sistema": "pgvector", "swap_out_paginas": 0, "ts_utc": "2026-11-16T10:27:21.857Z"}
+{"evento": "inicio", "n": 500000, "passo": "limpar", "sistema": "pgvector", "ts_utc": "2026-11-16T10:27:21.858Z"}
+{"duracao_s": 6.441572846000781, "evento": "fim", "n": 500000, "passo": "limpar", "sistema": "pgvector", "ts_utc": "2026-11-16T10:27:28.299Z"}
+{"evento": "fim", "n": 500000, "passo": "bloco", "sistema": "pgvector", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.24918854300267412, "ts_utc": "2026-11-16T10:27:28.549Z"}
+{"evento": "inicio", "n": 500000, "passo": "bloco", "plano": ["seed_b", "B", "limpar", "seed_b_eq", "B_eq", "limpar", "seed_a", "A", "limpar"], "sistema": "qdrant", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.2435398890011129, "ts_utc": "2026-11-16T10:27:29.415Z"}
+{"evento": "inicio", "n": 500000, "passo": "dados", "sistema": "qdrant", "ts_utc": "2026-11-16T10:27:29.415Z"}
+{"evento": "fim", "n": 500000, "passo": "dados", "sistema": "qdrant", "ts_utc": "2026-11-16T10:27:58.306Z"}
+{"evento": "inicio", "n": 500000, "passo": "reiniciar", "sistema": "qdrant", "ts_utc": "2026-11-16T10:27:58.306Z"}
+{"duracao_s": 5.676911186998041, "evento": "fim", "n": 500000, "passo": "reiniciar", "sistema": "qdrant", "ts_utc": "2026-11-16T10:28:03.983Z"}
+{"evento": "inicio", "n": 500000, "passo": "seed_b", "sistema": "qdrant", "ts_utc": "2026-11-16T10:28:03.985Z"}
+{"evento": "fim", "n": 500000, "passo": "seed_b", "sistema": "qdrant", "swap_out_paginas": 0, "ts_utc": "2026-11-16T10:31:22.320Z"}
+{"evento": "inicio", "n": 500000, "passo": "B", "sistema": "qdrant", "ts_utc": "2026-11-16T10:31:22.320Z"}
+{"evento": "fim", "n": 500000, "passo": "B", "sistema": "qdrant", "swap_out_paginas": 0, "ts_utc": "2026-11-16T10:32:40.753Z"}
+{"evento": "inicio", "n": 500000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T10:32:40.754Z"}
+{"duracao_s": 6.122642598998937, "evento": "fim", "n": 500000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T10:32:46.876Z"}
+{"evento": "inicio", "n": 500000, "passo": "seed_b_eq", "sistema": "qdrant", "ts_utc": "2026-11-16T10:32:46.877Z"}
+{"evento": "fim", "n": 500000, "passo": "seed_b_eq", "sistema": "qdrant", "swap_out_paginas": 5, "ts_utc": "2026-11-16T10:34:59.393Z"}
+{"evento": "inicio", "n": 500000, "passo": "B_eq", "sistema": "qdrant", "ts_utc": "2026-11-16T10:34:59.393Z"}
+{"evento": "fim", "n": 500000, "passo": "B_eq", "sistema": "qdrant", "swap_out_paginas": 0, "ts_utc": "2026-11-16T10:36:21.260Z"}
+{"evento": "inicio", "n": 500000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T10:36:21.261Z"}
+{"duracao_s": 6.13947207000092, "evento": "fim", "n": 500000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T10:36:27.400Z"}
+{"evento": "inicio", "n": 500000, "passo": "seed_a", "sistema": "qdrant", "ts_utc": "2026-11-16T10:36:27.401Z"}
+{"evento": "fim", "n": 500000, "passo": "seed_a", "sistema": "qdrant", "swap_out_paginas": 0, "ts_utc": "2026-11-16T10:38:32.420Z"}
+{"evento": "inicio", "n": 500000, "passo": "A", "sistema": "qdrant", "ts_utc": "2026-11-16T10:38:32.420Z"}
+{"evento": "fim", "n": 500000, "passo": "A", "sistema": "qdrant", "swap_out_paginas": 0, "ts_utc": "2026-11-16T10:40:02.627Z"}
+{"evento": "inicio", "n": 500000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T10:40:02.628Z"}
+{"duracao_s": 6.169175619997986, "evento": "fim", "n": 500000, "passo": "limpar", "sistema": "qdrant", "ts_utc": "2026-11-16T10:40:08.797Z"}
+{"evento": "fim", "n": 500000, "passo": "bloco", "sistema": "qdrant", "sonda_cpu_iteracoes": 3000000, "sonda_cpu_s": 0.24609867799881613, "ts_utc": "2026-11-16T10:40:09.044Z"}

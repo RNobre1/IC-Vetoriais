@@ -1,0 +1,23 @@
+2026-11-16T05:39:36Z
+commit: e97b303cb9b3f3700828577f703c38f073d1b18c
+7.1.5-200.fc44.x86_64
+governor: performance
+CPU(s):                                  16
+Model name:                              13th Gen Intel(R) Core(TM) i5-13450HX
+Thread(s) per core:                      2
+Core(s) per socket:                      10
+CPU(s) scaling MHz:                      59%
+CPU max MHz:                             4600,0000
+CPU min MHz:                             800,0000
+NAME       ALGORITHM DISKSIZE  DATA  COMPR TOTAL STREAMS MOUNTPOINT
+/dev/zram0 lzo-rle         8G  404K 117,3K  944K         [SWAP]
+NAME       TYPE      SIZE USED PRIO
+/dev/zram0 partition   8G 400K  100
+               total        used        free      shared  buff/cache   available
+Mem:           15662        4251        2517         362        9595       11411
+Swap:           8191           0        8191
+docker 29.6.2
+/ic-pgvector sha256:b48c110f4911eb3d73ba7b6bd8964a5f26be740c2d580158530471c3c0f66487 pgvector/pgvector:0.8.2-pg18-bookworm
+/ic-qdrant sha256:94728574965d17c6485dd361aa3c0818b325b9016dac5ea6afec7b4b2700865f qdrant/qdrant:v1.17.1
+/ic-weaviate sha256:d6cef8c3126d6fad0adc3130c8641b7b36033a4267f20b4b4de5b423cee8cf21 semitechnologies/weaviate:1.37.2
+escalas: 100000 1000000 500000 | C em: 1000000 | ponte: 1 | extra: 
