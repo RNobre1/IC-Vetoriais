@@ -69,7 +69,7 @@ Valores nas tabelas geradas em `docx/relatorio_parcial/gerado/` (`make tabelas`)
 ## Observações
 
 - A queda de latência sob escrita no Qdrant e no Weaviate vista na sessão anterior não se repete: com a frequência fixa, a mediana sobe com a taxa de escrita nos três sistemas. Era efeito do turbo.
-- Concordância com a sessão anterior (verificação pedida pelo contraponto; fora do relatório): recall do Cenário A com diferença mediana de 0,001 e máxima de 0,0098 (pgvector 500k, ef = 16); B equalizado até 0,0152 (Weaviate 1%, 100k) — variação entre construções independentes do grafo, maior em ef baixo. Disco do pgvector idêntico; Weaviate até 11%; Qdrant não comparável. Memória do Weaviate em 1M: 4,0 GiB de RSS Δ (antes 4,5).
+- Concordância com a sessão anterior (verificação pedida pelo contraponto; fora do relatório): recall do Cenário A com diferença mediana de 0,001 e máxima de 0,0098 (pgvector 500k, ef = 16); B equalizado até 0,0152 (Weaviate 1%, 100k) — variação entre construções independentes do grafo, maior em ef baixo. Disco do pgvector idêntico; Weaviate até 11%; Qdrant não comparável. Memória do Weaviate em 1M: 3,9 GiB de RSS Δ (antes 4,5).
 - O RSS Δ do pgvector em 1M (1.951,6 MiB) inclui páginas de arquivo ativas logo após o índice; a memória anônima nas consultas fica em dezenas de MiB.
 - O índice do Qdrant ficou 44% mais lento sem turbo, o do Weaviate 27% e o do pgvector 23%; a razão pgvector/Weaviate em 1M quase não mudou (14,4 → 14,0).
 
