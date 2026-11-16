@@ -247,16 +247,13 @@ def test_linhas_cenario_c_hospedeiro_assentamento():
 
 
 def test_referencia_preliminar_hospedeiro_1m():
-    """Valida valores de referência de frequência da CPU no Cenário C da sessão preliminar."""
-    p_results = Path(
-        "/Users/rnobre/.traycer/epics/04d7ef96-f88f-4c9b-9007-745670c439de/scratch/preliminar/results"
-    )
+    """Valida valores de referência de frequência da CPU no Cenário C da sessão final versionada."""
+    p_results = Path(__file__).resolve().parents[2] / "results"
     sessao_dir = p_results / "sessoes" / "2026-11-16-final"
     csv_path = sessao_dir / "monitor_023936.csv"
     marcos_path = sessao_dir / "marcos.jsonl"
 
-    if not csv_path.exists() or not marcos_path.exists():
-        return
+    assert csv_path.exists() and marcos_path.exists()
 
     sessao = carregar_sessao(p_results, marcos_path)
     linhas = linhas_cenario_c_hospedeiro(sessao, 1000000, amostras_monitor=csv_path)

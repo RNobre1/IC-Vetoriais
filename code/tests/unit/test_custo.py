@@ -143,16 +143,13 @@ def test_calcular_custo_filtra_fases_irrelevantes():
 
 
 def test_referencia_preliminar_custo_1m():
-    """Valida valores de referência da sessão preliminar (1M pgvector seed_b e 1M Weaviate B)."""
-    p_results = Path(
-        "/Users/rnobre/.traycer/epics/04d7ef96-f88f-4c9b-9007-745670c439de/scratch/preliminar/results"
-    )
+    """Valida valores de referência da sessão final versionada (1M pgvector seed_b e 1M Weaviate B)."""
+    p_results = Path(__file__).resolve().parents[2] / "results"
     sessao_dir = p_results / "sessoes" / "2026-11-16-final"
     csv_path = sessao_dir / "monitor_023936.csv"
     marcos_path = sessao_dir / "marcos.jsonl"
 
-    if not csv_path.exists() or not marcos_path.exists():
-        return
+    assert csv_path.exists() and marcos_path.exists()
 
     metricas = calcular_custo(csv_path, marcos_path)
 
