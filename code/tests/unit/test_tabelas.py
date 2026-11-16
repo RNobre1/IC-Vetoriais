@@ -7,6 +7,7 @@ from analise.tabelas import (
     linhas_cenario_a,
     linhas_cenario_b,
     linhas_cenario_c,
+    linhas_cenario_c_hospedeiro,
     linhas_controle_weaviate,
     linhas_ponte,
     linhas_recursos,
@@ -173,3 +174,98 @@ def test_linhas_controle_weaviate():
     linhas = linhas_controle_weaviate(sessao, n=500000)
     assert "16 & 0,9076 & 0,9067 & 0,0009 & Sim \\\\" in linhas
     assert "32 & 0,9189 & 0,9100 & 0,0089 & Não \\\\" in linhas
+
+
+def test_linhas_cenario_c_hospedeiro():
+    sessao = carregar_sessao(FIXTURES_DIR / "jsons", FIXTURES_DIR / "marcos.jsonl")
+
+    # 1. Sem amostras de monitor: deve preencher com ---
+    linhas_vazio = linhas_cenario_c_hospedeiro(sessao, n=5000, amostras_monitor=[])
+    assert r"\multirow{2}{*}{pgvector}" in linhas_vazio
+    assert " & 1 & 0 & --- & --- & --- \\\\" in linhas_vazio
+    assert " & 2 & 10 & --- & --- & --- \\\\" in linhas_vazio
+    assert r"\hline" in linhas_vazio
+
+    # 2. Com amostras sintéticas na janela
+    amostras = [
+        {
+            "ts_utc": "2026-11-15T14:51:46.000Z",
+            "cpu_mhz_medio": "2500.0",
+            "cpu_host_ocupado": "100",
+            "cpu_host_total": "1000",
+            "psi_cpu_some_avg10": "0.10",
+        },
+        {
+            "ts_utc": "2026-11-15T14:51:50.000Z",
+            "cpu_mhz_medio": "2700.0",
+            "cpu_host_ocupado": "250",
+            "cpu_host_total": "1600",
+            "psi_cpu_some_avg10": "0.35",
+        },
+    ]
+    linhas_com_dados = linhas_cenario_c_hospedeiro(sessao, n=5000, amostras_monitor=amostras)
+    # Janela 1: MHz médio = (2500+2700)/2 = 2600; CPU ocup = (250-100)/(1600-1000)*100 = 25%; PSI pico = 0.35
+    assert " & 1 & 0 & 2.600 & 25 & 0,35 \\\\" in linhas_com_dados
+    # Janela 2 (sem amostras): ---
+    assert " & 2 & 10 & --- & --- & --- \\\\" in linhas_com_dados
+
+
+def test_linhas_cenario_c_hospedeiro_assentamento():
+    dados_c = {
+        "cenario": "C",
+        "sistema": "weaviate",
+        "n": 5000,
+        "pontos": [
+            {
+                "parametros": {"ordem_janela": 5, "taxa_alvo": 0},
+                "ambiente": {
+                    "assentar_s": 5.0,
+                    "inicio_utc": "2026-11-15T15:00:00Z",
+                    "fim_utc": "2026-11-15T15:01:00Z",
+                },
+            }
+        ],
+    }
+    sessao = Sessao(
+        arquivos={
+            ("C", "weaviate", 5000): ArquivoSessao(
+                caminho=Path("dummy_c.json"),
+                cenario="C",
+                sistema="weaviate",
+                n=5000,
+                condicao="C",
+                timestamp_utc="2026-11-15T15-00-00Z",
+                dados=dados_c,
+            )
+        }
+    )
+    linhas = linhas_cenario_c_hospedeiro(sessao, n=5000, amostras_monitor=[])
+    assert " & 6* & 0 & --- & --- & --- \\\\" in linhas
+
+
+def test_referencia_preliminar_hospedeiro_1m():
+    """Valida valores de referência de frequência da CPU no Cenário C da sessão preliminar."""
+    p_results = Path(
+        "/Users/rnobre/.traycer/epics/04d7ef96-f88f-4c9b-9007-745670c439de/scratch/preliminar/results"
+    )
+    sessao_dir = p_results / "sessoes" / "2026-11-16-final"
+    csv_path = sessao_dir / "monitor_023936.csv"
+    marcos_path = sessao_dir / "marcos.jsonl"
+
+    if not csv_path.exists() or not marcos_path.exists():
+        return
+
+    sessao = carregar_sessao(p_results, marcos_path)
+    linhas = linhas_cenario_c_hospedeiro(sessao, 1000000, amostras_monitor=csv_path)
+
+    # pgvector janela 1 (alvo 0): ~1728 MHz
+    assert r"\multirow{6}{*}{pgvector}" in linhas
+    assert " & 1 & 0 & 1.728 & 8 & 0,00 \\\\" in linhas
+
+    # Qdrant janela de 1000 (janela 4): ~2933 MHz
+    assert r"\multirow{6}{*}{Qdrant}" in linhas
+    assert " & 4 & 1.000 & 2.933 & 26 & 0,48 \\\\" in linhas
+
+    # Weaviate janela de 1000 (janela 4): ~3540 MHz
+    assert r"\multirow{6}{*}{Weaviate}" in linhas
+    assert " & 4 & 1.000 & 3.540 & 23 & 1,34 \\\\" in linhas

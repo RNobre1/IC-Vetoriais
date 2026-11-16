@@ -1,5 +1,7 @@
 """Teste de frescor das tabelas geradas para o relatório."""
 
+from pathlib import Path
+
 import pytest
 
 from analise.config_oficial import (
@@ -9,6 +11,8 @@ from analise.config_oficial import (
     SESSAO_DIR,
 )
 from analise.gerar import gerar_artefatos
+
+FIXTURES_DIR = Path(__file__).parent / "fixtures" / "analise"
 
 
 def test_frescor_tabelas_geradas(tmp_path):
@@ -47,3 +51,38 @@ def test_frescor_tabelas_geradas(tmp_path):
     for arquivo_regerado in tmp_tabelas.glob("*.tex"):
         arquivo_tex = SAIDA_TABELAS / arquivo_regerado.name
         assert arquivo_tex.exists(), f"Tabela {arquivo_regerado.name} foi gerada mas não existe na pasta oficial {SAIDA_TABELAS}."
+
+
+def test_frescor_sintetico_com_fixtures(tmp_path):
+    """Valida a mecânica do teste de frescor (regeração idêntica e detecção de tabela faltante)."""
+    pasta_oficial = tmp_path / "gerado_oficial"
+    pasta_regerada = tmp_path / "regerada"
+
+    gerar_artefatos(
+        results_dir=FIXTURES_DIR / "jsons",
+        sessao_dir=FIXTURES_DIR,
+        marcos_path=FIXTURES_DIR / "marcos.jsonl",
+        monitor_csv=FIXTURES_DIR / "monitor_synthetic.csv",
+        anterior_paths=[FIXTURES_DIR / "anterior_A_100k.json"],
+        saida_tabelas=pasta_oficial,
+        saida_figuras=tmp_path / "figuras",
+    )
+
+    assert (pasta_oficial / "tab_c_hospedeiro_5000.tex").exists()
+    assert (pasta_oficial / "tab_custo.tex").exists()
+    assert (pasta_oficial / "tab_custo_5000.tex").exists()
+
+    gerar_artefatos(
+        results_dir=FIXTURES_DIR / "jsons",
+        sessao_dir=FIXTURES_DIR,
+        marcos_path=FIXTURES_DIR / "marcos.jsonl",
+        monitor_csv=FIXTURES_DIR / "monitor_synthetic.csv",
+        anterior_paths=[FIXTURES_DIR / "anterior_A_100k.json"],
+        saida_tabelas=pasta_regerada,
+        saida_figuras=tmp_path / "figuras",
+    )
+
+    for arq in pasta_oficial.glob("*.tex"):
+        regerado = pasta_regerada / arq.name
+        assert regerado.exists()
+        assert regerado.read_bytes() == arq.read_bytes()
