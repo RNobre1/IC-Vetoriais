@@ -41,3 +41,15 @@ def test_gerar_artefatos_completo(tmp_path):
 
     # Avisos capturados
     assert isinstance(avisos, list)
+
+
+def test_makefile_tabelas_alvo_imprime_avisos():
+    makefile = Path(__file__).parents[2] / "Makefile"
+    assert makefile.exists()
+    conteudo = makefile.read_text(encoding="utf-8")
+
+    # Localiza o alvo tabelas:
+    assert "tabelas:" in conteudo
+    trecho = conteudo.split("tabelas:")[1].split("\n\n")[0]
+    # Deve imprimir os avisos com prefixo AVISO:
+    assert "AVISO:" in trecho

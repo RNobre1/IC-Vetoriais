@@ -121,4 +121,4 @@ clean:  ## Remove containers, volumes Docker e caches Python
 	find . -type d -name __pycache__ -exec rm -rf {} +
 
 tabelas:  ## Gera tabelas e figuras oficiais a partir de analise.config_oficial
-	$(PYTHON) -c "from analise.config_oficial import RESULTS_DIR, SESSAO_DIR, ANTERIOR_PATHS, SAIDA_TABELAS, SAIDA_FIGURAS; from analise.gerar import gerar_artefatos; gerar_artefatos(results_dir=RESULTS_DIR, sessao_dir=SESSAO_DIR, anterior_paths=ANTERIOR_PATHS, saida_tabelas=SAIDA_TABELAS, saida_figuras=SAIDA_FIGURAS)"
+	$(PYTHON) -c "from analise.config_oficial import RESULTS_DIR, SESSAO_DIR, ANTERIOR_PATHS, SAIDA_TABELAS, SAIDA_FIGURAS; from analise.gerar import gerar_artefatos; [print(f'AVISO: {a}') for a in gerar_artefatos(results_dir=RESULTS_DIR, sessao_dir=SESSAO_DIR, anterior_paths=ANTERIOR_PATHS, saida_tabelas=SAIDA_TABELAS, saida_figuras=SAIDA_FIGURAS)]"
