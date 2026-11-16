@@ -7,6 +7,7 @@ dataset: "MS MARCO passages"
 dataset_tamanho_n: [100000, 500000, 1000000]
 tags: [sessão-final, escala-1m, cenario-c, recursos, reprodutibilidade, etapa-4]
 status: anterior
+vigente_em: "[[2026-11-16-sessao-cpu-fixa]]"
 ---
 
 # Experimento: sessão de medição final (100k, 500k e 1M; Cenários A, B e C)

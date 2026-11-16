@@ -38,8 +38,21 @@ Em D10d, o contraponto reprovou a omissão da sessão descartada no relatório e
 - O relatório final e o pitch são reescritos com a sessão `2026-11-16-cpu-fixa`.
 - Verificações depois da sessão: sondas estáveis (±5%), `cpu_mhz_medio` do monitor nunca acima de 2.400 MHz, `throttle_total` sem salto, nenhum bloco recusado pela checagem de CPU e a regra de D10c aplicada.
 
+## Verificação (16/11/2026, 19h)
+
+Executada depois da sessão (`code/results/sessoes/2026-11-16-cpu-fixa/verificacao_hospedeiro.txt`) e antes de abrir os resultados:
+
+- Checagem da CPU em todos os blocos: `no_turbo=1`, `perf 100/100`, `performance`; nenhum bloco recusado; nenhuma nova tentativa.
+- Sonda: 0,2411 a 0,2589 s. O alvo de ±5% da seção anterior não foi atingido à risca: o desvio máximo foi de 6,2%, sempre em sondas de fim de bloco, logo após carga pesada; as de início de bloco ficaram dentro de 4,6%. Na sessão descartada, a mesma sonda variou cerca de 2×.
+- `cpu_mhz_medio` máximo de 2.251 MHz (nunca acima da base) e `throttle_total` constante (636).
+- D10c aplicada: duas execuções do `dnf-makecache` (1 e 2 s), dentro de fases do Weaviate (B em 100k; B equalizado em 1M), cobrindo 0,1% e 0,0% das fases, com +0,76 e +0,51 núcleo; PSI de E/S zero. Aceitas.
+- Controle do Weaviate atendido nos 10 pontos (|Δ| máximo 0,0037).
+- Concordância com a sessão descartada (condição do contraponto): em [[../experimentos/2026-11-16-sessao-cpu-fixa]].
+
 ## Backlinks
 
 - [[2026-11-15-protocolo-da-sessao-final]]
 - [[2026-11-15-desenho-do-cenario-c]]
 - [[../experimentos/2026-11-16-sessao-final]]
+- [[../experimentos/2026-11-16-sessao-cpu-fixa]]
+- [[../lições/2026-11-16-frequencia-da-cpu-nao-controlada]]
