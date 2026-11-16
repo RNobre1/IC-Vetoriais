@@ -6,10 +6,12 @@ cenário: "A, B (padrão e equalizado) e C"
 dataset: "MS MARCO passages"
 dataset_tamanho_n: [100000, 500000, 1000000]
 tags: [sessão-final, escala-1m, cenario-c, recursos, reprodutibilidade, etapa-4]
-status: vigente
+status: anterior
 ---
 
 # Experimento: sessão de medição final (100k, 500k e 1M; Cenários A, B e C)
+
+> **Substituída em 16/11/2026** pela sessão `2026-11-16-cpu-fixa` ([[2026-11-16-sessao-cpu-fixa]]). Durante esta sessão, um gerenciador de energia (auto-cpufreq) ligava e desligava o turbo conforme a carga, e a velocidade de uma *thread* variou cerca de 2× entre blocos. Latência, QPS e tempo de índice daqui não entram no relatório; recall, memória e disco continuam como dado datado. Decisão: [[../decisões/2026-11-16-frequencia-da-cpu-fixada]].
 
 ## Objetivo
 
