@@ -6,7 +6,8 @@ cenário: "A e B"
 dataset: "MS MARCO passages"
 dataset_tamanho_n: [100000, 500000]
 tags: [footprint, indexação, recursos, etapa-4, reprodutibilidade]
-status: vigente
+status: anterior
+vigente_em: "[[2026-11-16-sessao-final]]"
 ---
 
 # Experimento: footprint de disco e memória, tempo de indexação, e o que se aprende comparando duas execuções
