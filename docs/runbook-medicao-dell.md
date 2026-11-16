@@ -82,6 +82,31 @@ O motivo da separação é operacional, não hierárquico. Dado bruto é commuta
    make test-unit
    ```
 
+6. **Frequência da CPU fixa — obrigatória desde 16/11/2026.** A sessão desliga o turbo e prende a frequência na base pelo comando root `ic-cpu-fixa`, versionado em `code/scripts/ic-cpu-fixa`. Instalação, uma vez, com senha:
+
+   ```bash
+   sudo install -o root -g root -m 0755 code/scripts/ic-cpu-fixa /usr/local/sbin/ic-cpu-fixa
+   echo "$USER ALL=(root) NOPASSWD: /usr/local/sbin/ic-cpu-fixa" | sudo tee /etc/sudoers.d/ic-cpu-fixa
+   sudo chmod 0440 /etc/sudoers.d/ic-cpu-fixa && sudo visudo -cf /etc/sudoers.d/ic-cpu-fixa
+   sudo -n /usr/local/sbin/ic-cpu-fixa fixar && cat /sys/devices/system/cpu/intel_pstate/no_turbo   # esperado: 1
+   sudo -n /usr/local/sbin/ic-cpu-fixa restaurar
+   ```
+
+   Nenhum outro gerenciador de energia pode ajustar a CPU durante a medição: um daemon que ligava e desligava o turbo conforme a carga fez a velocidade de uma *thread* variar 2× entre blocos na sessão da madrugada de 16/11, que foi descartada. Decisão: `vault/decisões/2026-11-16-frequencia-da-cpu-fixada.md`. Conferir antes de medir:
+
+   ```bash
+   pgrep -fa 'cpufreq|tlp|powertop' || echo "nenhum gerenciador extra"
+   systemctl list-timers --all --no-pager   # nada pesado dentro da janela
+   ```
+
+   Serviços de usuário que indexam arquivos ou buscam atualizações (GNOME Software, LocalSearch) são parados e mascarados durante a sessão e religados no fim:
+
+   ```bash
+   systemctl --user stop gnome-software localsearch-3 && systemctl --user mask --runtime gnome-software localsearch-3
+   # ao fim:
+   systemctl --user unmask --runtime gnome-software localsearch-3 && systemctl --user start gnome-software localsearch-3
+   ```
+
 ## Execução
 
 ### Sessão completa (a partir de 15/11/2026)
@@ -90,13 +115,13 @@ A sessão de medição do relatório final roda por um roteiro único, que mede 
 
 ```bash
 cd code
-make sessao SESSAO_ID=2026-11-16-final
+make sessao SESSAO_ID=2026-11-16-cpu-fixa
 ```
 
 O que o alvo faz, em ordem:
 
 1. Bloqueia suspensão e ação da tampa com `systemd-inhibit` enquanto roda (sem ele, avisa e segue).
-2. Grava o ambiente (commit, kernel, governor, zram, swap, imagens) em `results/sessoes/<id>/ambiente.txt`.
+2. Fixa a CPU (`sudo -n ic-cpu-fixa fixar`, com `CPU_FIXA=1`, o padrão) e grava o ambiente (commit, kernel, governor, estado do `intel_pstate`, zram, swap, imagens) em `results/sessoes/<id>/ambiente.txt`. O executor recebe `--exigir-cpu-fixa`, confere o estado no início e no fim de cada bloco e recusa o bloco se ele divergir. A CPU é restaurada ao fim, inclusive em falha.
 3. Liga o amostrador de recursos (`lib/monitor.py`, 1 Hz) em segundo plano: `results/sessoes/<id>/monitor_*.csv`.
 4. Ponte: `reset-medicao` e Cenário A em 100k pelo protocolo anterior (`make bench-A N=100000`).
 5. Para cada escala, na ordem 100k, 1M, 500k: `reset-medicao` e, para cada sistema na ordem que `benchmarks.run_sessao.ordem_dos_sistemas` define, `python -m benchmarks.run_sessao --n N --sistema S` (com `--cenario-c` em 1M). O executor recria contêiner e volume do serviço no início e a cada descarte.
@@ -104,7 +129,7 @@ O que o alvo faz, em ordem:
 
 Marcos de fase (início e fim de cada seed, cenário e janela do C) ficam em `results/sessoes/<id>/marcos.jsonl` e no log de cada par.
 
-Antes de começar: fechar programas de desktop que não sejam necessários (atualizador de software, navegador), manter a máquina na tomada e não usá-la até o fim. Em 15/11/2026 a sessão completa foi estimada em cerca de 5 h.
+Antes de começar: fechar programas de desktop que não sejam necessários (atualizador de software, navegador), manter a máquina na tomada e não usá-la até o fim. Com turbo, a sessão de 16/11 de madrugada levou 5 h; sem turbo, a sessão fica mais longa.
 
 Para ensaiar o roteiro com carga pequena, sem gravar nada em `results/`:
 

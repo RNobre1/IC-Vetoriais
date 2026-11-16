@@ -1,0 +1,37 @@
+#!/bin/bash
+# Fixa a CPU para medição (turbo desligado, P-state em 100%, governor performance)
+# e restaura o estado anterior ao fim.
+set -euo pipefail
+P=/sys/devices/system/cpu/intel_pstate
+ORIG=/run/ic-cpu-fixa.orig
+case "${1:-}" in
+  fixar)
+    if [ ! -f "$ORIG" ]; then
+      {
+        echo "no_turbo=$(cat $P/no_turbo)"
+        echo "min_perf_pct=$(cat $P/min_perf_pct)"
+        echo "max_perf_pct=$(cat $P/max_perf_pct)"
+        echo "governor=$(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor)"
+        echo "ativo_tuned=$(systemctl is-active tuned 2>/dev/null || true)"
+        echo "ativo_tuned_ppd=$(systemctl is-active tuned-ppd 2>/dev/null || true)"
+      } > "$ORIG"
+    fi
+    systemctl stop tuned-ppd tuned 2>/dev/null || true
+    echo 1 > $P/no_turbo
+    echo 100 > $P/max_perf_pct
+    echo 100 > $P/min_perf_pct
+    for g in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo performance > "$g"; done
+    ;;
+  restaurar)
+    [ -f "$ORIG" ] || exit 0
+    . "$ORIG"
+    echo "$min_perf_pct" > $P/min_perf_pct
+    echo "$max_perf_pct" > $P/max_perf_pct
+    echo "$no_turbo" > $P/no_turbo
+    for g in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo "$governor" > "$g"; done
+    [ "$ativo_tuned" = active ] && systemctl start tuned || true
+    [ "$ativo_tuned_ppd" = active ] && systemctl start tuned-ppd || true
+    rm -f "$ORIG"
+    ;;
+  *) echo "uso: ic-cpu-fixa fixar|restaurar" >&2; exit 2 ;;
+esac
