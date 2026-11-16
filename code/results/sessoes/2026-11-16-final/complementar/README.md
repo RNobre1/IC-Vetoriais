@@ -33,4 +33,4 @@ Cada chamada do executor carrega a base e constrói um grafo HNSW novo. Os três
 
 Em p = 10% e `ef_search` = 16, o terceiro grafo ficou entre os dois valores da sessão (0,7539 no padrão, 0,7660 no equalizado). Nas oito células omitidas, a diferença para o equalizado ficou abaixo de 0,005 mesmo entre grafos distintos.
 
-A latência daqui vale só como ordem de grandeza: os contêineres não foram reiniciados entre as chamadas e o Weaviate manteve na memória parte do grafo anterior.
+A latência daqui vale só como ordem de grandeza: os contêineres não foram reiniciados entre as chamadas, e o Weaviate começou a segunda e a terceira com cerca de 2,4 GB de memória residente herdados da chamada anterior.
