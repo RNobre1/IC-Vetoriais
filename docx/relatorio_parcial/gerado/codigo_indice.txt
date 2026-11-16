@@ -1,0 +1,25 @@
+# pgvector (code/seeders/pgvector_seeder.py)
+cur.execute(
+    f"CREATE INDEX ON {nome_tabela} USING hnsw (embedding vector_cosine_ops) "
+    f"WITH (m = {m}, ef_construction = {ef_construction})"
+)
+
+# Qdrant (code/seeders/qdrant_seeder.py)
+client.create_collection(
+    collection_name=nome_colecao,
+    vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
+    hnsw_config=HnswConfigDiff(
+        m=m,
+        ef_construct=ef_construction,
+        full_scan_threshold=full_scan_threshold,
+    ),
+)
+
+# Weaviate (code/seeders/weaviate_seeder.py)
+vector_index_config=Configure.VectorIndex.hnsw(
+    distance_metric=VectorDistances.COSINE,
+    max_connections=m,
+    ef_construction=ef_construction,
+    flat_search_cutoff=flat_search_cutoff,
+    filter_strategy=estrategia,
+),

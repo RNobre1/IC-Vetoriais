@@ -1,0 +1,23 @@
+# pgvector (code/benchmarks/buscadores.py)
+cur.execute(
+    f"SELECT id FROM {self._tabela} WHERE seletor < %s "
+    f"ORDER BY embedding <=> %s LIMIT %s",
+    (p_max, query, k),
+)
+
+# Qdrant (code/benchmarks/buscadores.py)
+resposta = self._client.query_points(
+    collection_name=self._colecao,
+    query=query.tolist(),
+    limit=k,
+    search_params=SearchParams(hnsw_ef=self._ef),
+    query_filter=Filter(must=[FieldCondition(key="seletor", range=Range(lt=p_max))]),
+)
+
+# Weaviate (code/benchmarks/buscadores.py)
+resultado = self._col.query.near_vector(
+    near_vector=query.tolist(),
+    limit=k,
+    return_properties=["external_id"],
+    filters=WvFilter.by_property("seletor").less_than(p_max),
+)

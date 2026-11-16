@@ -73,6 +73,7 @@ def seed_weaviate(
     client.collections.create(
         name=nome_classe,
         vector_config=Configure.Vectors.self_provided(
+            # relatorio: inicio indice-hnsw
             vector_index_config=Configure.VectorIndex.hnsw(
                 distance_metric=VectorDistances.COSINE,
                 max_connections=m,
@@ -80,6 +81,7 @@ def seed_weaviate(
                 flat_search_cutoff=flat_search_cutoff,
                 filter_strategy=estrategia,
             ),
+            # relatorio: fim indice-hnsw
         ),
         properties=[
             Property(name="external_id", data_type=DataType.INT),

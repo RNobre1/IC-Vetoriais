@@ -69,6 +69,7 @@ def seed_qdrant(
     if metadata is not None and len(metadata) != n:
         raise ValueError(f"metadata len={len(metadata)} != vetores N={n}")
 
+    # relatorio: inicio indice-hnsw
     client.create_collection(
         collection_name=nome_colecao,
         vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
@@ -78,6 +79,7 @@ def seed_qdrant(
             full_scan_threshold=full_scan_threshold,
         ),
     )
+    # relatorio: fim indice-hnsw
 
     # Cenário B: índice de payload em `seletor` só quando o atributo existe.
     # Necessário para o filtered-ANN do Qdrant ser comparável (pgvector usa a

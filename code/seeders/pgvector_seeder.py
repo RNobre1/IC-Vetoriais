@@ -70,10 +70,12 @@ def seed_pgvector(
         )
 
         # Índice HNSW após o INSERT (recomendação do pgvector para grandes lotes).
+        # relatorio: inicio indice-hnsw
         cur.execute(
             f"CREATE INDEX ON {nome_tabela} USING hnsw (embedding vector_cosine_ops) "
             f"WITH (m = {m}, ef_construction = {ef_construction})"
         )
+        # relatorio: fim indice-hnsw
 
         # Cenário B equalizado: índice no atributo de filtro. Só faz sentido
         # quando `seletor` foi de fato gravado (Cenário A passa metadata=None).

@@ -19,6 +19,7 @@ Escreve um arquivo .tex por tabela:
 - tab_controle_<n>.tex (somente onde 0,1 * n >= CORTE_FLAT_WEAVIATE)
 - tab_custo.tex (consolidada com todas as escalas)
 - tab_custo_<n>.tex (por escala, sem a coluna de escala)
+- codigo_<listagem>.txt (trechos de código, vide analise.trechos)
 E as figuras em PDF correspondentes.
 
 Escalas ou cenários ausentes emitem aviso informativo e pulam a tabela específica
@@ -46,6 +47,7 @@ from analise.tabelas import (
     linhas_recursos,
     linhas_reprodutibilidade,
 )
+from analise.trechos import gerar_trechos
 from benchmarks.run_sessao import CORTE_FLAT_WEAVIATE
 
 
@@ -208,6 +210,9 @@ def gerar_artefatos(
             )
     else:
         avisos.append("Nenhum CSV de monitor encontrado; tab_custo.tex pulada.")
+
+    # 9. Trechos de código citados no relatório (codigo_*.txt)
+    gerar_trechos(p_tab)
 
     # Figuras PDF
     if p_fig:
