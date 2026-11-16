@@ -1,0 +1,384 @@
+{
+  "cenario": "B",
+  "n": 1000000,
+  "pontos": [
+    {
+      "ambiente": {
+        "equalizado": false,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "sistema": "weaviate",
+        "swap_out_paginas_no_passo": 18122,
+        "swap_out_paginas_no_seed": 88269,
+        "tentativa": 1,
+        "varredura_reduzida": true
+      },
+      "metricas": {
+        "p50": 14.529731499806076,
+        "p95": 156.41336690014214,
+        "p99": 165.49012513999514,
+        "qps": 34.78015484020736,
+        "recall_at_k": 0.9999
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "sistema": "weaviate",
+        "swap_out_paginas_no_passo": 18122,
+        "swap_out_paginas_no_seed": 88269,
+        "tentativa": 1,
+        "varredura_reduzida": true
+      },
+      "metricas": {
+        "p50": 14.360101499732991,
+        "p95": 17.2201668494381,
+        "p99": 21.84469307976542,
+        "qps": 67.69446484416353,
+        "recall_at_k": 0.9999
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "sistema": "weaviate",
+        "swap_out_paginas_no_passo": 18122,
+        "swap_out_paginas_no_seed": 88269,
+        "tentativa": 1,
+        "varredura_reduzida": true
+      },
+      "metricas": {
+        "p50": 14.332592000300792,
+        "p95": 17.332190600336617,
+        "p99": 21.799545239955478,
+        "qps": 67.83476632419554,
+        "recall_at_k": 0.9999
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "sistema": "weaviate",
+        "swap_out_paginas_no_passo": 18122,
+        "swap_out_paginas_no_seed": 88269,
+        "tentativa": 1,
+        "varredura_reduzida": true
+      },
+      "metricas": {
+        "p50": 14.328036500046437,
+        "p95": 17.215133899799184,
+        "p99": 21.0930615500547,
+        "qps": 68.07550417955196,
+        "recall_at_k": 0.9999
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "sistema": "weaviate",
+        "swap_out_paginas_no_passo": 18122,
+        "swap_out_paginas_no_seed": 88269,
+        "tentativa": 1,
+        "varredura_reduzida": true
+      },
+      "metricas": {
+        "p50": 14.347042000281363,
+        "p95": 17.040478199669447,
+        "p99": 21.925193069946545,
+        "qps": 67.81516363506617,
+        "recall_at_k": 0.9999
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "sistema": "weaviate",
+        "swap_out_paginas_no_passo": 18122,
+        "swap_out_paginas_no_seed": 88269,
+        "tentativa": 1,
+        "varredura_reduzida": true
+      },
+      "metricas": {
+        "p50": 93.65607950030608,
+        "p95": 108.82340050025046,
+        "p99": 120.05659331960487,
+        "qps": 10.476609653373309,
+        "recall_at_k": 0.7714000000000001
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "sistema": "weaviate",
+        "swap_out_paginas_no_passo": 18122,
+        "swap_out_paginas_no_seed": 88269,
+        "tentativa": 1,
+        "varredura_reduzida": true
+      },
+      "metricas": {
+        "p50": 94.179908499882,
+        "p95": 106.1316996995174,
+        "p99": 118.46083982991331,
+        "qps": 10.426271290543127,
+        "recall_at_k": 0.8551
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "sistema": "weaviate",
+        "swap_out_paginas_no_passo": 18122,
+        "swap_out_paginas_no_seed": 88269,
+        "tentativa": 1,
+        "varredura_reduzida": true
+      },
+      "metricas": {
+        "p50": 94.88652899972294,
+        "p95": 109.0960722001455,
+        "p99": 118.61794556949461,
+        "qps": 10.334063526501659,
+        "recall_at_k": 0.9116000000000002
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "sistema": "weaviate",
+        "swap_out_paginas_no_passo": 18122,
+        "swap_out_paginas_no_seed": 88269,
+        "tentativa": 1,
+        "varredura_reduzida": true
+      },
+      "metricas": {
+        "p50": 96.96386000041457,
+        "p95": 111.32465630034856,
+        "p99": 120.10897176026447,
+        "qps": 10.134311645415815,
+        "recall_at_k": 0.9479000000000001
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "sistema": "weaviate",
+        "swap_out_paginas_no_passo": 18122,
+        "swap_out_paginas_no_seed": 88269,
+        "tentativa": 1,
+        "varredura_reduzida": true
+      },
+      "metricas": {
+        "p50": 100.11830600024041,
+        "p95": 112.7273529499689,
+        "p99": 125.76949753013649,
+        "qps": 9.835774090249798,
+        "recall_at_k": 0.9656
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "sistema": "weaviate",
+        "swap_out_paginas_no_passo": 18122,
+        "swap_out_paginas_no_seed": 88269,
+        "tentativa": 1,
+        "varredura_reduzida": true
+      },
+      "metricas": {
+        "p50": 321.66831900030957,
+        "p95": 356.28407819931454,
+        "p99": 366.43673887046134,
+        "qps": 3.0611520541763486,
+        "recall_at_k": 0.9796
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "equalizado": false,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "qdrant",
+          "weaviate",
+          "pgvector"
+        ],
+        "protocolo": "sessao-2026-11",
+        "sistema": "weaviate",
+        "swap_out_paginas_no_passo": 18122,
+        "swap_out_paginas_no_seed": 88269,
+        "tentativa": 1,
+        "varredura_reduzida": true
+      },
+      "metricas": {
+        "p50": 608.8818315001845,
+        "p95": 643.1778808499985,
+        "p99": 653.599289180238,
+        "qps": 1.629050245435444,
+        "recall_at_k": 0.963
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    }
+  ],
+  "recursos": {
+    "configuracao": {},
+    "container": "ic-weaviate",
+    "criterio_indice_utilizavel": "fila_vetorial_drenada",
+    "disco": {
+      "aparente_bytes": 2889611884,
+      "total_bytes": 2889691136
+    },
+    "instrumento_disco": "du_sk_diretorio_classe",
+    "memoria_rss_baseline_bytes": 68084040,
+    "memoria_rss_bytes": 4779224859,
+    "memoria_rss_delta_bytes": 4711140819,
+    "sistema": "weaviate",
+    "tempo_carga_s": 305.715216519,
+    "tempo_indice_utilizavel_s": 305.71802821799974
+  },
+  "sistema": "weaviate",
+  "timestamp_utc": "2026-11-16T16-00-40Z"
+}

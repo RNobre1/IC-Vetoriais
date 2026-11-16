@@ -1,0 +1,28 @@
+== Blocos: sonda e estado da CPU
+ 100000 pgvector  inicio sonda=0.2547 no_turbo=1 perf=100/100 gov=['performance']
+ 100000 pgvector  fim    sonda=0.2589 no_turbo=1 perf=100/100 gov=['performance']
+ 100000 qdrant    inicio sonda=0.2449 no_turbo=1 perf=100/100 gov=['performance']
+ 100000 qdrant    fim    sonda=0.2587 no_turbo=1 perf=100/100 gov=['performance']
+ 100000 weaviate  inicio sonda=0.2427 no_turbo=1 perf=100/100 gov=['performance']
+ 100000 weaviate  fim    sonda=0.2433 no_turbo=1 perf=100/100 gov=['performance']
+1000000 qdrant    inicio sonda=0.2417 no_turbo=1 perf=100/100 gov=['performance']
+1000000 qdrant    fim    sonda=0.2585 no_turbo=1 perf=100/100 gov=['performance']
+1000000 weaviate  inicio sonda=0.2461 no_turbo=1 perf=100/100 gov=['performance']
+1000000 weaviate  fim    sonda=0.2433 no_turbo=1 perf=100/100 gov=['performance']
+1000000 pgvector  inicio sonda=0.2422 no_turbo=1 perf=100/100 gov=['performance']
+1000000 pgvector  fim    sonda=0.2523 no_turbo=1 perf=100/100 gov=['performance']
+ 500000 weaviate  inicio sonda=0.2513 no_turbo=1 perf=100/100 gov=['performance']
+ 500000 weaviate  fim    sonda=0.2429 no_turbo=1 perf=100/100 gov=['performance']
+ 500000 pgvector  inicio sonda=0.2434 no_turbo=1 perf=100/100 gov=['performance']
+ 500000 pgvector  fim    sonda=0.2411 no_turbo=1 perf=100/100 gov=['performance']
+ 500000 qdrant    inicio sonda=0.2426 no_turbo=1 perf=100/100 gov=['performance']
+ 500000 qdrant    fim    sonda=0.2438 no_turbo=1 perf=100/100 gov=['performance']
+sonda: mín 0.2411 máx 0.2589 mediana 0.2438 desvio máx 6.2%
+
+== Monitor: frequência e throttle
+cpu_mhz_medio máximo: 2251 MHz; throttle_total: 636 -> 636
+
+== dnf-makecache × fases medidas
+2 execução(ões) do dnf-makecache no período
+  11:52:17 (1 s) dentro de 100000 weaviate B: 0.1% da fase; CPU fora dos contêineres 1.15 núcleo (base 0.39, extra +0.76); PSI E/S máx 0.00 -> ACEITO
+  15:02:17 (2 s) dentro de 1000000 weaviate B_eq: 0.0% da fase; CPU fora dos contêineres 0.83 núcleo (base 0.32, extra +0.51); PSI E/S máx 0.00 -> ACEITO

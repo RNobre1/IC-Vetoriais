@@ -1,0 +1,28 @@
+{"ts_utc": "2026-11-16T14:49:16.527Z", "n": 100000, "sistema": "weaviate", "passo": "bloco", "evento": "inicio", "plano": ["seed_b", "B", "limpar", "seed_b_eq", "B_eq", "limpar", "seed_a", "A", "limpar"], "cpu": {"no_turbo": "1", "min_perf_pct": "100", "max_perf_pct": "100", "governors": ["performance"]}, "sonda_cpu_s": 0.2427362579999226, "sonda_cpu_iteracoes": 3000000}
+{"ts_utc": "2026-11-16T14:49:16.527Z", "n": 100000, "sistema": "weaviate", "passo": "dados", "evento": "inicio"}
+{"ts_utc": "2026-11-16T14:49:26.899Z", "n": 100000, "sistema": "weaviate", "passo": "dados", "evento": "fim"}
+{"ts_utc": "2026-11-16T14:49:26.900Z", "n": 100000, "sistema": "weaviate", "passo": "reiniciar", "evento": "inicio"}
+{"ts_utc": "2026-11-16T14:49:39.303Z", "n": 100000, "sistema": "weaviate", "passo": "reiniciar", "evento": "fim", "duracao_s": 12.403467525999986}
+{"ts_utc": "2026-11-16T14:49:39.304Z", "n": 100000, "sistema": "weaviate", "passo": "seed_b", "evento": "inicio"}
+{"ts_utc": "2026-11-16T14:50:04.429Z", "n": 100000, "sistema": "weaviate", "passo": "seed_b", "evento": "fim", "swap_out_paginas": 0}
+{"ts_utc": "2026-11-16T14:50:04.429Z", "n": 100000, "sistema": "weaviate", "passo": "B", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:00:08.001Z", "n": 100000, "sistema": "weaviate", "passo": "B", "evento": "fim", "swap_out_paginas": 0}
+gravado: results/cenario_B_weaviate_100000_2026-11-16T14-50-04Z.json
+{"ts_utc": "2026-11-16T15:00:08.002Z", "n": 100000, "sistema": "weaviate", "passo": "limpar", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:00:20.913Z", "n": 100000, "sistema": "weaviate", "passo": "limpar", "evento": "fim", "duracao_s": 12.910773648000031}
+{"ts_utc": "2026-11-16T15:00:20.914Z", "n": 100000, "sistema": "weaviate", "passo": "seed_b_eq", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:00:44.845Z", "n": 100000, "sistema": "weaviate", "passo": "seed_b_eq", "evento": "fim", "swap_out_paginas": 0}
+{"ts_utc": "2026-11-16T15:00:44.845Z", "n": 100000, "sistema": "weaviate", "passo": "B_eq", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:11:02.284Z", "n": 100000, "sistema": "weaviate", "passo": "B_eq", "evento": "fim", "swap_out_paginas": 0}
+gravado: results/cenario_B_weaviate_100000_2026-11-16T15-00-44Z.json
+{"ts_utc": "2026-11-16T15:11:02.285Z", "n": 100000, "sistema": "weaviate", "passo": "limpar", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:11:14.952Z", "n": 100000, "sistema": "weaviate", "passo": "limpar", "evento": "fim", "duracao_s": 12.666706930000146}
+{"ts_utc": "2026-11-16T15:11:14.953Z", "n": 100000, "sistema": "weaviate", "passo": "seed_a", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:11:38.986Z", "n": 100000, "sistema": "weaviate", "passo": "seed_a", "evento": "fim", "swap_out_paginas": 0}
+{"ts_utc": "2026-11-16T15:11:38.987Z", "n": 100000, "sistema": "weaviate", "passo": "A", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:12:29.306Z", "n": 100000, "sistema": "weaviate", "passo": "A", "evento": "fim", "swap_out_paginas": 0}
+gravado: results/cenario_A_weaviate_100000_2026-11-16T15-11-38Z.json
+{"ts_utc": "2026-11-16T15:12:29.307Z", "n": 100000, "sistema": "weaviate", "passo": "limpar", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:12:41.101Z", "n": 100000, "sistema": "weaviate", "passo": "limpar", "evento": "fim", "duracao_s": 11.794317684999896}
+{"ts_utc": "2026-11-16T15:12:41.346Z", "n": 100000, "sistema": "weaviate", "passo": "bloco", "evento": "fim", "cpu": {"no_turbo": "1", "min_perf_pct": "100", "max_perf_pct": "100", "governors": ["performance"]}, "sonda_cpu_s": 0.24326631899975837, "sonda_cpu_iteracoes": 3000000}
+Sessão weaviate N=100000: 3 arquivo(s) gravado(s).

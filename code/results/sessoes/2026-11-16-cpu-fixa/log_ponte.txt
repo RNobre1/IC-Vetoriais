@@ -1,0 +1,61 @@
+make[1]: Entrando no diretório '/home/rnobre/Área de trabalho/UFOPA/IC-Vetoriais/code'
+
+Isto APAGA os volumes dos 3 SGBDs (coleções de execuções anteriores).
+Os JSONs de code/results/ não são tocados. Ctrl-C em 5s para abortar.
+docker compose down -v
+ Container ic-weaviate Stopping 
+ Container ic-pgvector Stopping 
+ Container ic-qdrant Stopping 
+ Container ic-weaviate Stopped 
+ Container ic-weaviate Removing 
+ Container ic-pgvector Stopped 
+ Container ic-pgvector Removing 
+ Container ic-qdrant Stopped 
+ Container ic-qdrant Removing 
+ Container ic-pgvector Removed 
+ Container ic-qdrant Removed 
+ Container ic-weaviate Removed 
+ Volume code_qdrantdata Removing 
+ Volume code_weaviatedata Removing 
+ Volume code_pgdata Removing 
+ Network code_default Removing 
+ Volume code_qdrantdata Removed 
+ Volume code_weaviatedata Removed 
+ Volume code_pgdata Removed 
+ Network code_default Removed 
+docker compose up -d
+ Network code_default Creating 
+ Network code_default Created 
+ Volume code_qdrantdata Creating 
+ Volume code_qdrantdata Created 
+ Volume code_weaviatedata Creating 
+ Volume code_weaviatedata Created 
+ Volume code_pgdata Creating 
+ Volume code_pgdata Created 
+ Container ic-weaviate Creating 
+ Container ic-pgvector Creating 
+ Container ic-qdrant Creating 
+ Container ic-weaviate Created 
+ Container ic-qdrant Created 
+ Container ic-pgvector Created 
+ Container ic-qdrant Starting 
+ Container ic-weaviate Starting 
+ Container ic-pgvector Starting 
+ Container ic-pgvector Started 
+ Container ic-qdrant Started 
+ Container ic-weaviate Started 
+Aguardando healthcheck dos 3 serviços...
+3/3 healthy
+make[1]: Saindo do diretório '/home/rnobre/Área de trabalho/UFOPA/IC-Vetoriais/code'
+
+make[1]: Entrando no diretório '/home/rnobre/Área de trabalho/UFOPA/IC-Vetoriais/code'
+
+.venv/bin/python -m benchmarks.run_cenario_a \
+	--n 100000 --queries 1000 --k 10 \
+	--ef-search 16,32,64,128,256 --warmup 50 --repeticoes 1 --sistemas pgvector,qdrant,weaviate
+Cenário A: 3 resultado(s) gravado(s) em results
+  results/cenario_A_pgvector_100000_2026-11-16T14-32-02Z.json
+  results/cenario_A_qdrant_100000_2026-11-16T14-32-02Z.json
+  results/cenario_A_weaviate_100000_2026-11-16T14-32-02Z.json
+make[1]: Saindo do diretório '/home/rnobre/Área de trabalho/UFOPA/IC-Vetoriais/code'
+

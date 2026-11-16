@@ -1,0 +1,27 @@
+2026-11-16T14:34:51Z
+platform_profile: balanced
+AC: 1
+cpu0 base=2400000 max=2400000 scaling_max=2400000 gov=performance
+cpu1 base=2400000 max=2400000 scaling_max=2400000 gov=performance
+cpu10 base=2400000 max=2400000 scaling_max=2400000 gov=performance
+cpu11 base=2400000 max=2400000 scaling_max=2400000 gov=performance
+cpu12 base=1800000 max=1800000 scaling_max=1800000 gov=performance
+cpu13 base=1800000 max=1800000 scaling_max=1800000 gov=performance
+cpu14 base=1800000 max=1800000 scaling_max=1800000 gov=performance
+cpu15 base=1800000 max=1800000 scaling_max=1800000 gov=performance
+cpu2 base=2400000 max=2400000 scaling_max=2400000 gov=performance
+cpu3 base=2400000 max=2400000 scaling_max=2400000 gov=performance
+cpu4 base=2400000 max=2400000 scaling_max=2400000 gov=performance
+cpu5 base=2400000 max=2400000 scaling_max=2400000 gov=performance
+cpu6 base=2400000 max=2400000 scaling_max=2400000 gov=performance
+cpu7 base=2400000 max=2400000 scaling_max=2400000 gov=performance
+cpu8 base=2400000 max=2400000 scaling_max=2400000 gov=performance
+cpu9 base=2400000 max=2400000 scaling_max=2400000 gov=performance
+constraint_0_name: long_term
+constraint_1_name: short_term
+constraint_2_name: peak_power
+constraint_0_power_limit_uw: 200000000
+constraint_1_power_limit_uw: 191000000
+constraint_2_power_limit_uw: 242000000
+zram: [lzo-rle] lzo lz4 lz4hc zstd deflate 842 
+btrfs

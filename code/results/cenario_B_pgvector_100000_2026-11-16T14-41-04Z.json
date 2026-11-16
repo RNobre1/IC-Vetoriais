@@ -1,0 +1,689 @@
+{
+  "cenario": "B",
+  "n": 100000,
+  "pontos": [
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 0.9430575000237695,
+        "p95": 1.6599845499683852,
+        "p99": 1.9392672599485647,
+        "qps": 1004.377185253196,
+        "recall_at_k": 0.0148
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 1.3931130000059966,
+        "p95": 2.4607595999952983,
+        "p99": 3.0084240599830987,
+        "qps": 675.3002178809954,
+        "recall_at_k": 0.0273
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 2.112345499995172,
+        "p95": 3.7610223500166735,
+        "p99": 4.359460260079686,
+        "qps": 439.0481878551785,
+        "recall_at_k": 0.059199999999999996
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 3.399027999989812,
+        "p95": 6.246571699932701,
+        "p99": 7.13304820005078,
+        "qps": 275.727297721797,
+        "recall_at_k": 0.1267
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 1.345092999940789,
+        "p95": 2.0340611500273553,
+        "p99": 2.1942936600260055,
+        "qps": 723.4773383222454,
+        "recall_at_k": 0.9991
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.01,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 0.9672604999764189,
+        "p95": 1.6757336500006654,
+        "p99": 1.9433963399853837,
+        "qps": 985.1589081220865,
+        "recall_at_k": 0.15780000000000002
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 1.244633499993597,
+        "p95": 2.235647399959361,
+        "p99": 2.7108126100006293,
+        "qps": 739.3676441098129,
+        "recall_at_k": 0.3192
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 2.161842499958766,
+        "p95": 3.7688883000669193,
+        "p99": 4.399704830055952,
+        "qps": 433.6780540727525,
+        "recall_at_k": 0.6305
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 3.194744999973409,
+        "p95": 5.86185854998007,
+        "p99": 6.7030353199629635,
+        "qps": 292.53484238146905,
+        "recall_at_k": 0.9411
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 5.692554000006567,
+        "p95": 10.31925169999681,
+        "p99": 11.661548219943825,
+        "qps": 165.99146875759914,
+        "recall_at_k": 0.9916
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.1,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 0.8874764999973195,
+        "p95": 1.4960269499056265,
+        "p99": 1.7349964600191468,
+        "qps": 1070.5882846539616,
+        "recall_at_k": 0.7303999999999999
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 1.2384645000338423,
+        "p95": 2.2227969499681417,
+        "p99": 2.587989910064152,
+        "qps": 750.4156439688653,
+        "recall_at_k": 0.9402
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 2.0322530000385086,
+        "p95": 3.4522087000368624,
+        "p99": 3.9839161400379908,
+        "qps": 470.12319053972675,
+        "recall_at_k": 0.9789
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 3.1763235000425993,
+        "p95": 5.623322600035863,
+        "p99": 6.444455009984722,
+        "qps": 299.1572806117779,
+        "recall_at_k": 0.9944
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 5.468393000001015,
+        "p95": 9.85303844995542,
+        "p99": 11.086196399937762,
+        "qps": 172.47238408364456,
+        "recall_at_k": 0.9985
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 0.5,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 0.972265500024605,
+        "p95": 1.699570449989096,
+        "p99": 2.053539370016324,
+        "qps": 978.5051241198933,
+        "recall_at_k": 0.9054000000000001
+      },
+      "parametros": {
+        "ef_search": 16,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 1.2902010000175324,
+        "p95": 2.171807250005031,
+        "p99": 2.553119100081176,
+        "qps": 728.2393376181426,
+        "recall_at_k": 0.959
+      },
+      "parametros": {
+        "ef_search": 32,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 2.0275654999863946,
+        "p95": 3.503116149988727,
+        "p99": 4.050907750022361,
+        "qps": 466.0532800560598,
+        "recall_at_k": 0.9868000000000001
+      },
+      "parametros": {
+        "ef_search": 64,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 3.071523000016896,
+        "p95": 5.638315500073077,
+        "p99": 6.388399849973894,
+        "qps": 305.76707419281695,
+        "recall_at_k": 0.9976
+      },
+      "parametros": {
+        "ef_search": 128,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    },
+    {
+      "ambiente": {
+        "btree_seletor_s": 0.1517488480000111,
+        "equalizado": true,
+        "layout_seed": "B",
+        "ordem_sistemas": [
+          "pgvector",
+          "qdrant",
+          "weaviate"
+        ],
+        "protocolo": "sessao-2026-11",
+        "seed_compartilhado": true,
+        "sistema": "pgvector",
+        "swap_out_paginas_no_passo": 0,
+        "swap_out_paginas_no_seed": 0,
+        "tentativa": 1,
+        "vacuum_analyze_s": 0.4081583079999973,
+        "varredura_reduzida": false
+      },
+      "metricas": {
+        "p50": 5.365085999983421,
+        "p95": 9.829069800053958,
+        "p99": 11.091051110038277,
+        "qps": 174.63321613163313,
+        "recall_at_k": 0.9997
+      },
+      "parametros": {
+        "ef_search": 256,
+        "k": 10,
+        "seletividade": 1.0,
+        "warmup": 50
+      }
+    }
+  ],
+  "recursos": {
+    "configuracao": {
+      "maintenance_work_mem": "64MB",
+      "max_parallel_maintenance_workers": "2",
+      "shared_buffers": "128MB"
+    },
+    "container": "ic-pgvector",
+    "criterio_indice_utilizavel": "create_index_retornou",
+    "disco": {
+      "heap_bytes": 163840000,
+      "indices_bytes": 209281024,
+      "total_bytes": 373194752
+    },
+    "instrumento_disco": "pg_total_relation_size",
+    "memoria_rss_baseline_bytes": null,
+    "memoria_rss_bytes": 170183885,
+    "memoria_rss_delta_bytes": null,
+    "sistema": "pgvector",
+    "tempo_carga_s": null,
+    "tempo_indice_utilizavel_s": null
+  },
+  "sistema": "pgvector",
+  "timestamp_utc": "2026-11-16T14-41-04Z"
+}

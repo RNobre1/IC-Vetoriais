@@ -1,0 +1,47 @@
+{"ts_utc": "2026-11-16T15:12:59.599Z", "n": 1000000, "sistema": "qdrant", "passo": "bloco", "evento": "inicio", "plano": ["seed_b", "B", "limpar", "seed_b_eq", "B_eq", "limpar", "seed_a", "A", "C", "limpar"], "cpu": {"no_turbo": "1", "min_perf_pct": "100", "max_perf_pct": "100", "governors": ["performance"]}, "sonda_cpu_s": 0.24172318600039944, "sonda_cpu_iteracoes": 3000000}
+{"ts_utc": "2026-11-16T15:12:59.599Z", "n": 1000000, "sistema": "qdrant", "passo": "dados", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:14:41.093Z", "n": 1000000, "sistema": "qdrant", "passo": "dados", "evento": "fim"}
+{"ts_utc": "2026-11-16T15:14:41.094Z", "n": 1000000, "sistema": "qdrant", "passo": "reiniciar", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:14:47.419Z", "n": 1000000, "sistema": "qdrant", "passo": "reiniciar", "evento": "fim", "duracao_s": 6.32503064399998}
+{"ts_utc": "2026-11-16T15:14:47.420Z", "n": 1000000, "sistema": "qdrant", "passo": "seed_b", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:25:09.018Z", "n": 1000000, "sistema": "qdrant", "passo": "seed_b", "evento": "fim", "swap_out_paginas": 0}
+{"ts_utc": "2026-11-16T15:25:09.018Z", "n": 1000000, "sistema": "qdrant", "passo": "B", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:26:50.730Z", "n": 1000000, "sistema": "qdrant", "passo": "B", "evento": "fim", "swap_out_paginas": 0}
+gravado: results/cenario_B_qdrant_1000000_2026-11-16T15-25-09Z.json
+{"ts_utc": "2026-11-16T15:26:50.731Z", "n": 1000000, "sistema": "qdrant", "passo": "limpar", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:26:57.598Z", "n": 1000000, "sistema": "qdrant", "passo": "limpar", "evento": "fim", "duracao_s": 6.86752782900021}
+{"ts_utc": "2026-11-16T15:26:57.599Z", "n": 1000000, "sistema": "qdrant", "passo": "seed_b_eq", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:35:05.811Z", "n": 1000000, "sistema": "qdrant", "passo": "seed_b_eq", "evento": "fim", "swap_out_paginas": 0}
+{"ts_utc": "2026-11-16T15:35:05.811Z", "n": 1000000, "sistema": "qdrant", "passo": "B_eq", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:36:49.790Z", "n": 1000000, "sistema": "qdrant", "passo": "B_eq", "evento": "fim", "swap_out_paginas": 0}
+gravado: results/cenario_B_qdrant_1000000_2026-11-16T15-35-05Z.json
+{"ts_utc": "2026-11-16T15:36:49.791Z", "n": 1000000, "sistema": "qdrant", "passo": "limpar", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:36:56.671Z", "n": 1000000, "sistema": "qdrant", "passo": "limpar", "evento": "fim", "duracao_s": 6.880095731000438}
+{"ts_utc": "2026-11-16T15:36:56.671Z", "n": 1000000, "sistema": "qdrant", "passo": "seed_a", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:43:59.644Z", "n": 1000000, "sistema": "qdrant", "passo": "seed_a", "evento": "fim", "swap_out_paginas": 3}
+{"ts_utc": "2026-11-16T15:43:59.645Z", "n": 1000000, "sistema": "qdrant", "passo": "A", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:45:45.620Z", "n": 1000000, "sistema": "qdrant", "passo": "A", "evento": "fim", "swap_out_paginas": 0}
+gravado: results/cenario_A_qdrant_1000000_2026-11-16T15-43-59Z.json
+{"ts_utc": "2026-11-16T15:45:45.620Z", "n": 1000000, "sistema": "qdrant", "passo": "C_total", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:45:45.621Z", "n": 1000000, "sistema": "qdrant", "passo": "C", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:45:46.643Z", "n": 1000000, "sistema": "qdrant", "passo": "C", "evento": "janela_inicio", "ordem": 0, "taxa": 0}
+{"ts_utc": "2026-11-16T15:46:52.679Z", "n": 1000000, "sistema": "qdrant", "passo": "C", "evento": "janela_fim", "ordem": 0, "taxa": 0}
+{"ts_utc": "2026-11-16T15:46:54.684Z", "n": 1000000, "sistema": "qdrant", "passo": "C", "evento": "janela_inicio", "ordem": 1, "taxa": 10}
+{"ts_utc": "2026-11-16T15:48:02.559Z", "n": 1000000, "sistema": "qdrant", "passo": "C", "evento": "janela_fim", "ordem": 1, "taxa": 10}
+{"ts_utc": "2026-11-16T15:48:04.563Z", "n": 1000000, "sistema": "qdrant", "passo": "C", "evento": "janela_inicio", "ordem": 2, "taxa": 100}
+{"ts_utc": "2026-11-16T15:49:12.133Z", "n": 1000000, "sistema": "qdrant", "passo": "C", "evento": "janela_fim", "ordem": 2, "taxa": 100}
+{"ts_utc": "2026-11-16T15:49:14.138Z", "n": 1000000, "sistema": "qdrant", "passo": "C", "evento": "janela_inicio", "ordem": 3, "taxa": 1000}
+{"ts_utc": "2026-11-16T15:50:21.701Z", "n": 1000000, "sistema": "qdrant", "passo": "C", "evento": "janela_fim", "ordem": 3, "taxa": 1000}
+{"ts_utc": "2026-11-16T15:50:23.706Z", "n": 1000000, "sistema": "qdrant", "passo": "C", "evento": "janela_inicio", "ordem": 4, "taxa": 0}
+{"ts_utc": "2026-11-16T15:51:29.731Z", "n": 1000000, "sistema": "qdrant", "passo": "C", "evento": "janela_fim", "ordem": 4, "taxa": 0}
+{"ts_utc": "2026-11-16T15:51:31.734Z", "n": 1000000, "sistema": "qdrant", "passo": "C", "evento": "janela_inicio", "ordem": 5, "taxa": 0}
+{"ts_utc": "2026-11-16T15:52:37.760Z", "n": 1000000, "sistema": "qdrant", "passo": "C", "evento": "janela_fim", "ordem": 5, "taxa": 0}
+{"ts_utc": "2026-11-16T15:52:38.416Z", "n": 1000000, "sistema": "qdrant", "passo": "C", "evento": "fim", "inseridos": 72261, "contagem": 1072261}
+{"ts_utc": "2026-11-16T15:52:38.416Z", "n": 1000000, "sistema": "qdrant", "passo": "C_recall", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:53:27.047Z", "n": 1000000, "sistema": "qdrant", "passo": "C_recall", "evento": "fim"}
+gravado: results/cenario_C_qdrant_1000000_2026-11-16T15-45-45Z.json
+{"ts_utc": "2026-11-16T15:53:27.048Z", "n": 1000000, "sistema": "qdrant", "passo": "C_total", "evento": "fim", "swap_out_paginas": 0}
+{"ts_utc": "2026-11-16T15:53:27.049Z", "n": 1000000, "sistema": "qdrant", "passo": "limpar", "evento": "inicio"}
+{"ts_utc": "2026-11-16T15:53:33.958Z", "n": 1000000, "sistema": "qdrant", "passo": "limpar", "evento": "fim", "duracao_s": 6.909265866000169}
+{"ts_utc": "2026-11-16T15:53:34.218Z", "n": 1000000, "sistema": "qdrant", "passo": "bloco", "evento": "fim", "cpu": {"no_turbo": "1", "min_perf_pct": "100", "max_perf_pct": "100", "governors": ["performance"]}, "sonda_cpu_s": 0.2584553220003727, "sonda_cpu_iteracoes": 3000000}
+Sessão qdrant N=1000000: 4 arquivo(s) gravado(s).

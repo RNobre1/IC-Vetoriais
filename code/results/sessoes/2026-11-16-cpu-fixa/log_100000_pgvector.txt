@@ -1,0 +1,22 @@
+{"ts_utc": "2026-11-16T14:36:24.414Z", "n": 100000, "sistema": "pgvector", "passo": "bloco", "evento": "inicio", "plano": ["seed_b", "A", "B", "btree", "B_eq", "limpar"], "cpu": {"no_turbo": "1", "min_perf_pct": "100", "max_perf_pct": "100", "governors": ["performance"]}, "sonda_cpu_s": 0.2546985650000124, "sonda_cpu_iteracoes": 3000000}
+{"ts_utc": "2026-11-16T14:36:24.414Z", "n": 100000, "sistema": "pgvector", "passo": "dados", "evento": "inicio"}
+{"ts_utc": "2026-11-16T14:36:35.125Z", "n": 100000, "sistema": "pgvector", "passo": "dados", "evento": "fim"}
+{"ts_utc": "2026-11-16T14:36:35.126Z", "n": 100000, "sistema": "pgvector", "passo": "reiniciar", "evento": "inicio"}
+{"ts_utc": "2026-11-16T14:36:41.114Z", "n": 100000, "sistema": "pgvector", "passo": "reiniciar", "evento": "fim", "duracao_s": 5.988105291000011}
+{"ts_utc": "2026-11-16T14:36:41.115Z", "n": 100000, "sistema": "pgvector", "passo": "seed_b", "evento": "inicio"}
+{"ts_utc": "2026-11-16T14:38:53.813Z", "n": 100000, "sistema": "pgvector", "passo": "seed_b", "evento": "fim", "swap_out_paginas": 0}
+{"ts_utc": "2026-11-16T14:38:53.813Z", "n": 100000, "sistema": "pgvector", "passo": "A", "evento": "inicio"}
+{"ts_utc": "2026-11-16T14:40:04.344Z", "n": 100000, "sistema": "pgvector", "passo": "A", "evento": "fim", "swap_out_paginas": 0}
+gravado: results/cenario_A_pgvector_100000_2026-11-16T14-38-53Z.json
+{"ts_utc": "2026-11-16T14:40:04.345Z", "n": 100000, "sistema": "pgvector", "passo": "B", "evento": "inicio"}
+{"ts_utc": "2026-11-16T14:41:03.650Z", "n": 100000, "sistema": "pgvector", "passo": "B", "evento": "fim", "swap_out_paginas": 0}
+gravado: results/cenario_B_pgvector_100000_2026-11-16T14-40-04Z.json
+{"ts_utc": "2026-11-16T14:41:03.651Z", "n": 100000, "sistema": "pgvector", "passo": "btree", "evento": "inicio"}
+{"ts_utc": "2026-11-16T14:41:03.803Z", "n": 100000, "sistema": "pgvector", "passo": "btree", "evento": "fim", "swap_out_paginas": 0}
+{"ts_utc": "2026-11-16T14:41:04.824Z", "n": 100000, "sistema": "pgvector", "passo": "B_eq", "evento": "inicio"}
+{"ts_utc": "2026-11-16T14:41:58.743Z", "n": 100000, "sistema": "pgvector", "passo": "B_eq", "evento": "fim", "swap_out_paginas": 0}
+gravado: results/cenario_B_pgvector_100000_2026-11-16T14-41-04Z.json
+{"ts_utc": "2026-11-16T14:41:58.744Z", "n": 100000, "sistema": "pgvector", "passo": "limpar", "evento": "inicio"}
+{"ts_utc": "2026-11-16T14:42:04.941Z", "n": 100000, "sistema": "pgvector", "passo": "limpar", "evento": "fim", "duracao_s": 6.197312722999982}
+{"ts_utc": "2026-11-16T14:42:05.201Z", "n": 100000, "sistema": "pgvector", "passo": "bloco", "evento": "fim", "cpu": {"no_turbo": "1", "min_perf_pct": "100", "max_perf_pct": "100", "governors": ["performance"]}, "sonda_cpu_s": 0.2589039499999899, "sonda_cpu_iteracoes": 3000000}
+Sessão pgvector N=100000: 3 arquivo(s) gravado(s).
