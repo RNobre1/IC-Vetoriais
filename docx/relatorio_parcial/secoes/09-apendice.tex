@@ -1,0 +1,46 @@
+% =============================================================================
+% Apêndice
+% =============================================================================
+
+\appendix
+\section{Custo de recursos em 100 mil e 500 mil vetores}
+\label{ap:custo}
+
+As tabelas a seguir completam a Tabela~\ref{tab:custo_1m} para as duas escalas menores, com as mesmas convenções. Em 100 mil vetores, nenhuma fase registrou pressão de memória.
+
+\begin{table}[H]
+\centering
+\caption{Custo de recursos por fase, 100k vetores. Mesmas convenções da Tabela~\ref{tab:custo_1m}.}
+\label{tab:custo_100k}
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{3pt}
+\footnotesize
+\begin{tabular}{|l|l|r|r|r|r|r|r|}
+\hline
+\textbf{Sistema} & \textbf{Fase} & \textbf{Mem. total} & \textbf{Mem. anôn.} & \textbf{CPU} & \textbf{Swap-out} & \textbf{Swap-in} & \textbf{PSI (\%)} \\
+\hline
+\linhasgeradas{gerado/tab_custo_100000.tex}
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Custo de recursos por fase, 500k vetores. Mesmas convenções da Tabela~\ref{tab:custo_1m}.}
+\label{tab:custo_500k}
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{3pt}
+\footnotesize
+\begin{tabular}{|l|l|r|r|r|r|r|r|}
+\hline
+\textbf{Sistema} & \textbf{Fase} & \textbf{Mem. total} & \textbf{Mem. anôn.} & \textbf{CPU} & \textbf{Swap-out} & \textbf{Swap-in} & \textbf{PSI (\%)} \\
+\hline
+\linhasgeradas{gerado/tab_custo_500000.tex}
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{fig_memoria_500000}
+\caption{Memória dos contêineres ao longo de cada bloco em 500k vetores. Mesmas convenções da Figura~\ref{fig:memoria_1m}.}
+\label{fig:memoria_500k}
+\end{figure}

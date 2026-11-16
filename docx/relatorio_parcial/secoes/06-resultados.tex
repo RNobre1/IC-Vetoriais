@@ -4,7 +4,9 @@
 
 \section{Resultados e Discussão}
 
-Esta seção apresenta os resultados dos três cenários nos três sistemas, nas escalas de 100 mil, 500 mil e 1 milhão de vetores. \todo{INTRO-SESSAO}
+Esta seção apresenta os resultados dos três cenários nos três sistemas, nas escalas de 100 mil, 500 mil e 1 milhão de vetores. Todos os valores vêm de uma única sessão de medição, executada na madrugada de 16 de novembro de 2026, das 02h39 às 07h40, sem interrupção e sem nova tentativa em nenhum dos dez blocos (a ponte de protocolo e os três sistemas em cada escala). A sessão de 23 de agosto, que sustentou o relatório parcial, passa a ser dado anterior: entra na Seção~\ref{sec:reprod} como réplica, nunca misturada às tabelas desta seção.
+
+As tabelas e figuras desta seção são geradas por \textit{script} a partir dos arquivos de resultado versionados no repositório, e um teste automatizado confere que os arquivos gerados coincidem com o que o código produz a partir desses dados. Nenhum número de tabela foi transcrito à mão.
 
 \subsection{Configuração do ambiente experimental}
 
@@ -29,15 +31,186 @@ Os \textit{embeddings} de 1 milhão de passagens foram gerados na máquina de tr
 
 \subsection{Indexação e uso de recursos}
 
-\todo{RECURSOS}
+\label{sec:recursos}
+
+Cada sistema recebe os mesmos vetores, em lote, e constrói o índice HNSW com os mesmos parâmetros. As estratégias de construção diferem: o pgvector constrói o índice depois da carga completa (\code{CREATE INDEX ... USING hnsw}), em uma operação única e bloqueante, enquanto Qdrant e Weaviate aceitam as escritas e constroem o grafo de forma incremental. Nos dois casos o retorno da escrita não garante índice pronto, e o protocolo aguarda uma condição de término em cada sistema --- o estado \code{green} da coleção no Qdrant e a fila de indexação vazia no Weaviate. O tempo reportado é de parede, do início da carga até essa condição, e é o único dos valores da Tabela~\ref{tab:recursos} que admite comparação direta entre os três.
+
+O disco do pgvector vem de \code{pg\_total\_relation\_size}, que soma tabela, TOAST e índices; o do Qdrant e o do Weaviate, de \code{du -sk} sobre o diretório da coleção, medindo blocos alocados. A memória é a diferença no consumo do contêiner (\code{docker stats}) entre uma linha de base tomada imediatamente antes da carga e o momento em que o índice fica utilizável. Os valores do pgvector vêm da carga compartilhada descrita na Seção~\ref{sec:protocolo}, com o atributo de filtro preenchido; os do Qdrant e do Weaviate, da coleção do Cenário A. Em 100 mil vetores, o disco do pgvector (353,7 MiB) é idêntico ao medido em agosto sem o atributo, o que mostra que preenchê-lo não alterou a ocupação.
+
+\begin{table}[H]
+\centering
+\caption{Uso de recursos e tempo de indexação. Disco por vetor calculado sobre o total; o vetor bruto de 384 dimensões em \textit{float32} ocupa 1.536 B.}
+\label{tab:recursos}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{|l|l|r|r|r|r|}
+\hline
+\textbf{Base} & \textbf{Sistema} & \textbf{Disco (MiB)} & \textbf{B/vetor} & \textbf{RSS $\Delta$ (MiB)} & \textbf{Índice (s)} \\
+\hline
+\linhasgeradas{gerado/tab_recursos.tex}
+\end{tabular}
+\end{table}
+
+\textbf{Tempo de indexação.} É a diferença mais expressiva de toda a comparação, e ela cresce com a escala. O pgvector levou 77,4 s em 100 mil vetores, 1.245,0 s em 500 mil e 3.393,6 s em 1 milhão --- 56,6 minutos, contra 291,7 s do Qdrant e 235,8 s do Weaviate. A razão entre o pgvector e o mais rápido dos especializados passa de 4,9 em 100 mil para 11,9 em 500 mil e 14,4 em 1 milhão. A Seção~\ref{sec:custo} acrescenta a explicação que faltava no relatório parcial: em 1 milhão de vetores a construção do pgvector usou, em média, 1,8 núcleo de CPU, contra 6,9 a 10,6 nos especializados. A construção paralela do índice HNSW no pgvector é dimensionada por \code{maintenance\_work\_mem}, que permaneceu no valor padrão da imagem (64 MB, gravado em cada arquivo de resultado), enquanto Qdrant e Weaviate constroem com parâmetros padrão dimensionados para essa tarefa. O número da tabela reflete, portanto, uma configuração herdada, e a comparação deve ser lida como padrão contra padrão, não como capacidade máxima de cada sistema. A sensibilidade a esse parâmetro não foi medida e fica como trabalho futuro.
+
+\textbf{Disco.} O pgvector ocupa 3.708 a 3.709 B por vetor nas três escalas, mais que o dobro do vetor bruto: dos 3.536,4 MiB de 1 milhão de vetores, 1.973,5 MiB são índices e 1.562,5 MiB a tabela (decomposição gravada no arquivo de resultado), o que é compatível com um índice que guarda os próprios vetores, e não só referências às tuplas. O Weaviate fica entre 2.422 e 2.881 B por vetor. O Qdrant não segue proporção alguma: 2.226 B por vetor em 100 mil, 3.499 em 500 mil e 1.865 em 1 milhão, e em 500 mil a ocupação desta sessão (1.668,6 MiB) é o dobro da medida em agosto (808,8 MiB). A medida por diretório inclui arquivos pré-alocados, \textit{log} de escrita e segmentos que o otimizador ainda não fundiu, e retrata o estado do diretório no instante da coleta. Sem decompor esse diretório, o que não foi feito, o disco do Qdrant não é comparável com o dos outros dois.
+
+\textbf{Memória.} A coluna de RSS não ordena os três sistemas, porque cada um mantém o grafo em um lugar diferente. O Weaviate carrega o índice no próprio processo e cresce com a coleção: 649,7 MiB em 100 mil, 2,3 GiB em 500 mil e 4,5 GiB em 1 milhão, cerca de três vezes o tamanho dos vetores brutos. O Qdrant usa arquivos mapeados em memória, cujas páginas o sistema operacional pode devolver, e seus valores (103,6 a 1.254,6 MiB) oscilam sem relação estável com a escala. O PostgreSQL lê o índice pelo \textit{cache} de páginas do sistema operacional, que não é memória de processo algum, e por isso aparece com acréscimo pequeno. A leitura defensável continua qualitativa e se confirma em 1 milhão: só o Weaviate exige memória residente proporcional à coleção, e nessa escala ela já é um quarto da RAM do \textit{notebook}.
 
 \subsection{Cenário A --- busca pura}
 
-\todo{CENARIO-A}
+\label{sec:cenario_a}
+
+As Tabelas~\ref{tab:cenario_a_100k}, \ref{tab:cenario_a_500k} e \ref{tab:cenario_a_1m} apresentam o Cenário A nas três escalas. Para cada valor de $ef\_search$ são reportados o \textit{recall@10}, as medianas, entre as cinco repetições, dos percentis de latência e do QPS, e a amplitude relativa da mediana de latência entre as repetições ((máximo $-$ mínimo) / mediana). A Figura~\ref{fig:recall_qps} reúne as curvas \textit{recall} $\times$ QPS.
+
+\begin{table}[H]
+\centering
+\caption{Cenário A --- busca pura, 100k vetores, $K = 10$. Latência e QPS: mediana de cinco repetições; Amp.: amplitude relativa da mediana de latência entre as repetições.}
+\label{tab:cenario_a_100k}
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|l|r|r|r|r|r|r|r|}
+\hline
+\textbf{Sistema} & $ef$ & \textbf{Recall} & \textbf{p50 (ms)} & \textbf{p95 (ms)} & \textbf{p99 (ms)} & \textbf{QPS} & \textbf{Amp. (\%)} \\
+\hline
+\linhasgeradas{gerado/tab_a_100000.tex}
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Cenário A --- busca pura, 500k vetores, $K = 10$. Mesmas convenções da Tabela~\ref{tab:cenario_a_100k}.}
+\label{tab:cenario_a_500k}
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|l|r|r|r|r|r|r|r|}
+\hline
+\textbf{Sistema} & $ef$ & \textbf{Recall} & \textbf{p50 (ms)} & \textbf{p95 (ms)} & \textbf{p99 (ms)} & \textbf{QPS} & \textbf{Amp. (\%)} \\
+\hline
+\linhasgeradas{gerado/tab_a_500000.tex}
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Cenário A --- busca pura, 1M vetores, $K = 10$. Mesmas convenções da Tabela~\ref{tab:cenario_a_100k}.}
+\label{tab:cenario_a_1m}
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|l|r|r|r|r|r|r|r|}
+\hline
+\textbf{Sistema} & $ef$ & \textbf{Recall} & \textbf{p50 (ms)} & \textbf{p95 (ms)} & \textbf{p99 (ms)} & \textbf{QPS} & \textbf{Amp. (\%)} \\
+\hline
+\linhasgeradas{gerado/tab_a_1000000.tex}
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{fig_recall_qps}
+\caption{Cenário A: curvas \textit{recall@10} $\times$ QPS nas três escalas, com QPS em escala logarítmica. Cada ponto é um valor de $ef\_search$ (16 a 256, da esquerda para a direita); a barra vertical vai do menor ao maior QPS entre as cinco repetições.}
+\label{fig:recall_qps}
+\end{figure}
+
+\textbf{Recall.} Os três sistemas superam \textit{recall@10} de 0,99 dentro do varrimento nas três escalas, e o valor de $ef\_search$ necessário para isso repete o padrão do relatório parcial: o Qdrant chega lá primeiro (64 em 100 mil e em 1 milhão, 128 em 500 mil), o pgvector em seguida (128, 256 e 128) e o Weaviate por último (256 nas três escalas). O \textit{recall} de um mesmo sistema em um mesmo $ef\_search$ cai com a escala, mas não de forma estritamente monótona --- o pgvector em $ef = 128$ tem 0,9875 em 500 mil e 0,9909 em 1 milhão ---, porque cada escala usa as suas próprias 1.000 consultas, as passagens imediatamente seguintes à base.
+
+\textbf{Velocidade com qualidade comparável.} Ler as curvas no ponto em que cada sistema cruza \textit{recall} de 0,99 mostra a inversão mais nítida do estudo. Em 100 mil vetores, o pgvector é o mais rápido (495,1 QPS, com \textit{recall} 0,9974), à frente do Weaviate (358,3) e do Qdrant (291,9). Em 500 mil e em 1 milhão a ordem se inverte e o pgvector passa a último: em 1 milhão, Weaviate 490,6 QPS (0,9931), Qdrant 366,8 (0,9943) e pgvector 257,8 (0,9909). O pgvector é também o sistema cujo \textit{throughput} mais cai ao longo da curva: em 1 milhão, do maior QPS do varrimento (781,0, em $ef = 32$) a 164,6 em $ef = 256$, uma razão de 4,7, contra 1,9 no Qdrant e 2,2 no Weaviate. No pgvector, a escolha de $ef\_search$ é uma decisão de capacidade.
+
+\textbf{Variabilidade.} A coluna de amplitude é o dado novo desta fase, e ela é grande: a mediana de latência de um mesmo ponto variou, entre as cinco repetições, de 4\% a 74\% da própria mediana. Isso quantifica a advertência do relatório parcial: com um único cliente e CPU quase ociosa, a latência de um ponto não é uma propriedade estável do sistema, e diferenças menores que o dobro entre sistemas devem ser lidas com cautela. O Cenário C sugere uma das causas (Seção~\ref{sec:cenario_c}): a frequência da CPU do hospedeiro varia com a carga, e com ela a latência. Diferenças da ordem das descritas acima --- o pgvector caindo de primeiro a último entre 100 mil e 1 milhão, ou a razão de 4,7 ao longo da curva --- excedem essa variação; diferenças de 20\% ou 30\% entre dois sistemas em um ponto, não.
 
 \subsection{Cenário B --- busca com filtro}
 
-\todo{CENARIO-B}
+\label{sec:cenario_b}
+
+O Cenário B avalia a busca vetorial combinada com filtro de metadados. O atributo de filtro é um valor numérico sintético uniformemente distribuído em $[0, 1)$, e a seletividade $p$ determina a fração da base elegível (predicado \code{seletor < p}).
+
+\subsubsection{Duas condições de execução}
+\label{sec:duas_condicoes}
+
+A primeira rodada deste cenário, na fase parcial, produziu \textit{recall@10} de exatamente 1,0000 no Qdrant e no Weaviate sob as seletividades restritivas, idêntico nos cinco valores de $ef\_search$. Recall que não responde a $ef\_search$ não pode resultar do percurso do grafo HNSW. A causa é uma otimização documentada e presente nos dois sistemas: quando o subconjunto elegível é pequeno, o executor abandona o índice aproximado e resolve a consulta por varredura exata. O Weaviate faz isso abaixo de \code{flatSearchCutoff} objetos elegíveis (padrão 40.000); o Qdrant, abaixo de \code{full\_scan\_threshold} quilobytes (padrão 10.000). O \textit{recall} perfeito nessas condições mede que a busca aproximada não foi usada.
+
+O cenário é por isso medido em duas condições. Na condição \textbf{padrão}, cada sistema roda como vem configurado; ela responde ao que um usuário encontra sem ajuste. Na condição \textbf{equalizada}, os três sistemas recebem índice dedicado no atributo de filtro e os limiares de varredura exata são levados ao mínimo, o que força o uso do HNSW em toda seletividade e isola a qualidade da busca aproximada sob filtro. No pgvector, que não tem o atalho, a única diferença entre as condições é o índice B-tree no atributo.
+
+As tabelas reportam o ponto $ef\_search = 64$, o intermediário do varrimento. Na condição padrão do Weaviate em 500 mil e 1 milhão, as seletividades de 50\% e 100\% foram medidas apenas nesse ponto, porque acima do corte de 40.000 elegíveis as duas condições executam o mesmo caminho e a medida completa custaria horas. A seletividade de 10\%, também acima do corte nessas escalas, foi medida no varrimento completo como controle, com um critério fixado antes da sessão: diferença de \textit{recall} entre as condições de no máximo 0,005 em todos os $ef\_search$. A Tabela~\ref{tab:controle} mostra o resultado.
+
+\begin{table}[H]
+\centering
+\caption{Controle do Cenário B no Weaviate: \textit{recall@10} em $p = 10\%$ (acima do corte de varredura exata) nas duas condições. Critério pré-registrado: $|\Delta| \leq 0{,}005$.}
+\label{tab:controle}
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{|l|r|r|r|r|c|}
+\hline
+\textbf{Base} & $ef$ & \textbf{Padrão} & \textbf{Equalizado} & $|\Delta|$ & \textbf{Atende} \\
+\hline
+\linhasgeradas{gerado/tab_controle_500000.tex}
+\linhasgeradas{gerado/tab_controle_1000000.tex}
+\end{tabular}
+\end{table}
+
+O critério foi atendido em 9 dos 10 pontos e falhou em um: 500 mil vetores, $ef = 16$, com diferença de 0,0121. A regra fixada antes da sessão previa medir, nesse caso, as células omitidas com o tempo que restasse da janela, e assim foi feito logo após a sessão, em execução complementar e separada, cujos arquivos ficam rotulados como tal no repositório e não entram nas tabelas desta seção. Essa execução construiu um terceiro grafo do Weaviate em 500 mil vetores e mediu de novo o mesmo ponto: \textit{recall} de 0,7592, entre os 0,7539 da condição padrão e os 0,7660 da equalizada. A diferença que reprovou o ponto é, portanto, da mesma ordem que a variação entre duas construções do mesmo índice com os mesmos parâmetros, que é maior em $ef$ baixo, onde a busca visita poucos nós. O resultado não refuta que padrão e equalizado sigam o mesmo caminho acima do corte, mas também não permite afirmá-lo nesse ponto. \todo{D9-CELULAS}
+
+\subsubsection{Resultados}
+
+As Tabelas~\ref{tab:cenario_b_100k}, \ref{tab:cenario_b_500k} e \ref{tab:cenario_b_1m} trazem o \textit{recall} nas duas condições e a latência na condição equalizada.
+
+\begin{table}[H]
+\centering
+\caption{Cenário B --- \textit{recall@10} nas condições padrão e equalizada, 100k vetores, $K = 10$, $ef = 64$. Negrito: \textit{recall} da condição padrão idêntico em todos os $ef$ medidos, isto é, insensível ao percurso do grafo --- sinal de varredura exata.}
+\label{tab:cenario_b_100k}
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{|l|r|r|r|r|r|}
+\hline
+\multirow{2}{*}{\textbf{Sistema}} & \multirow{2}{*}{\textbf{Seletiv.}} & \multicolumn{2}{c|}{\textbf{Recall@10}} & \multicolumn{2}{c|}{\textbf{Equalizado}} \\
+\cline{3-6}
+ & & \textbf{Padrão} & \textbf{Equaliz.} & \textbf{p50 (ms)} & \textbf{QPS} \\
+\hline
+\linhasgeradas{gerado/tab_b_100000.tex}
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Cenário B --- 500k vetores. Mesmas convenções da Tabela~\ref{tab:cenario_b_100k}.}
+\label{tab:cenario_b_500k}
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{|l|r|r|r|r|r|}
+\hline
+\multirow{2}{*}{\textbf{Sistema}} & \multirow{2}{*}{\textbf{Seletiv.}} & \multicolumn{2}{c|}{\textbf{Recall@10}} & \multicolumn{2}{c|}{\textbf{Equalizado}} \\
+\cline{3-6}
+ & & \textbf{Padrão} & \textbf{Equaliz.} & \textbf{p50 (ms)} & \textbf{QPS} \\
+\hline
+\linhasgeradas{gerado/tab_b_500000.tex}
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Cenário B --- 1M vetores. Mesmas convenções da Tabela~\ref{tab:cenario_b_100k}.}
+\label{tab:cenario_b_1m}
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{|l|r|r|r|r|r|}
+\hline
+\multirow{2}{*}{\textbf{Sistema}} & \multirow{2}{*}{\textbf{Seletiv.}} & \multicolumn{2}{c|}{\textbf{Recall@10}} & \multicolumn{2}{c|}{\textbf{Equalizado}} \\
+\cline{3-6}
+ & & \textbf{Padrão} & \textbf{Equaliz.} & \textbf{p50 (ms)} & \textbf{QPS} \\
+\hline
+\linhasgeradas{gerado/tab_b_1000000.tex}
+\end{tabular}
+\end{table}
+
+Os três comportamentos descritos no relatório parcial se mantêm em 1 milhão de vetores, e dois deles se acentuam.
+
+O \textbf{pgvector} aplica o filtro depois da busca no grafo (\textit{post-filtering}): sob seletividade de 1\%, poucos dos candidatos devolvidos pelo HNSW satisfazem o predicado, e o \textit{recall} fica em 0,0594, 0,0649 e 0,0694 nas três escalas. As duas condições dão valores idênticos até a quarta casa, o que agora se pode afirmar sem a ressalva de construções diferentes do índice: nesta sessão as duas foram medidas na mesma tabela, e o B-tree no atributo de filtro não mudou o resultado. É o comportamento que \citeonline{gollapudi2023filtered} descrevem para a pós-filtragem quando poucos itens satisfazem o filtro.
+
+O \textbf{Qdrant} sustenta a busca filtrada quando obrigado a usar o índice: 1,0000, 0,9998 e 0,9989 em $p = 1\%$ na condição equalizada, e nunca abaixo de 0,978 em nenhuma seletividade e escala.
+
+O \textbf{Weaviate} é o que mais perde quando privado da varredura exata, e a perda aumenta com a escala: 0,5655 em 100 mil, 0,5073 em 500 mil e 0,4614 em 1 milhão, em $p = 1\%$ na condição equalizada. Na condição padrão, a mesma seletividade cai abaixo do corte de 40.000 elegíveis nas três escalas e é respondida por varredura exata (1,0000, 1,0000 e 0,9999). A latência sob filtro amplo também escala com o número de elegíveis, independentemente do modo de busca: em $p = 100\%$, a mediana passa de 31,16 ms em 100 mil para 159,86 ms em 500 mil e 330,18 ms em 1 milhão, com 3,0 consultas por segundo nessa última --- contra 1,04 ms e 936,0 consultas por segundo do mesmo sistema sem filtro, no Cenário A em 1 milhão e $ef = 64$. O custo cresce aproximadamente na proporção do número de elementos elegíveis, o que indica que a avaliação do predicado, e não o percurso do grafo, domina a consulta.
+
+Dois resultados do parcial não se repetem com a mesma forma. A coincidência entre as condições do Weaviate acima do corte, que o parcial verificou nas oito séries, falhou no ponto de $ef = 16$ em 500 mil (Tabela~\ref{tab:controle}). E o Qdrant em 100 mil respondeu por varredura exata também em $p = 10\%$ (\textit{recall} 1,0000 na condição padrão, como no parcial), mas em 500 mil e 1 milhão já não, como esperado pelo limiar em quilobytes.
 
 \subsection{Cenário C --- buscas sob inserção concorrente}
 
@@ -56,7 +229,7 @@ O Cenário C foi executado na escala de 1 milhão de vetores, sobre a coleção 
 \hline
 \textbf{Sistema} & \textbf{Jan.} & \textbf{Alvo} & \textbf{Sust.} & \textbf{p50 (ms)} & \textbf{p99 (ms)} & \textbf{QPS} & \textbf{Recall} & \textbf{Recall novos} & \textbf{Visib. (\%)} \\
 \hline
-\input{gerado/tab_c_1000000}
+\linhasgeradas{gerado/tab_c_1000000.tex}
 \end{tabular}
 \end{table}
 
@@ -71,7 +244,22 @@ O Cenário C foi executado na escala de 1 milhão de vetores, sobre a coleção 
 
 \textbf{Latência das buscas.} A escrita concorrente pesa mais sobre a cauda do que sobre a mediana. No pgvector, a janela de 1.000 inserções por segundo elevou o p99 de 6,63 para 9,17 ms e reduziu o \textit{throughput} de 428,6 para 276,4 consultas por segundo, embora o sistema tenha absorvido apenas cerca de 97 inserções por segundo nessa janela; no Weaviate, o p99 quase dobrou (2,68 para 5,26 ms); no Qdrant, a variação foi a menor dos três (7,11 para 7,93 ms). Nos três sistemas, a latência voltou ao patamar inicial nas duas janelas sem escrita, o que indica que o efeito é da escrita em curso e não do crescimento da coleção, que ao fim somava 12.961 vetores novos no pgvector e 72.261 nos outros dois.
 
-A mediana se comportou de forma inesperada no Qdrant e no Weaviate: caiu durante a escrita (de 3,71 para 2,98 ms e de 1,35 para 1,06 ms na janela de 1.000). O amostrador de recursos mostra, nas mesmas janelas, a frequência média da CPU do hospedeiro subindo de 1.961 para 2.933 MHz no Qdrant e de 2.083 para 3.540 MHz no Weaviate, enquanto no pgvector, cujo produtor ficou limitado, ela pouco variou (entre 1.671 e 1.862 MHz). A coincidência é compatível com o escalonamento de frequência do processador: com mais trabalho em curso, os núcleos deixam os estados de baixo consumo e atendem a consulta seguinte mais rápido. A hipótese não foi testada com a frequência fixada, e por isso fica registrada como explicação provável, não como causa demonstrada. Ela tem uma consequência que alcança todos os cenários: com um único cliente e a CPU quase ociosa, parte da latência medida reflete o gerenciamento de energia do hospedeiro, e não apenas o sistema medido.
+A mediana se comportou de forma inesperada no Qdrant e no Weaviate: caiu durante a escrita (de 3,71 para 2,98 ms e de 1,35 para 1,06 ms na janela de 1.000). O amostrador de recursos mostra, nas mesmas janelas (Tabela~\ref{tab:cenario_c_hospedeiro}), a frequência média da CPU do hospedeiro subindo de 1.961 para 2.933 MHz no Qdrant e de 2.083 para 3.540 MHz no Weaviate, enquanto no pgvector, cujo produtor ficou limitado, ela pouco variou (entre 1.671 e 1.862 MHz). A coincidência é compatível com o escalonamento de frequência do processador: com mais trabalho em curso, os núcleos deixam os estados de baixo consumo e atendem a consulta seguinte mais rápido. A hipótese não foi testada com a frequência fixada, e por isso fica registrada como explicação provável, não como causa demonstrada. Ela tem uma consequência que alcança todos os cenários: com um único cliente e a CPU quase ociosa, parte da latência medida reflete o gerenciamento de energia do hospedeiro, e não apenas o sistema medido.
+
+\begin{table}[H]
+\centering
+\caption{Cenário C, 1M vetores: estado do hospedeiro em cada janela, segundo o amostrador de recursos --- frequência média da CPU, ocupação média da CPU do hospedeiro e pico da pressão de CPU (PSI, média de 10 s).}
+\label{tab:cenario_c_hospedeiro}
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{5pt}
+\footnotesize
+\begin{tabular}{|l|c|r|r|r|r|}
+\hline
+\textbf{Sistema} & \textbf{Jan.} & \textbf{Alvo} & \textbf{MHz médio} & \textbf{CPU host (\%)} & \textbf{PSI CPU (\%)} \\
+\hline
+\linhasgeradas{gerado/tab_c_hospedeiro_1000000.tex}
+\end{tabular}
+\end{table}
 
 \textbf{Qualidade das respostas.} O \textit{recall} não se moveu com a escrita em nenhum sistema: a maior variação entre janelas foi de 0,0014, no Weaviate. Os vetores recém-inseridos foram encontrados quase na mesma proporção que os antigos --- no Qdrant, entre 0,987 e 1,000 dos vizinhos verdadeiros novos; no Weaviate, entre 0,959 e 0,974, em linha com o \textit{recall} de 0,963 da coleção como um todo; no pgvector, entre 0,969 e 1,000 ---, e a sonda de visibilidade encontrou os 50 últimos vetores confirmados em todas as janelas com escrita, nos três sistemas. Ao fim, a contagem de vetores de cada coleção conferiu exatamente com a base mais as inserções confirmadas. Nesta escala e nestas taxas, portanto, confirmação implicou visibilidade imediata, e a escrita concorrente custou latência, não correção.
 
@@ -92,7 +280,7 @@ A Tabela~\ref{tab:recursos} resume o custo de cada coleção pronta; o amostrado
 \hline
 \textbf{Sistema} & \textbf{Fase} & \textbf{Mem. total} & \textbf{Mem. anôn.} & \textbf{CPU} & \textbf{Swap-out} & \textbf{Swap-in} & \textbf{PSI (\%)} \\
 \hline
-\input{gerado/tab_custo_1000000}
+\linhasgeradas{gerado/tab_custo_1000000.tex}
 \end{tabular}
 \end{table}
 
@@ -107,12 +295,87 @@ Três perfis distintos aparecem. O \textbf{Weaviate} mantém o grafo na memória
 
 A CPU separa as construções de índice. Qdrant e Weaviate construíram o grafo usando, em média, de 6,9 a 10,6 núcleos; o pgvector, 1,8 núcleo ao longo dos 56,6 minutos da carga. A construção do pgvector em 1 milhão de vetores, portanto, foi em grande parte sequencial, o que é coerente com o \code{maintenance\_work\_mem} padrão de 64 MB discutido na Seção~\ref{sec:recursos}, mas a relação causal não foi testada nesta sessão. Nas fases de consulta, todos os sistemas ficaram entre 0,9 e 2 núcleos: com um único cliente sequencial, a CPU disponível nunca foi o limite.
 
-O \textit{swap} se concentrou nas cargas. Na construção do índice do pgvector em 1 milhão de vetores o hospedeiro enviou 2,4 GiB ao \textit{swap}, com pico de pressão de memória de 1,5\%; nas fases de medição, o pico de pressão não passou de \todo{PSI-MAX-MEDICAO}\%. O \textit{swap-out} registrado durante as consultas filtradas do Weaviate em 1 milhão (92 e 38 MiB) aconteceu, portanto, sem paradas por falta de memória que o PSI detectasse. Esse resultado responde à ressalva do relatório parcial, que não sabia em qual fase o \textit{swap} ocorria: nesta sessão ocorreu na carga, e o tempo de indexação do pgvector em 1 milhão de vetores carrega esse efeito, mas latência e \textit{recall} não.
+O \textit{swap} se concentrou nas cargas. Na construção do índice do pgvector em 1 milhão de vetores o hospedeiro enviou 2,4 GiB ao \textit{swap}, com pico de pressão de memória de 1,5\%; nas fases de medição, a pressão de memória ficou em zero ou perto de zero em todos os sistemas e escalas, com uma exceção: um pico de 8,96\% durante o Cenário A do pgvector em 500 mil vetores (Apêndice~\ref{ap:custo}), acompanhado de apenas 1,5 MiB de \textit{swap-out} na fase e amortecido pela mediana das cinco repetições. O \textit{swap-out} registrado durante as consultas filtradas do Weaviate em 1 milhão (92 e 38 MiB) aconteceu, portanto, sem paradas por falta de memória que o PSI detectasse. Esse resultado responde à ressalva do relatório parcial, que não sabia em qual fase o \textit{swap} ocorria: nesta sessão ocorreu na carga, e o tempo de indexação do pgvector em 1 milhão de vetores carrega esse efeito, mas latência e \textit{recall} não.
 
 \subsection{Reprodutibilidade}
 
-\todo{REPROD}
+\label{sec:reprod}
+
+Duas comparações qualificam os números desta seção. A primeira é a ponte de protocolo: o Cenário A em 100 mil vetores medido, na mesma sessão, pelo protocolo do relatório parcial (os três sistemas semeados em sequência, com as coleções residentes, uma passagem por ponto) e pelo protocolo novo. A segunda compara a sessão de 23 de agosto com a desta medição nos pontos que as duas têm em comum.
+
+\begin{table}[H]
+\centering
+\caption{Ponte de protocolo: Cenário A, 100k vetores, $ef = 64$, medido na mesma sessão pelo protocolo do relatório parcial (uma passagem) e pelo protocolo desta sessão (mediana de cinco repetições).}
+\label{tab:ponte}
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|l|r|r|r|r|r|r|}
+\hline
+\multirow{2}{*}{\textbf{Sistema}} & \multicolumn{3}{c|}{\textbf{Protocolo anterior}} & \multicolumn{3}{c|}{\textbf{Protocolo da sessão}} \\
+\cline{2-7}
+ & \textbf{Recall} & \textbf{p50 (ms)} & \textbf{QPS} & \textbf{Recall} & \textbf{p50 (ms)} & \textbf{QPS} \\
+\hline
+\linhasgeradas{gerado/tab_ponte.tex}
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Reprodutibilidade entre sessões: Cenário A, $ef = 64$, sessão de 23/08/2026 (relatório parcial) e sessão de 16/11/2026. Razão: QPS da sessão nova sobre o da anterior.}
+\label{tab:reprod}
+\renewcommand{\arraystretch}{1.1}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{|l|l|r|r|r|r|r|}
+\hline
+\multirow{2}{*}{\textbf{Base}} & \multirow{2}{*}{\textbf{Sistema}} & \multicolumn{2}{c|}{\textbf{23/08}} & \multicolumn{2}{c|}{\textbf{16/11}} & \multirow{2}{*}{\textbf{Razão}} \\
+\cline{3-6}
+ & & \textbf{Recall} & \textbf{QPS} & \textbf{Recall} & \textbf{QPS} & \\
+\hline
+\linhasgeradas{gerado/tab_reprod.tex}
+\end{tabular}
+\end{table}
+
+O \textit{recall} reproduz nas duas comparações. Entre os protocolos, a maior diferença é de 0,0019 (Qdrant); entre as sessões, de 0,0020 (Weaviate em 100 mil), e isso apesar de a sessão nova usar \textit{embeddings} gerados em outra máquina, o que confirma na prática a verificação de equivalência da Seção~\ref{sec:protocolo}.
+
+A velocidade não reproduz. Entre as sessões, a razão de QPS no mesmo ponto vai de 0,67 (Qdrant em 100 mil) a 1,70 (Weaviate em 500 mil), e o sentido da diferença muda de sistema para sistema e de escala para escala. Entre os protocolos, dentro da mesma sessão, a diferença foi menor (de 0,75 a 1,10) e da mesma ordem da amplitude entre repetições do Cenário A: a troca de protocolo não introduziu um viés maior que o ruído de medida. O conjunto confirma, com mais dados, a conclusão metodológica do parcial: neste \textit{hardware}, com um cliente único, \textit{recall} é propriedade do índice e se reproduz; latência e QPS dependem também do estado do hospedeiro e precisam ser comparados dentro de uma mesma sessão, como fazem as tabelas desta seção.
 
 \subsection{Discussão}
 
-\todo{DISCUSSAO}
+\label{sec:discussao}
+
+Reunidos, os resultados não apontam um sistema melhor em tudo. Apontam qual recurso cada arquitetura gasta e em que situação esse gasto pesa. A Tabela~\ref{tab:sintese} resume as leituras que os dados sustentam; os parágrafos seguintes as qualificam.
+
+\begin{table}[H]
+\centering
+\caption{Síntese dos resultados em 1M vetores, com as ressalvas desta seção.}
+\label{tab:sintese}
+\renewcommand{\arraystretch}{1.2}
+\footnotesize
+\begin{tabularx}{\textwidth}{|l|X|X|X|}
+\hline
+\textbf{Aspecto} & \textbf{pgvector} & \textbf{Qdrant} & \textbf{Weaviate} \\
+\hline
+Construção do índice & 56,6 min, quase sequencial (configuração padrão) & 4,9 min & 3,9 min \\
+\hline
+Memória residente & pequena; usa o \textit{cache} de páginas & moderada; arquivos mapeados & 4,5 GiB no processo, cresce com a coleção \\
+\hline
+Busca pura, \textit{recall} $\geq$ 0,99 & o mais lento em 500k e 1M; o mais rápido em 100k & intermediário; atinge 0,99 com o menor $ef$ & o mais rápido em 500k e 1M \\
+\hline
+Filtro restritivo (1\%), índice forçado & \textit{recall} 0,07 (pós-filtragem) & \textit{recall} 0,999 & \textit{recall} 0,46, piora com a escala \\
+\hline
+Filtro amplo (100\%), mediana & 2,00 ms (sem filtro: 1,95) & 4,05 ms (sem filtro: 2,53) & 330,18 ms (sem filtro: 1,04) \\
+\hline
+Escrita concorrente & teto de $\approx$100 ins/s; QPS cai 36\% & 1.000 ins/s; cauda pouco afetada & 1.000 ins/s; p99 quase dobra \\
+\hline
+\end{tabularx}
+\end{table}
+
+\textbf{A escala muda a resposta.} Em 100 mil vetores, o pgvector é o mais rápido no ponto de \textit{recall} 0,99 e constrói o índice em pouco mais de um minuto; para uma coleção desse porte, já mantida em PostgreSQL, a extensão é a escolha de menor custo operacional sem perda de desempenho. A partir de 500 mil vetores o quadro se inverte: o pgvector passa a último na busca com \textit{recall} alto, e o tempo de construção, na configuração padrão, cresce de 77 segundos para quase uma hora. A comparação das três escalas, e não de uma só, é o que torna essa inversão visível.
+
+\textbf{Cada arquitetura paga em um recurso diferente.} O Weaviate entrega a menor latência em escala maior porque mantém o grafo no próprio processo, e cobra isso em memória: em 1 milhão de vetores de 384 dimensões, um quarto da RAM do \textit{notebook}. O Qdrant, apoiado em arquivos mapeados, usa menos memória residente e é o mais estável em qualidade sob filtro. O pgvector delega a memória ao sistema operacional e paga no tempo de construção e na busca filtrada. Para quem escolhe, a pergunta útil é qual desses recursos é escasso na instalação.
+
+\textbf{Filtro é onde a diferença é de natureza, não de grau.} Com seletividade de 1\% e o índice forçado, o pgvector devolve menos de um décimo dos vizinhos corretos em qualquer escala, porque filtra depois da busca; o Weaviate devolve menos da metade em 1 milhão; o Qdrant, quase todos. Na condição padrão, a varredura exata dos especializados esconde essas diferenças sob filtros muito seletivos, e um \textit{benchmark} que reporte só essa condição atribuiria ao índice um mérito que é do atalho. Para aplicações em que filtros restritivos são a regra, como bases multiusuário separadas por inquilino, a estratégia de filtragem pesa mais que a velocidade da busca pura.
+
+\textbf{Escrita concorrente custa latência, não correção.} Nos três sistemas, o \textit{recall} não se moveu com inserções concorrentes, e todo vetor confirmado foi encontrado logo em seguida. O que muda é a cauda da latência e, no pgvector, a taxa que o sistema absorve com um único produtor e \textit{commit} por lote. Como a confirmação do PostgreSQL é durável em disco e a dos outros dois não é equivalente nesta configuração, a diferença de taxa sustentada mistura arquitetura e garantia de durabilidade.
+
+\textbf{O que os números não dizem.} Todos os valores de QPS são de um único cliente sequencial: medem o inverso da latência média, não a capacidade do servidor sob concorrência. A latência variou até 74\% entre repetições do mesmo ponto e até 1,7 vez entre sessões, e parte dessa variação acompanha a frequência da CPU do hospedeiro; por isso as comparações de velocidade feitas aqui se apoiam em diferenças maiores que esse ruído e nunca misturam sessões. O tempo de indexação é padrão contra padrão. E todos os resultados vêm de um único \textit{hardware}, um \textit{notebook} x86-64 com 16 GiB; a generalização para outras máquinas é justamente o que fica como trabalho futuro na Seção~\ref{sec:futuros}.

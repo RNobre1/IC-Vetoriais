@@ -40,6 +40,11 @@
 \usepackage[alf]{abntex2cite}
 
 % --- Macros do projeto -------------------------------------------------------
+% Linhas de tabela geradas por script (gerado/*.tex). Usa a primitiva do TeX:
+% o \input do LaTeX insere um \relax que abre uma linha vazia no tabular.
+\makeatletter
+\newcommand{\linhasgeradas}[1]{\@@input #1 }
+\makeatother
 % Marcador de pendência editorial (vermelho/itálico, igual ao docx original)
 \newcommand{\todo}[1]{{\color{red}\textit{[TODO] #1}}}
 % Trecho de código inline (fonte monoespaçada)
@@ -90,5 +95,8 @@
 % --- Referências -------------------------------------------------------------
 \bibliographystyle{abntex2-alf}
 \bibliography{refs}
+
+% --- Apêndice -----------------------------------------------------------------
+\input{secoes/09-apendice}
 
 \end{document}
