@@ -46,3 +46,9 @@ results/
 code/results/*
 !code/results/*.json
 
+# Sessões de medição: ambiente, progresso, marcos de fase, logs, o CSV do
+# amostrador de recursos e as janelas brutas do Cenário C. Sustentam a
+# atribuição de memória, CPU e swap a cada fase e o cálculo do recall sob
+# escrita (vide vault/decisões/2026-11-15-protocolo-da-sessao-final.md).
+!code/results/sessoes/
+!code/results/sessoes/**

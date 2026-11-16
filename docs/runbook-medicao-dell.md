@@ -146,7 +146,7 @@ git commit -m "chore(results): mede footprint e tempo de indexação em 100k e 5
 git push
 ```
 
-Na sessão completa, versionar também o diretório `results/sessoes/<id>/` (ambiente, progresso, marcos, logs e o CSV do amostrador, comprimido com `gzip`). Se o `git status` mostrar qualquer outro arquivo que não seja resultado, não commitar — relatar antes.
+Na sessão completa, versionar também o diretório `results/sessoes/<id>/` (ambiente, progresso, marcos, logs, o CSV do amostrador e as janelas brutas do Cenário C em `.npz`). Se o `git status` mostrar qualquer outro arquivo que não seja resultado, não commitar — relatar antes.
 
 Convenções de commit do projeto: mensagem em PT-BR, no imperativo, seguindo Conventional Commits, autoria única do bolsista.
 
