@@ -91,7 +91,7 @@ bench-B:  ## Cenário B — busca com filtro (requer 'make up'). Vars: N Q K EF 
 		--ef-search $(EF) --warmup $(WARMUP) --sistemas $(SYS) \
 		--seletividades $(SEL) $(if $(EQ),--equalizado,)
 
-sessao:  ## DESTRUTIVO: sessão de medição completa (recria volumes). Vars: SESSAO_ID ESCALAS C_EM PONTE PONTE_ARGS EXTRA RESULTS
+sessao:  ## DESTRUTIVO: sessão de medição completa (recria volumes). Vars: SESSAO_ID ESCALAS C_EM PONTE PONTE_ARGS EXTRA RESULTS CPU_FIXA
 	@if systemd-inhibit --what=sleep:idle --mode=block true >/dev/null 2>&1; then \
 		systemd-inhibit --what=sleep:idle:handle-lid-switch --who=ic-vetoriais \
 			--why="sessão de medição" --mode=block bash scripts/sessao_final.sh; \

@@ -141,6 +141,7 @@ class ConfigSessao:
     embeddings_dir: Path = Path("../data/embeddings")
     results_dir: Path = Path("./results")
     marcos: Path | None = None
+    exigir_cpu_fixa: bool = False
 
 
 def _lista(tipo):
@@ -174,6 +175,11 @@ def parse_args(argv: Sequence[str]) -> ConfigSessao:
     p.add_argument("--embeddings-dir", type=Path, default=Path("../data/embeddings"))
     p.add_argument("--results-dir", type=Path, default=Path("./results"))
     p.add_argument("--marcos", type=Path, default=None)
+    p.add_argument(
+        "--exigir-cpu-fixa",
+        action="store_true",
+        help="recusa o bloco se a frequência da CPU não estiver fixada (turbo desligado).",
+    )
     a = p.parse_args(argv)
 
     if a.sistema not in SISTEMAS_VALIDOS:
@@ -212,6 +218,7 @@ def parse_args(argv: Sequence[str]) -> ConfigSessao:
         embeddings_dir=a.embeddings_dir,
         results_dir=a.results_dir,
         marcos=a.marcos,
+        exigir_cpu_fixa=a.exigir_cpu_fixa,
     )
 
 
@@ -256,6 +263,55 @@ def sonda_cpu(iteracoes: int = 3_000_000) -> dict[str, Any]:
     for i in range(iteracoes):
         acc += i * i % 7
     return {"sonda_cpu_s": time.perf_counter() - t0, "sonda_cpu_iteracoes": iteracoes}
+
+
+RAIZ_CPU = Path("/sys/devices/system/cpu")
+
+# Frequência fixa na base: turbo desligado e P-state preso em 100%. Com turbo
+# dinâmico, a velocidade de uma thread chegou a variar 2x entre blocos.
+CPU_FIXA_ESPERADA: dict[str, Any] = {
+    "no_turbo": "1",
+    "min_perf_pct": "100",
+    "max_perf_pct": "100",
+    "governors": ["performance"],
+}
+
+
+def estado_cpu(raiz: Path = RAIZ_CPU) -> dict[str, Any]:
+    """Configuração de frequência do hospedeiro (driver `intel_pstate`)."""
+
+    def ler(caminho: Path) -> str | None:
+        try:
+            return caminho.read_text().strip()
+        except OSError:
+            return None
+
+    pstate = raiz / "intel_pstate"
+    governors = {ler(g) for g in raiz.glob("cpu[0-9]*/cpufreq/scaling_governor")}
+    return {
+        "no_turbo": ler(pstate / "no_turbo"),
+        "min_perf_pct": ler(pstate / "min_perf_pct"),
+        "max_perf_pct": ler(pstate / "max_perf_pct"),
+        "governors": sorted(g for g in governors if g is not None),
+    }
+
+
+def problemas_cpu_fixa(estado: dict[str, Any]) -> list[str]:
+    """Campos que divergem de `CPU_FIXA_ESPERADA`; lista vazia quando a CPU está fixada."""
+    return [
+        f"{campo}={estado.get(campo)!r} (esperado {esperado!r})"
+        for campo, esperado in CPU_FIXA_ESPERADA.items()
+        if estado.get(campo) != esperado
+    ]
+
+
+def conferir_cpu(*, exigir: bool, raiz: Path = RAIZ_CPU) -> dict[str, Any]:
+    """Estado da CPU para o marco do bloco; com `exigir`, recusa CPU não fixada."""
+    estado = estado_cpu(raiz)
+    problemas = problemas_cpu_fixa(estado)
+    if exigir and problemas:
+        raise RuntimeError("frequência da CPU não está fixada: " + "; ".join(problemas))
+    return estado
 
 
 def ler_pswpout() -> int | None:
@@ -427,7 +483,11 @@ def executar(cfg: ConfigSessao) -> list[Path]:  # noqa: C901 — sequência line
     def marco(passo: str, evento: str, extra: dict[str, Any] | None = None) -> None:
         registrar_marco(cfg.marcos, n=n, sistema=s, passo=passo, evento=evento, extra=extra)
 
-    marco("bloco", "inicio", {"plano": plano, **sonda_cpu()})
+    marco(
+        "bloco",
+        "inicio",
+        {"plano": plano, "cpu": conferir_cpu(exigir=cfg.exigir_cpu_fixa), **sonda_cpu()},
+    )
 
     # --- dados e verdades exatas --------------------------------------------
     marco("dados", "inicio")
@@ -802,7 +862,7 @@ def executar(cfg: ConfigSessao) -> list[Path]:  # noqa: C901 — sequência line
             raise ValueError(f"passo desconhecido: {passo}")
 
     est.fechar()
-    marco("bloco", "fim", sonda_cpu())
+    marco("bloco", "fim", {"cpu": conferir_cpu(exigir=cfg.exigir_cpu_fixa), **sonda_cpu()})
     return escritos
 
 

@@ -19,6 +19,9 @@
 #   PONTE_ARGS  variáveis extras do make bench-A da ponte (ex.: "EF=16,64")
 #   EXTRA       argumentos extras do run_sessao (o ensaio reduz a carga aqui)
 #   RESULTS     diretório dos JSONs (padrão: results)
+#   CPU_FIXA    1 fixa a frequência da CPU (turbo desligado) durante a sessão e
+#               faz o executor recusar bloco sem ela (padrão: 1). Exige o
+#               comando root /usr/local/sbin/ic-cpu-fixa liberado no sudoers.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
@@ -29,6 +32,7 @@ PONTE=${PONTE:-1}
 PONTE_ARGS=${PONTE_ARGS:-}
 EXTRA=${EXTRA:-}
 RESULTS=${RESULTS:-results}
+CPU_FIXA=${CPU_FIXA:-1}
 PY=.venv/bin/python
 [ -x "$PY" ] || { echo "ERRO: $PY não existe; rode 'make deps' antes da sessão." >&2; exit 1; }
 
@@ -39,6 +43,15 @@ MARCOS="$DIR/marcos.jsonl"
 touch "$PROG"
 
 log() { echo "[sessao $(date +%H:%M:%S)] $*"; }
+
+# Frequência fixa antes de qualquer medição, inclusive a ponte. O executor
+# confere o estado no início e no fim de cada bloco (--exigir-cpu-fixa).
+if [ "$CPU_FIXA" = "1" ]; then
+    sudo -n /usr/local/sbin/ic-cpu-fixa fixar \
+        || { echo "ERRO: não consegui fixar a CPU (sudo -n /usr/local/sbin/ic-cpu-fixa fixar)." >&2; exit 1; }
+    EXTRA="$EXTRA --exigir-cpu-fixa"
+fi
+restaurar_cpu() { [ "$CPU_FIXA" = "1" ] && sudo -n /usr/local/sbin/ic-cpu-fixa restaurar; }
 pswpout() { awk '/^pswpout /{print $2}' /proc/vmstat; }
 # A ponte roda pelos CLIs antigos, que não gravam marcos; sem estes, os JSONs
 # dela cairiam fora da janela da sessão na análise.
@@ -53,6 +66,10 @@ r(Path('$MARCOS'), n=100000, sistema='todos', passo='ponte', evento='$1')" >/dev
     git status --short
     uname -r
     echo "governor: $(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null)"
+    for f in no_turbo min_perf_pct max_perf_pct; do
+        echo "intel_pstate/$f: $(cat /sys/devices/system/cpu/intel_pstate/$f 2>/dev/null)"
+    done
+    echo "cpu_fixa: $CPU_FIXA"
     lscpu | grep -E 'Model name|^CPU\(s\)|Thread|Core|MHz'
     zramctl 2>/dev/null
     swapon --show
@@ -67,7 +84,7 @@ make ui-down >/dev/null 2>&1 || true
 $PY -m lib.monitor --saida "$DIR/monitor_$(date +%H%M%S).csv" --intervalo 1.0 \
     --containers ic-pgvector,ic-qdrant,ic-weaviate >>"$DIR/monitor.log" 2>&1 &
 MON=$!
-trap 'kill -TERM $MON 2>/dev/null; wait $MON 2>/dev/null' EXIT
+trap 'kill -TERM $MON 2>/dev/null; wait $MON 2>/dev/null; restaurar_cpu' EXIT
 log "monitor pid $MON"
 
 if [ "$PONTE" = "1" ] && ! grep -q "^ponte	" "$PROG"; then

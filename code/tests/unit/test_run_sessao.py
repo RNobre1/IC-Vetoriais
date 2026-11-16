@@ -15,9 +15,12 @@ import pytest
 
 from benchmarks.run_sessao import (
     ConfigSessao,
+    conferir_cpu,
+    estado_cpu,
     ordem_dos_sistemas,
     parse_args,
     plano_de_passos,
+    problemas_cpu_fixa,
     registrar_marco,
     sonda_cpu,
     varredura_b,
@@ -214,3 +217,81 @@ def test_sonda_cpu_devolve_tempo_positivo_de_carga_fixa() -> None:
     r = sonda_cpu(iteracoes=20_000)
     assert r["sonda_cpu_s"] > 0
     assert r["sonda_cpu_iteracoes"] == 20_000
+
+
+# ---------------------------------------------------------------------------
+# Frequência da CPU fixada
+# ---------------------------------------------------------------------------
+
+
+def _cpu_falsa(raiz, *, no_turbo="1", minimo="100", maximo="100", governors=("performance",) * 4):
+    pstate = raiz / "intel_pstate"
+    pstate.mkdir(parents=True)
+    (pstate / "no_turbo").write_text(no_turbo + "\n")
+    (pstate / "min_perf_pct").write_text(minimo + "\n")
+    (pstate / "max_perf_pct").write_text(maximo + "\n")
+    for i, g in enumerate(governors):
+        d = raiz / f"cpu{i}" / "cpufreq"
+        d.mkdir(parents=True)
+        (d / "scaling_governor").write_text(g + "\n")
+    return raiz
+
+
+def test_estado_cpu_le_intel_pstate_e_governors(tmp_path) -> None:
+    _cpu_falsa(tmp_path, governors=("performance", "powersave", "performance"))
+    assert estado_cpu(tmp_path) == {
+        "no_turbo": "1",
+        "min_perf_pct": "100",
+        "max_perf_pct": "100",
+        "governors": ["performance", "powersave"],
+    }
+
+
+def test_estado_cpu_sem_intel_pstate_devolve_campos_vazios(tmp_path) -> None:
+    assert estado_cpu(tmp_path) == {
+        "no_turbo": None,
+        "min_perf_pct": None,
+        "max_perf_pct": None,
+        "governors": [],
+    }
+
+
+def test_cpu_fixada_nao_tem_problemas(tmp_path) -> None:
+    assert problemas_cpu_fixa(estado_cpu(_cpu_falsa(tmp_path))) == []
+
+
+@pytest.mark.parametrize(
+    ("ajuste", "campo"),
+    [
+        ({"no_turbo": "0"}, "no_turbo"),
+        ({"minimo": "18"}, "min_perf_pct"),
+        ({"maximo": "80"}, "max_perf_pct"),
+        ({"governors": ("performance", "powersave")}, "governors"),
+    ],
+)
+def test_cpu_nao_fixada_aponta_o_campo(tmp_path, ajuste, campo) -> None:
+    problemas = problemas_cpu_fixa(estado_cpu(_cpu_falsa(tmp_path, **ajuste)))
+    assert len(problemas) == 1
+    assert problemas[0].startswith(campo)
+
+
+def test_conferir_cpu_recusa_cpu_nao_fixada_quando_exigida(tmp_path) -> None:
+    _cpu_falsa(tmp_path, no_turbo="0")
+    with pytest.raises(RuntimeError, match="no_turbo"):
+        conferir_cpu(exigir=True, raiz=tmp_path)
+
+
+def test_conferir_cpu_sem_exigir_so_devolve_o_estado(tmp_path) -> None:
+    _cpu_falsa(tmp_path, no_turbo="0")
+    assert conferir_cpu(exigir=False, raiz=tmp_path)["no_turbo"] == "0"
+
+
+def test_conferir_cpu_fixada_devolve_o_estado_para_o_marco(tmp_path) -> None:
+    _cpu_falsa(tmp_path)
+    assert conferir_cpu(exigir=True, raiz=tmp_path)["governors"] == ["performance"]
+
+
+def test_parse_args_exigir_cpu_fixa() -> None:
+    base = ["--n", "1000", "--sistema", "qdrant"]
+    assert parse_args(base).exigir_cpu_fixa is False
+    assert parse_args([*base, "--exigir-cpu-fixa"]).exigir_cpu_fixa is True
