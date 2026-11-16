@@ -269,3 +269,51 @@ def test_referencia_preliminar_hospedeiro_1m():
     # Weaviate janela de 1000 (janela 4): ~3540 MHz
     assert r"\multirow{6}{*}{Weaviate}" in linhas
     assert " & 4 & 1.000 & 3.540 & 23 & 1,34 \\\\" in linhas
+
+
+def _sessao_b_sintetica(recalls_padrao_1pct: list[float]) -> Sessao:
+    """Weaviate com B padrão em p=1% nos ef dados e B equalizado só em ef=64."""
+    efs = [16, 32, 64, 128, 256][: len(recalls_padrao_1pct)]
+    pontos_p = [
+        {
+            "parametros": {"seletividade": 0.01, "ef_search": ef},
+            "metricas": {"recall_at_k": r, "p50": 1.0, "qps": 100.0},
+        }
+        for ef, r in zip(efs, recalls_padrao_1pct, strict=True)
+    ]
+    pontos_e = [
+        {
+            "parametros": {"seletividade": 0.01, "ef_search": 64},
+            "metricas": {"recall_at_k": 0.5, "p50": 3.0, "qps": 300.0},
+        }
+    ]
+    s = Sessao()
+    for cond, pts in (("B_padrao", pontos_p), ("B_eq", pontos_e)):
+        s.arquivos[(cond, "weaviate", 1000)] = ArquivoSessao(
+            caminho=Path(f"{cond}.json"),
+            cenario="B",
+            sistema="weaviate",
+            n=1000,
+            condicao=cond,
+            timestamp_utc="2026-11-16T00-00-00Z",
+            dados={"pontos": pts},
+        )
+    return s
+
+
+def test_cenario_b_negrito_quando_recall_padrao_nao_responde_a_ef():
+    # Recall idêntico em todos os ef medidos não pode vir do percurso do grafo:
+    # é o atalho de varredura exata. Vale também para 0,9999 constante.
+    linhas = linhas_cenario_b(_sessao_b_sintetica([0.9999] * 5), n=1000, ef=64)
+    assert " & 1\\% & \\textbf{0,9999} & 0,5000 & 3,00 & 300,0 \\\\" in linhas
+
+
+def test_cenario_b_sem_negrito_quando_recall_varia_com_ef():
+    linhas = linhas_cenario_b(_sessao_b_sintetica([0.9, 0.95, 0.97, 0.99, 1.0]), n=1000, ef=64)
+    assert " & 1\\% & 0,9700 & 0,5000 & 3,00 & 300,0 \\\\" in linhas
+
+
+def test_cenario_b_sem_negrito_com_um_unico_ef_medido():
+    # Com um ponto só, não há como saber se o recall responde a ef.
+    linhas = linhas_cenario_b(_sessao_b_sintetica([1.0, 1.0, 1.0][:1] * 1), n=1000, ef=64)
+    assert "textbf" not in linhas

@@ -122,6 +122,17 @@ def linhas_cenario_a(sessao: Sessao, n: int) -> str:
     return "\n".join(linhas) + "\n"
 
 
+def _recall_invariante_a_ef(pontos: list[dict], sel: float) -> bool:
+    """Verdadeiro se a seletividade foi medida em 2+ ef e o recall é o mesmo em todos."""
+    recalls = [
+        p.get("metricas", {}).get("recall_at_k")
+        for p in pontos
+        if abs(p.get("parametros", {}).get("seletividade", 0) - sel) < 1e-5
+    ]
+    recalls = [r for r in recalls if r is not None]
+    return len(recalls) > 1 and max(recalls) - min(recalls) < 1e-12
+
+
 def linhas_cenario_b(sessao: Sessao, n: int, ef: int = 64) -> str:
     """Gera linhas do Cenário B (padrão vs equalizado) para ef fixado (default 64)."""
     linhas: list[str] = []
@@ -167,6 +178,10 @@ def linhas_cenario_b(sessao: Sessao, n: int, ef: int = 64) -> str:
             )
 
             r_p = num(pt_p.get("metricas", {}).get("recall_at_k"), 4) if pt_p else "---"
+            if pt_p and _recall_invariante_a_ef(arq_padrao.pontos, sel):
+                # Recall que não responde a ef_search não vem do percurso do
+                # grafo: é o atalho de varredura exata da condição padrão.
+                r_p = rf"\textbf{{{r_p}}}"
 
             if pt_e:
                 m_e = pt_e.get("metricas", {})
