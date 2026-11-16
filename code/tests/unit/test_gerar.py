@@ -29,10 +29,21 @@ def test_gerar_artefatos_completo(tmp_path):
     assert (saida_tabelas / "tab_ponte.tex").exists()
     assert (saida_tabelas / "tab_reprod.tex").exists()
     assert (saida_tabelas / "tab_custo.tex").exists()
+    assert (saida_tabelas / "tab_custo_5000.tex").exists()
 
     # Conteúdo não vazio
     assert (saida_tabelas / "tab_recursos.tex").stat().st_size > 0
     assert (saida_tabelas / "tab_c_5000.tex").stat().st_size > 0
+    assert (saida_tabelas / "tab_custo_5000.tex").stat().st_size > 0
+
+    # Verifica distinção de formato entre tab_custo.tex (consolidada) e tab_custo_5000.tex (por escala)
+    conteudo_custo_global = (saida_tabelas / "tab_custo.tex").read_text(encoding="utf-8")
+    conteudo_custo_5000 = (saida_tabelas / "tab_custo_5000.tex").read_text(encoding="utf-8")
+
+    assert "5k" in conteudo_custo_global
+    assert "5k" not in conteudo_custo_5000
+    assert r"\multirow{1}{*}{pgvector}" in conteudo_custo_5000
+    assert r"\hline" in conteudo_custo_5000
 
     # Figuras geradas
     assert (saida_figuras / "fig_recall_qps.pdf").exists()

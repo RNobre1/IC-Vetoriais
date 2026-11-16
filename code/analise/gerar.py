@@ -16,7 +16,8 @@ Escreve um arquivo .tex por tabela:
 - tab_ponte.tex
 - tab_reprod.tex
 - tab_controle_<n>.tex (somente onde 0,1 * n >= CORTE_FLAT_WEAVIATE)
-- tab_custo.tex
+- tab_custo.tex (consolidada com todas as escalas)
+- tab_custo_<n>.tex (por escala, sem a coluna de escala)
 E as figuras em PDF correspondentes.
 
 Escalas ou cenários ausentes emitem aviso informativo e pulam a tabela específica
@@ -179,6 +180,10 @@ def gerar_artefatos(
                     )
             conteudo_custo = linhas_custo(metricas_custo)
             (p_tab / "tab_custo.tex").write_text(conteudo_custo, encoding="utf-8")
+            escalas_custo = sorted({m.n for m in metricas_custo})
+            for n_custo in escalas_custo:
+                conteudo_n = linhas_custo(metricas_custo, escala=n_custo, incluir_escala=False)
+                (p_tab / f"tab_custo_{n_custo}.tex").write_text(conteudo_n, encoding="utf-8")
         else:
             avisos.append(
                 "Nenhum intervalo de fase compatível encontrado no CSV; tab_custo.tex pulada."

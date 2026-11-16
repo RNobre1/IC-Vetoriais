@@ -43,3 +43,7 @@ def test_frescor_tabelas_geradas(tmp_path):
         assert (
             arquivo_regerado.read_bytes() == arquivo_tex.read_bytes()
         ), f"Tabela {arquivo_tex.name} difere da versão em disco (falha de frescor)."
+
+    for arquivo_regerado in tmp_tabelas.glob("*.tex"):
+        arquivo_tex = SAIDA_TABELAS / arquivo_regerado.name
+        assert arquivo_tex.exists(), f"Tabela {arquivo_regerado.name} foi gerada mas não existe na pasta oficial {SAIDA_TABELAS}."

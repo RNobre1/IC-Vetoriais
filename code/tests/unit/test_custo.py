@@ -75,6 +75,23 @@ def test_linhas_custo_ordenacao_e_multirows():
     assert r"\hline" in linhas
 
 
+def test_linhas_custo_sem_escala():
+    m1 = MetricaCustoFase(100000, "pgvector", "B", 800.0, 10.0, 1.0, 0, 0.0, 0.0, 1000.0)
+    m2 = MetricaCustoFase(100000, "pgvector", "seed_b", 850.0, 60.0, 2.0, 0, 0.5, 0.0, 900.0)
+    m3 = MetricaCustoFase(100000, "qdrant", "A", 750.0, 300.0, 1.0, 0, 0.0, 0.0, 850.0)
+
+    linhas = linhas_custo([m1, m2, m3], incluir_escala=False)
+    # Não deve ter multirow de escala nem menção a 100k
+    assert r"\multirow{3}{*}{100k}" not in linhas
+    assert "100k" not in linhas
+
+    # Começa direto no multirow do sistema
+    assert linhas.startswith(r"\multirow{2}{*}{pgvector} & seed B")
+    assert " & B &" in linhas
+    assert r"\hline" in linhas
+    assert r"\multirow{1}{*}{Qdrant} & A &" in linhas
+
+
 def test_calcular_custo_celulas_vazias_e_reinicio():
     csv_path = FIXTURES_DIR / "monitor_vazias.csv"
     marcos_path = FIXTURES_DIR / "marcos_vazias.jsonl"

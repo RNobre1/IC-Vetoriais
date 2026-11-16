@@ -174,7 +174,8 @@ def calcular_custo(
         for linha in p_marcos.read_text(encoding="utf-8").splitlines():
             s = linha.strip()
             if s:
-                marcos_lista.append(json.loads(s))
+                with contextlib.suppress(json.JSONDecodeError):
+                    marcos_lista.append(json.loads(s))
     else:
         marcos_lista = list(marcos)
 
@@ -329,12 +330,27 @@ def calcular_custo(
     return resultados
 
 
-def linhas_custo(metricas: Sequence[MetricaCustoFase]) -> str:
-    """Gera linhas LaTeX para a tabela de custo de recursos com multirow por escala e sistema."""
+def linhas_custo(
+    metricas: Sequence[MetricaCustoFase],
+    *,
+    escala: int | None = None,
+    incluir_escala: bool = True,
+) -> str:
+    r"""Gera linhas LaTeX para a tabela de custo de recursos.
+
+    Args:
+        metricas: Amostras agregadas de custo por fase.
+        escala: Se informado, filtra apenas as métricas desta escala.
+        incluir_escala: Se True, inclui a primeira coluna com multirow da escala
+            (formato da tabela consolidada tab_custo.tex com \cline{2-7}).
+            Se False, omite a coluna de escala e começa diretamente no multirow
+            do sistema (formato por escala tab_custo_<n>.tex com \hline).
+    """
     linhas: list[str] = []
     por_escala: dict[int, list[MetricaCustoFase]] = defaultdict(list)
     for m in metricas:
-        por_escala[m.n].append(m)
+        if escala is None or m.n == escala:
+            por_escala[m.n].append(m)
 
     for n in sorted(por_escala.keys()):
         rotulo_escala = formato_escala(n)
@@ -374,23 +390,35 @@ def linhas_custo(metricas: Sequence[MetricaCustoFase]) -> str:
 
                 cols_dados = f"{passo_tex} & {p_mem} & {p_anon} & {cpu} & {sw} \\\\"
 
-                if primeira_linha_escala:
-                    linhas.append(
-                        f"\\multirow{{{total_linhas_escala}}}{{*}}{{{rotulo_escala}}}\n"
-                        f" & \\multirow{{{k_sis}}}{{*}}{{{nome_sis_disp}}} & {cols_dados}"
-                    )
-                    primeira_linha_escala = False
-                    primeira_linha_sistema = False
-                elif primeira_linha_sistema:
-                    linhas.append(
-                        f" & \\multirow{{{k_sis}}}{{*}}{{{nome_sis_disp}}} & {cols_dados}"
-                    )
-                    primeira_linha_sistema = False
+                if incluir_escala:
+                    if primeira_linha_escala:
+                        linhas.append(
+                            f"\\multirow{{{total_linhas_escala}}}{{*}}{{{rotulo_escala}}}\n"
+                            f" & \\multirow{{{k_sis}}}{{*}}{{{nome_sis_disp}}} & {cols_dados}"
+                        )
+                        primeira_linha_escala = False
+                        primeira_linha_sistema = False
+                    elif primeira_linha_sistema:
+                        linhas.append(
+                            f" & \\multirow{{{k_sis}}}{{*}}{{{nome_sis_disp}}} & {cols_dados}"
+                        )
+                        primeira_linha_sistema = False
+                    else:
+                        linhas.append(f" & & {cols_dados}")
                 else:
-                    linhas.append(f" & & {cols_dados}")
+                    if primeira_linha_sistema:
+                        linhas.append(
+                            f"\\multirow{{{k_sis}}}{{*}}{{{nome_sis_disp}}} & {cols_dados}"
+                        )
+                        primeira_linha_sistema = False
+                    else:
+                        linhas.append(f" & {cols_dados}")
 
-            if idx_sis < len(sistemas_com_fases) - 1:
-                linhas.append(r"\cline{2-7}")
+            if incluir_escala:
+                if idx_sis < len(sistemas_com_fases) - 1:
+                    linhas.append(r"\cline{2-7}")
+                else:
+                    linhas.append(r"\hline")
             else:
                 linhas.append(r"\hline")
 
