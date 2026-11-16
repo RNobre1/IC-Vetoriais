@@ -513,6 +513,8 @@ def linhas_controle_weaviate(sessao: Sessao, n: int) -> str:
     )
 
     linhas: list[str] = []
+    if efs:
+        linhas.append(f"\\multirow{{{len(efs)}}}{{*}}{{{formato_escala(n)}}}")
     for ef in efs:
         pt_p = next((p for p in pts_p if p.get("parametros", {}).get("ef_search") == ef), None)
         pt_e = next((p for p in pts_e if p.get("parametros", {}).get("ef_search") == ef), None)
@@ -522,7 +524,7 @@ def linhas_controle_weaviate(sessao: Sessao, n: int) -> str:
         delta = abs(r_p - r_e) if (r_p is not None and r_e is not None) else None
         atende = ("Sim" if delta <= 0.005 else "Não") if delta is not None else "---"
 
-        linhas.append(f"{ef} & {num(r_p, 4)} & {num(r_e, 4)} & {num(delta, 4)} & {atende} \\\\")
+        linhas.append(f" & {ef} & {num(r_p, 4)} & {num(r_e, 4)} & {num(delta, 4)} & {atende} \\\\")
     linhas.append(r"\hline")
 
     return "\n".join(linhas) + "\n"

@@ -172,8 +172,11 @@ def test_linhas_controle_weaviate():
     )
 
     linhas = linhas_controle_weaviate(sessao, n=500000)
-    assert "16 & 0,9076 & 0,9067 & 0,0009 & Sim \\\\" in linhas
-    assert "32 & 0,9189 & 0,9100 & 0,0089 & Não \\\\" in linhas
+    # A primeira coluna é a escala, em multirow, para empilhar 500k e 1M numa
+    # tabela só sem que o ef caia sob a coluna da escala.
+    assert linhas.splitlines()[0] == "\\multirow{2}{*}{500k}"
+    assert " & 16 & 0,9076 & 0,9067 & 0,0009 & Sim \\\\" in linhas
+    assert " & 32 & 0,9189 & 0,9100 & 0,0089 & Não \\\\" in linhas
 
 
 def test_linhas_cenario_c_hospedeiro():
