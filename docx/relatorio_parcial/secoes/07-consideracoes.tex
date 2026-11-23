@@ -29,10 +29,8 @@ Os resultados vêm de um único \textit{hardware}, um \textit{notebook} x86-64 c
 
 \begin{itemize}
     \item \textbf{Replicação em outra arquitetura.} Repetir a sessão completa na máquina de trabalho usada neste projeto, um MacBook Air com processador Apple M4 (ARM64) e macOS, sob o mesmo protocolo. A comparação é desejável e foi deliberadamente mantida fora deste relatório: no macOS o Docker roda dentro de uma máquina virtual, com efeito próprio sobre E/S e memória, e a mudança de arquitetura de instrução e de hierarquia de memória precisa ser estudada como variável declarada, não misturada aos resultados desta sessão.
-    \item \textbf{\textit{Cluster} de alto desempenho do IEG/UFOPA}, conforme o objetivo original, para escalas acima de 1 milhão de vetores, que não cabem no \textit{notebook}.
     \item \textbf{Sensibilidade à configuração}: o efeito de \code{maintenance\_work\_mem} e \code{max\_parallel\_maintenance\_workers} sobre a construção do índice no pgvector e o efeito das opções de varredura iterativa do índice sobre a busca filtrada, que podem mudar as duas conclusões mais desfavoráveis ao pgvector.
     \item \textbf{Concorrência de clientes}, para medir capacidade de servidor em vez do inverso da latência de um cliente.
-    \item \textbf{Turbo e núcleos dedicados}: repetir a sessão com o turbo ligado e com cliente e servidores presos a núcleos de desempenho, para medir quanto da distância entre os sistemas depende dessas condições do hospedeiro.
     \item \textbf{Repetição dos Cenários B e C} e inclusão de atualização e remoção de vetores na carga mista, situação em que índices de grafo têm dificuldades conhecidas \cite{singh2021freshdiskann}.
     \item \textbf{Redução de memória}, avaliando índices em disco e vetores comprimidos \cite{subramanya2019diskann}, e outros sistemas especializados, como o Milvus \cite{wang2021milvus}, além de modelos de \textit{embedding} de maior dimensão.
 \end{itemize}

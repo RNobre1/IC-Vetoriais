@@ -22,6 +22,9 @@
 \onehalfspacing
 \usepackage{indentfirst}
 \setlength{\parindent}{1.25cm}
+% Folga extra de espaçamento para linhas com palavras que não quebram
+% (nomes de imagem, arquivos, identificadores), em vez de passar da margem.
+\setlength{\emergencystretch}{3em}
 
 % --- Tipografia / utilitários -----------------------------------------------
 \usepackage{microtype}
@@ -47,8 +50,10 @@
 \makeatother
 % Marcador de pendência editorial (vermelho/itálico, igual ao docx original)
 \newcommand{\todo}[1]{{\color{red}\textit{[TODO] #1}}}
-% Trecho de código inline (fonte monoespaçada)
-\newcommand{\code}[1]{\texttt{\small #1}}
+% Trecho de código inline (fonte monoespaçada). O sublinhado admite quebra de
+% linha, para que nomes longos como max_parallel_maintenance_workers não
+% ultrapassem a margem.
+\newcommand{\code}[1]{\texttt{\small\def\_{\textunderscore\allowbreak}#1}}
 
 % --- Listagens de código ------------------------------------------------------
 % Os arquivos gerado/codigo_*.txt são extraídos do código-fonte por
