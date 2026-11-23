@@ -54,10 +54,10 @@ As configurações padrão de cada sistema foram usadas como \textit{baseline}. 
 \subsection{Métricas}
 
 \begin{itemize}
-    \item Latência de consulta: tempos p50, p95 e p99 para consultas de similaridade com e sem filtros.
-    \item \textit{Throughput}: consultas atendidas por segundo por um cliente único e sequencial.
-    \item Recall@K: proporção de vizinhos relevantes recuperados entre os K primeiros, estimada por comparação com busca exata.
-    \item Uso de recursos: espaço em disco e acréscimo de memória residente por \textit{dataset}; tempo de indexação inicial; e, ao longo de toda a medição, memória e CPU de cada contêiner, memória disponível, \textit{swap} e pressão de memória do hospedeiro.
+    \item Latência de consulta: percentis p50, p95 e p99 do tempo de resposta, com e sem filtros. O p50 é a mediana; o p95 e o p99 são os tempos abaixo dos quais ficam 95\% e 99\% das consultas, e por isso descrevem a cauda, as consultas mais lentas.
+    \item \textit{Throughput}: consultas atendidas por segundo (QPS) por um cliente único e sequencial.
+    \item Recall@K: fração dos K vizinhos mais próximos verdadeiros, dados pela busca exata, que aparecem entre os K resultados devolvidos pelo índice; neste estudo, $K = 10$.
+    \item Uso de recursos: espaço em disco e acréscimo de memória residente (RSS, \textit{resident set size}) por \textit{dataset}; tempo de indexação inicial; e, ao longo de toda a medição, memória e CPU de cada contêiner, memória disponível, \textit{swap} e pressão de memória do hospedeiro.
     \item Desempenho sob escrita (Cenário C): latência e \textit{recall} das consultas durante as inserções, taxa de inserção efetivamente sustentada e visibilidade dos vetores recém-inseridos.
 \end{itemize}
 
